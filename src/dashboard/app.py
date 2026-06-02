@@ -38,6 +38,16 @@ def load_data(user_id: str, day: int) -> dict:
     bench_path = os.path.join(settings.RESULTS_DIR, "benchmark_results.csv")
     if os.path.exists(bench_path):
         data["benchmark_df"] = pd.read_csv(bench_path)
+    policy_path = os.path.join(settings.RESULTS_DIR, "policy_comparison.csv")
+    if os.path.exists(policy_path):
+        data["policy_comparison_df"] = pd.read_csv(policy_path)
+    scale_path = os.path.join(settings.RESULTS_DIR, "scale_test.csv")
+    if os.path.exists(scale_path):
+        data["scale_test_df"] = pd.read_csv(scale_path)
+    device_path = os.path.join(settings.RESULTS_DIR, "device_report.json")
+    if os.path.exists(device_path):
+        with open(device_path) as f:
+            data["device_report"] = json.load(f)
     # Training curves
     curves_path = os.path.join(settings.RESULTS_DIR, "training_curves.json")
     if os.path.exists(curves_path):
@@ -152,9 +162,10 @@ def _run_dashboard() -> None:
     st.divider()
 
     # ── Tabs ─────────────────────────────────────────────────────────────────
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
         "🔗 Graph Evolution", "📊 Benchmarks", "🎯 RL Training",
-        "🔒 Security Log", "💾 Memory Tiers"
+        "🔒 Security Log", "💾 Memory Tiers", "Provenance",
+        "Policy Comparison", "Scale Test", "Device"
     ])
 
     # Tab 1: Graph Evolution
@@ -269,6 +280,53 @@ def _run_dashboard() -> None:
                       f"{tier_stats.get('hot_count',0)}/{tier_stats.get('hot_capacity',30)}")
             st.metric("WARM Capacity Used",
                       f"{tier_stats.get('warm_count',0)}/{tier_stats.get('warm_capacity',150)}")
+
+    with tab6:
+        st.subheader("Benchmark Provenance")
+        bench_df = data.get("benchmark_df")
+        if bench_df is not None:
+            provenance_cols = [
+                "policy_name",
+                *[provenance_column(m) for m in BENCHMARK_METRICS
+                  if provenance_column(m) in bench_df.columns]
+            ]
+            if len(provenance_cols) > 1:
+                st.dataframe(bench_df[provenance_cols].drop_duplicates())
+            else:
+                st.warning("Benchmark metrics do not include provenance labels.")
+        else:
+            st.info("No benchmark data available.")
+
+    with tab7:
+        st.subheader("RL Policy Comparison")
+        policy_df = data.get("policy_comparison_df")
+        if policy_df is not None:
+            fig = px.bar(policy_df, x="policy_name", y="cache_hit_rate",
+                         color="split", barmode="group",
+                         title="Random vs NoOp vs Frequency vs LRU vs PPO")
+            st.plotly_chart(fig, use_container_width=True)
+            st.dataframe(policy_df)
+        else:
+            st.info("No policy comparison data available.")
+
+    with tab8:
+        st.subheader("Graph Scale Test")
+        scale_df = data.get("scale_test_df")
+        if scale_df is not None:
+            fig = px.line(scale_df, x="user_count", y="prediction_time_ms",
+                          markers=True, title="Prediction Time by User Count")
+            st.plotly_chart(fig, use_container_width=True)
+            st.dataframe(scale_df)
+        else:
+            st.info("No scale test data available.")
+
+    with tab9:
+        st.subheader("Samsung Device Diagnostics")
+        device_report = data.get("device_report")
+        if device_report:
+            st.json(device_report)
+        else:
+            st.info("No device report. Run: python -m src.cli.connect_samsung --doctor")
 
 
 # Only call st when run as streamlit app

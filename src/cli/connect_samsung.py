@@ -47,6 +47,12 @@ def parse_args():
         default=False,
         help="Enable verbose debug logging"
     )
+    parser.add_argument(
+        "--doctor",
+        action="store_true",
+        default=False,
+        help="Run Samsung/ADB diagnostics and write results/device_report.json"
+    )
     return parser.parse_args()
 
 
@@ -54,6 +60,17 @@ def main() -> int:
     """Main entry point. Returns exit code."""
     args = parse_args()
     setup_logging(args.verbose)
+
+    if args.doctor:
+        from scripts.device_validation import write_device_report
+        report = write_device_report()
+        print("GraphMind Samsung Doctor")
+        print(f"ADB: {report.get('adb_status')}")
+        print(f"Device detected: {report.get('device_detected')}")
+        print(f"Telemetry: {report.get('telemetry_status')}")
+        print(f"Dashboard: {report.get('dashboard_status')}")
+        print("Report: results/device_report.json")
+        return 0 if report.get("checks", {}).get("adb") else 1
 
     wizard = SamsungConnectionWizard(
         non_interactive=args.non_interactive,
