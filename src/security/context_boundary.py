@@ -11,6 +11,7 @@ from typing import Optional, List
 from config import settings
 from src.core.event_bus import EventBus, TOPIC_APP_LAUNCHED, TOPIC_SECURITY_FLUSH
 from src.core.memory_manager import MemoryManager
+from src.security.classification_guard import ClassificationGuard, RetentionPolicy
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +41,8 @@ class ContextBoundaryEnforcer:
                 self._taxonomy: dict = json.load(f)
         except Exception:
             self._taxonomy = {}
+        self.classification_guard = ClassificationGuard(self._taxonomy)
+        self.retention_policy: RetentionPolicy = self.classification_guard.retention_policy
         bus = EventBus.get_instance()
         bus.subscribe(TOPIC_APP_LAUNCHED, self._on_app_launched)
 
@@ -97,9 +100,26 @@ class ContextBoundaryEnforcer:
     def get_app_category(self, app_id: str) -> str:
         """
         Look up category from app_taxonomy.
-        Returns category string or 'utility' if app_id not found.
+        Unknown packages are isolated as 'unknown_sensitive' until classified.
         """
-        return self._taxonomy.get(app_id, {}).get("category", "utility")
+        return self.classification_guard.classify(app_id)
+
+    def get_retention_policy(self) -> dict:
+        """Return active retention policy for security-relevant state."""
+        return self.retention_policy.to_dict()
+
+    def enforce_retention_policy(self) -> dict:
+        """Trim retained security logs according to policy limits."""
+        trace_limit = self.retention_policy.trace_retention_events
+        flush_overflow = max(0, len(self.flush_log) - trace_limit)
+        if flush_overflow:
+            del self.flush_log[:flush_overflow]
+        classification_overflow = self.classification_guard.trim_classification_log()
+        return {
+            "flush_events_removed": flush_overflow,
+            "classification_events_removed": classification_overflow,
+            **self.get_retention_policy(),
+        }
 
     def _on_app_launched(self, payload: dict) -> None:
         """
@@ -111,7 +131,9 @@ class ContextBoundaryEnforcer:
         if payload.get("user_id") != self.user_id:
             return
         app_id = payload.get("app_id", "unknown")
-        current_category = payload.get("category") or self.get_app_category(app_id)
+        current_category = self.classification_guard.classify(
+            app_id, payload.get("category")
+        )
         if self.previous_category is not None:
             self.enforce_boundary(self.previous_category, current_category,
                                   float(payload.get("timestamp", 0.0)))

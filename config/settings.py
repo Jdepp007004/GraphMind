@@ -64,9 +64,15 @@ DRIFT_KL_THRESHOLD = 0.3          # KL divergence above this triggers learning r
 DRIFT_LR_SPIKE_MULTIPLIER = 5.0   # multiply learning rate by this on drift
 
 # ── Security ───────────────────────────────────────────────────────────────
-SENSITIVE_CATEGORIES = ["financial", "health", "enterprise", "government"]
+UNKNOWN_SENSITIVE_CATEGORY = "unknown_sensitive"
+SENSITIVE_CATEGORIES = ["financial", "health", "enterprise", "government", UNKNOWN_SENSITIVE_CATEGORY]
 CONSUMER_CATEGORIES = ["social", "entertainment", "shopping", "gaming"]
 # Transition from sensitive → consumer triggers cache flush
+HOT_RETENTION_EVENTS = 500
+WARM_RETENTION_EVENTS = 2000
+COLD_RETENTION_DAYS = 15
+TRACE_RETENTION_EVENTS = 1000
+GRAPH_RETENTION_DAYS = NODE_EVICTION_DAYS
 
 # ── Gemma Model ────────────────────────────────────────────────────────────
 GEMMA_MODEL_ID = "google/gemma-2b"
