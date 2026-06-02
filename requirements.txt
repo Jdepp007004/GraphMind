@@ -1,0 +1,16 @@
+networkx==3.3
+numpy
+pandas
+scipy
+gymnasium
+stable-baselines3
+shimmy
+python-dotenv
+langgraph==0.1.14
+streamlit
+pyvis
+plotly
+apscheduler
+pytest
+pytest-cov
+torch

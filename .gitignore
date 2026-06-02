@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.Python
+pip-wheel-metadata/
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Environment secrets
+.env
+
+# IDE and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Testing and coverage
+.pytest_cache/
+.benchmarks/
+.coverage
+htmlcov/
+coverage.xml
+*.coveragerc
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Large binary / database files
+data/cold_graph.db
+data/base_graphs/
+models/rl_policies/
+
+# Simulation logs (large files)
+results/user_*_simulation_log.json
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
