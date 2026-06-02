@@ -8,13 +8,58 @@ import os
 import logging
 import json
 import time
-from typing import Optional
+from typing import Optional, List
 
 from config import settings
 from src.rl.environment import GraphMindEnv
 from src.data.dataset_generator import USER_PROFILES
 
 logger = logging.getLogger(__name__)
+
+
+class TrainingMetricsCallback:
+    """Collect real SB3 training metrics observed during learning."""
+
+    def __init__(self, user_id: str) -> None:
+        from stable_baselines3.common.callbacks import BaseCallback
+
+        class _Callback(BaseCallback):
+            def __init__(self, outer: "TrainingMetricsCallback") -> None:
+                super().__init__()
+                self.outer = outer
+                self.episode_reward = 0.0
+
+            def _on_step(self) -> bool:
+                rewards = self.locals.get("rewards", [0.0])
+                reward = float(rewards[0]) if len(rewards) else 0.0
+                self.episode_reward += reward
+                dones = self.locals.get("dones", [False])
+                done = bool(dones[0]) if len(dones) else False
+                logger_values = getattr(self.model.logger, "name_to_value", {})
+                self.outer.records.append({
+                    "user_id": self.outer.user_id,
+                    "step": int(self.num_timesteps),
+                    "episode_reward": self.episode_reward,
+                    "policy_loss": _to_float(logger_values.get("train/policy_gradient_loss")),
+                    "value_loss": _to_float(logger_values.get("train/value_loss")),
+                    "entropy": _to_float(logger_values.get("train/entropy_loss")),
+                })
+                if done:
+                    self.episode_reward = 0.0
+                return True
+
+        self.user_id = user_id
+        self.records: List[dict] = []
+        self.callback = _Callback(self)
+
+
+def _to_float(value):
+    if value is None:
+        return None
+    try:
+        return float(value)
+    except Exception:
+        return None
 
 
 class RLTrainer:
@@ -54,7 +99,6 @@ class RLTrainer:
         Logs training start and completion.
         """
         from stable_baselines3 import PPO
-        from stable_baselines3.common.callbacks import BaseCallback
 
         logger.info(f"Training PPO for {user_id}, timesteps={total_timesteps}")
         start_time = time.time()
@@ -73,6 +117,8 @@ class RLTrainer:
         )
 
         callbacks = []
+        metrics_callback = TrainingMetricsCallback(user_id)
+        callbacks.append(metrics_callback.callback)
         if self._wandb_enabled:
             try:
                 from wandb.integration.sb3 import WandbCallback
@@ -89,29 +135,24 @@ class RLTrainer:
         elapsed = time.time() - start_time
         logger.info(f"PPO training complete for {user_id} in {elapsed:.1f}s. Saved to {save_path}.zip")
 
-        # Save training curve data
-        self._save_training_curve(user_id, model)
+        self._save_training_metrics(metrics_callback.records)
         env.close()
         return save_path + ".zip"
 
-    def _save_training_curve(self, user_id: str, model) -> None:
-        """Extract and save episode reward data for dashboard."""
+    def _save_training_metrics(self, records: List[dict]) -> None:
+        """Persist callback-collected PPO training metrics."""
         try:
-            curve_path = os.path.join(settings.RESULTS_DIR, "training_curves.json")
-            if os.path.exists(curve_path):
-                with open(curve_path) as f:
-                    curves = json.load(f)
+            import pandas as pd
+
+            out_path = os.path.join(settings.RESULTS_DIR, "ppo_training_metrics.csv")
+            if os.path.exists(out_path):
+                existing = pd.read_csv(out_path)
+                df = pd.concat([existing, pd.DataFrame(records)], ignore_index=True)
             else:
-                curves = {}
-            # Generate synthetic curve data since SB3 doesn't expose it directly
-            curves[user_id] = [
-                {"step": i * 1000, "reward": float(0.3 + 0.5 * (i / 200))}
-                for i in range(200)
-            ]
-            with open(curve_path, "w") as f:
-                json.dump(curves, f)
+                df = pd.DataFrame(records)
+            df.to_csv(out_path, index=False)
         except Exception as e:
-            logger.warning(f"Could not save training curve: {e}")
+            logger.warning(f"Could not save PPO training metrics: {e}")
 
     def train_all_users(self) -> dict:
         """
@@ -157,11 +198,19 @@ class RLTrainer:
         Returns: {'user_id': [{'step': int, 'reward': float}, ...], ...}
         Returns empty dict if no training data found.
         """
-        curve_path = os.path.join(settings.RESULTS_DIR, "training_curves.json")
-        if os.path.exists(curve_path):
+        metrics_path = os.path.join(settings.RESULTS_DIR, "ppo_training_metrics.csv")
+        if os.path.exists(metrics_path):
             try:
-                with open(curve_path) as f:
-                    return json.load(f)
+                import pandas as pd
+
+                df = pd.read_csv(metrics_path)
+                curves = {}
+                for user_id, group in df.groupby("user_id"):
+                    curves[user_id] = [
+                        {"step": int(r["step"]), "reward": float(r["episode_reward"])}
+                        for _, r in group.iterrows()
+                    ]
+                return curves
             except Exception:
                 pass
         return {}
