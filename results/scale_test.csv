@@ -1,0 +1,5 @@
+user_count,events_per_user,node_count,edge_count,memory_usage_mb,serialization_time_ms,prediction_time_ms,elapsed_seconds,survived
+10,5,50,40,0.098,0.796,0.35,0.007,True
+100,5,500,400,0.478,0.88,3.978,0.047,True
+1000,5,5000,4000,0.575,1.323,47.723,0.591,True
+10000,5,50000,40000,0.686,1.435,1849.327,23.851,True
