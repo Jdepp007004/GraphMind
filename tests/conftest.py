@@ -23,8 +23,10 @@ def reset_event_bus():
     """Reset EventBus state before each test."""
     bus = EventBus.get_instance()
     bus.clear_all()
+    bus.clear_validation_stats()
     yield
     bus.clear_all()
+    bus.clear_validation_stats()
 
 
 @pytest.fixture

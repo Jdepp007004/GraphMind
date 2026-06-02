@@ -114,6 +114,17 @@ class BehaviouralGraph:
         edge_data["time_sensitivity"] = max(0.0, min(1.0, edge_data["time_sensitivity"] + delta_time))
         edge_data["battery_cost"] = max(0.0, min(1.0, edge_data["battery_cost"] + delta_battery))
 
+    def normalize_outgoing_edges(self, source_id: str) -> None:
+        """Normalize outgoing transition weights so they sum to 1.0."""
+        if source_id not in self._graph:
+            return
+        outgoing = list(self._graph.out_edges(source_id, data=True))
+        total = sum(max(0.0, d.get("transition_prob", 0.0)) for _, _, d in outgoing)
+        if total <= 0:
+            return
+        for _, _, edge_data in outgoing:
+            edge_data["transition_prob"] = edge_data.get("transition_prob", 0.0) / total
+
     def get_node(self, node_id: str) -> Optional[GraphNode]:
         """
         Return the GraphNode for node_id, or None if not found.
@@ -335,5 +346,6 @@ class BehaviouralGraph:
                                          delta_prob=0.01, delta_time=0.0, delta_battery=0.0)
             else:
                 self.add_edge(self._previous_node_id, current_node_id, 0.1, 0.5, 0.2)
+            self.normalize_outgoing_edges(self._previous_node_id)
 
         self._previous_node_id = current_node_id

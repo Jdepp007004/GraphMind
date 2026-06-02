@@ -8,7 +8,9 @@ Prevents direct cross-module coupling.
 import threading
 import queue
 import logging
+import sys
 from config import settings
+from src.core.event_schema import build_default_registry
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +44,9 @@ class EventBus:
         """Initialize the internal subscription registry."""
         self._subscribers: dict[str, list] = {}
         self._sub_lock = threading.Lock()
+        self._schema_registry = build_default_registry(sys.modules[__name__])
+        self._rejected_event_count = 0
+        self._rejected_events: list[dict] = []
 
     @classmethod
     def get_instance(cls) -> "EventBus":
@@ -77,6 +82,16 @@ class EventBus:
         Calls all registered callbacks synchronously in subscription order.
         Logs the publish at DEBUG level: f'EventBus: {topic} -> {list(payload.keys())}'
         """
+        result = self._schema_registry.validate(topic, payload)
+        if not result.valid:
+            self._rejected_event_count += 1
+            self._rejected_events.append({
+                "topic": topic,
+                "reason": result.reason,
+                "payload": payload,
+            })
+            logger.warning("EventBus rejected event %s: %s", topic, result.reason)
+            return
         logger.debug(f"EventBus: {topic} -> {list(payload.keys())}")
         with self._sub_lock:
             callbacks = list(self._subscribers.get(topic, []))
@@ -101,3 +116,15 @@ class EventBus:
         """
         with self._sub_lock:
             self._subscribers.clear()
+
+    def get_validation_stats(self) -> dict:
+        """Return invalid event counts and recent rejection records."""
+        return {
+            "rejected_event_count": self._rejected_event_count,
+            "rejected_events": list(self._rejected_events),
+        }
+
+    def clear_validation_stats(self) -> None:
+        """Reset validation counters without affecting subscriptions."""
+        self._rejected_event_count = 0
+        self._rejected_events.clear()
