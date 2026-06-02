@@ -179,22 +179,23 @@ class CaseStudyGenerator:
                 study.learned_confidence = min(0.98, study.final_hit_rate + 0.25)
 
     def _populate_estimated(self, study: UserCaseStudy, idx: int) -> None:
-        """Generate estimated values when no simulation log exists."""
-        base = 0.27 + idx * 0.015
-        final = base + 0.18
-        study.initial_hit_rate = round(base, 3)
-        study.final_hit_rate = round(min(0.95, final), 3)
-        study.max_hit_rate = round(min(0.95, final + 0.03), 3)
-        study.peak_node_count = 80 + idx * 15
-        study.learned_confidence = round(0.72 + idx * 0.025, 3)
+        """Generate neutral placeholders when no simulation log exists."""
+        base = 0.0
+        final = 0.0
+        study.initial_hit_rate = base
+        study.final_hit_rate = final
+        study.max_hit_rate = final
+        study.peak_node_count = 0
+        study.learned_confidence = 0.0
         # Milestone snapshots
         for day in (0, 1, 7, 14, 21, 29):
             frac = day / 29.0 if day > 0 else 0.0
             study.day_snapshots[day] = {
-                "cache_hit_rate": round(base + frac * (final - base), 3),
-                "node_count": int(20 + frac * study.peak_node_count),
-                "hot_count": min(30, int(5 + frac * 25)),
+                "cache_hit_rate": final,
+                "node_count": 0,
+                "hot_count": 0,
                 "kl_divergence": 0.0,
+                "provenance": "UNKNOWN",
             }
         sample_apps = ["Maps", "Spotify", "Outlook", "WhatsApp", "Chrome",
                        "YouTube", "Gmail", "Calculator", "Camera", "Notes"]

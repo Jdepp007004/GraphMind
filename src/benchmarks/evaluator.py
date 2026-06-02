@@ -17,13 +17,10 @@ from src.benchmarks.baselines import (
     BaselinePolicy, LMKDReactiveBaseline, ARTStaticProfileBaseline,
     UsageStatsLRUBaseline, BixbyFrequencyBaseline
 )
+from src.benchmarks.graphmind_policy_runner import GraphMindPolicyRunner
 from src.data.dataset_generator import USER_PROFILES
 
 logger = logging.getLogger(__name__)
-
-# Cache hit rate advantage we give GraphMind_RL over baselines
-# (simulates RL+graph advantage). Conservative estimate.
-_GRAPHMIND_HIT_BOOST = 0.18  # GraphMind gets +18% cache hit rate vs LMKD
 
 
 class BenchmarkEvaluator:
@@ -95,21 +92,21 @@ class BenchmarkEvaluator:
                     "graph_node_count": result.get("graph_node_count", 0)
                 })
 
-            # GraphMind_RL: computed from simulation log or estimated
+            # GraphMind_RL: evaluated through event replay like every baseline.
             lmkd_rate = next(r["cache_hit_rate"] for r in rows
                              if r["user_id"] == uid and r["policy_name"] == settings.BASELINE_LMKD)
-            bixby_rate = next(r["cache_hit_rate"] for r in rows
-                              if r["user_id"] == uid and r["policy_name"] == settings.BASELINE_BIXBY)
-            gm_rate = self._get_graphmind_hit_rate(uid, lmkd_rate)
+            gm_result = self.run_graphmind_policy(uid, events)
             rows.append({
                 "user_id": uid,
                 "policy_name": settings.BASELINE_GRAPHMIND,
                 "day": 29,
-                "cache_hit_rate": gm_rate,
-                "launch_speed_gain_pct": self.compute_launch_speed_gain(gm_rate, lmkd_rate),
-                "thrash_rate": 0.05,
-                "battery_overhead_pct": 0.8,
-                "graph_node_count": 150
+                "cache_hit_rate": gm_result["cache_hit_rate"],
+                "launch_speed_gain_pct": self.compute_launch_speed_gain(
+                    gm_result["cache_hit_rate"], lmkd_rate
+                ),
+                "thrash_rate": gm_result["thrash_rate"],
+                "battery_overhead_pct": gm_result["battery_overhead_pct"],
+                "graph_node_count": gm_result.get("graph_node_count", 0)
             })
 
         df = pd.DataFrame(rows)
@@ -118,27 +115,10 @@ class BenchmarkEvaluator:
         logger.info(f"Benchmark results saved to {out_path} ({len(df)} rows)")
         return df
 
-    def _get_graphmind_hit_rate(self, user_id: str, lmkd_rate: float) -> float:
-        """
-        Get GraphMind cache hit rate from simulation log if available,
-        otherwise estimate as LMKD + boost (ensures hardcheck passes).
-        """
-        log_path = os.path.join(settings.RESULTS_DIR, f"{user_id}_simulation_log.json")
-        if os.path.exists(log_path):
-            try:
-                with open(log_path) as f:
-                    log = json.load(f)
-                days = log.get("days", [])
-                if days:
-                    last_day = days[-1]
-                    state = last_day.get("state", {})
-                    cached_rate = state.get("cache_hit_rate", 0.0)
-                    if cached_rate > 0.0:
-                        return min(0.95, max(lmkd_rate + _GRAPHMIND_HIT_BOOST, cached_rate))
-            except Exception:
-                pass
-        # Fallback: guarantee we beat LMKD and Bixby
-        return min(0.95, lmkd_rate + _GRAPHMIND_HIT_BOOST)
+    def run_graphmind_policy(self, user_id: str, events: List[dict]) -> dict:
+        """Run GraphMind through graph, memory, and prefetch execution."""
+        runner = GraphMindPolicyRunner(user_id)
+        return runner.run(events)
 
     def run_user_policy(self, user_id: str, policy: BaselinePolicy,
                         events: List[dict]) -> dict:
