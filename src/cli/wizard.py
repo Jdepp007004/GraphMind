@@ -30,24 +30,29 @@ STEP_HEADER = "\n{'=' * 60}\n"
 
 
 def _print_banner() -> None:
+    """Print the GraphMind wizard banner."""
     print(GRAPHMIND_BANNER)
 
 
 def _step_header(step_num: int, title: str) -> None:
+    """Print a formatted wizard step header."""
     print(f"\n{'=' * 60}")
     print(f"  STEP {step_num}: {title}")
     print(f"{'=' * 60}")
 
 
 def _ok(msg: str) -> None:
+    """Print a success status line."""
     print(f"  [OK] {msg}")
 
 
 def _warn(msg: str) -> None:
+    """Print a warning status line."""
     print(f"  [!!] {msg}")
 
 
 def _info(msg: str) -> None:
+    """Print an informational status line."""
     print(f"       {msg}")
 
 
@@ -150,6 +155,7 @@ class SamsungConnectionWizard:
     # ── Step Implementations ────────────────────────────────────────────────
 
     def _step1_detect_platform(self) -> None:
+        """Detect and record the host operating system."""
         _step_header(1, "Platform Detection")
         platform_name = detect_platform()
         self.result.platform = platform_name
@@ -157,6 +163,7 @@ class SamsungConnectionWizard:
         _info("GraphMind supports Windows, Linux, and macOS.")
 
     def _step2_verify_adb(self) -> bool:
+        """Verify that ADB is installed and reachable."""
         _step_header(2, "ADB Verification")
         adb_path = find_adb()
         if not adb_path:
@@ -181,6 +188,7 @@ class SamsungConnectionWizard:
         return True
 
     def _step3_samsung_instructions(self) -> None:
+        """Show Samsung developer-mode setup instructions."""
         _step_header(3, "Samsung Developer Mode Setup")
         print_samsung_setup_instructions()
         if not self.non_interactive:
@@ -188,6 +196,7 @@ class SamsungConnectionWizard:
                     "Wireless Debugging are enabled on your device")
 
     def _step4_detect_device(self) -> bool:
+        """Detect an attached Samsung device through ADB."""
         _step_header(4, "Device Detection")
         _info("Running: adb devices")
         print()
@@ -234,6 +243,7 @@ class SamsungConnectionWizard:
             return False
 
     def _step5_troubleshoot(self) -> bool:
+        """Show troubleshooting guidance and optionally retry detection."""
         _step_header(5, "Troubleshooting")
         print(TROUBLESHOOTING_STEPS)
         if self.non_interactive:
@@ -244,6 +254,7 @@ class SamsungConnectionWizard:
         return self._step4_detect_device()
 
     def _step6_wireless_pairing(self) -> bool:
+        """Guide the user through wireless ADB pairing."""
         _step_header(6, "Wireless ADB Pairing")
         print("""
   On your Samsung device:
@@ -282,6 +293,7 @@ class SamsungConnectionWizard:
         return False
 
     def _step7_verify_permissions(self) -> None:
+        """Verify key device permissions and debugging status."""
         _step_header(7, "Permission Verification")
         if not self.result.device_serial or not self.result.adb_path:
             _info("Skipping permission check (no device connected).")
@@ -296,6 +308,7 @@ class SamsungConnectionWizard:
                 _warn(f"{label}: Not detected (may still work)")
 
     def _step8_start_telemetry(self) -> None:
+        """Start or smoke-test live telemetry collection."""
         _step_header(8, "Starting Live Telemetry Stream")
         if not self.result.device_serial:
             _info("No device connected. GraphMind will run in simulation mode.")
@@ -328,6 +341,7 @@ class SamsungConnectionWizard:
             _info("Falling back to simulation mode.")
 
     def _step9_launch_dashboard(self) -> None:
+        """Print dashboard launch details and optionally start Streamlit."""
         _step_header(9, "Dashboard Launch")
         print("""
   GraphMind Dashboard is ready to launch.

@@ -41,6 +41,7 @@ class TimelineFrame:
         self.drift_detected: bool = self.kl_divergence > 0.3
 
     def to_dict(self) -> dict:
+        """Serialize the timeline frame to a dashboard-ready dict."""
         return {
             "day": self.day,
             "node_count": self.node_count,

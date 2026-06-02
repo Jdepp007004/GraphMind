@@ -22,6 +22,7 @@ class RetentionPolicy:
     graph_retention_days: int = settings.GRAPH_RETENTION_DAYS
 
     def to_dict(self) -> dict:
+        """Serialize retention limits to a JSON-compatible dict."""
         return {
             "hot_retention_events": self.hot_retention_events,
             "warm_retention_events": self.warm_retention_events,
@@ -47,6 +48,7 @@ class ClassificationGuard:
         self.classification_log: List[dict] = []
 
     def classify(self, package_name: str, payload_category: Optional[str] = None) -> str:
+        """Classify a package, isolating unknown packages as sensitive."""
         if package_name in self.taxonomy:
             category = self.taxonomy[package_name].get("category", settings.UNKNOWN_SENSITIVE_CATEGORY)
             self._log(package_name, category, "taxonomy")
@@ -56,12 +58,15 @@ class ClassificationGuard:
         return category
 
     def is_sensitive(self, category: str) -> bool:
+        """Return True when a category is treated as sensitive."""
         return category in settings.SENSITIVE_CATEGORIES
 
     def retention_summary(self) -> dict:
+        """Return active retention limits."""
         return self.retention_policy.to_dict()
 
     def trim_classification_log(self) -> int:
+        """Trim classification logs to the configured trace retention limit."""
         limit = self.retention_policy.trace_retention_events
         overflow = max(0, len(self.classification_log) - limit)
         if overflow:
@@ -69,6 +74,7 @@ class ClassificationGuard:
         return overflow
 
     def _log(self, package_name: str, category: str, source: str) -> None:
+        """Record a package classification decision."""
         self.classification_log.append({
             "package_name": package_name,
             "category": category,

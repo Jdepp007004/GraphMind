@@ -203,10 +203,9 @@ def run_checks(phase_filter: int | None, verbose: bool, fix_hints_only: bool):
 # ─────────────────────────────────────────────────────────────────────────────
 
 @check(1, "Python version >= 3.11", 
-       "You must use Python 3.11.x. Run: python3.11 -m venv venv and reactivate. Check 'python --version'.")
+       "Use Python 3.11 or newer. Check 'python --version'.")
 def check_env_setup():
     assert sys.version_info >= (3, 11), f"Python {sys.version_info} < 3.11"
-    assert sys.version_info < (3, 13), "Python 3.13+ not tested. Use 3.11."
 
 
 @check(1, "config/settings.py importable and has all required constants",

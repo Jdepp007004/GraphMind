@@ -30,6 +30,7 @@ class TrainingMetricsCallback:
                 self.episode_reward = 0.0
 
             def _on_step(self) -> bool:
+                """Collect reward and logger values for the current training step."""
                 rewards = self.locals.get("rewards", [0.0])
                 reward = float(rewards[0]) if len(rewards) else 0.0
                 self.episode_reward += reward
@@ -54,6 +55,7 @@ class TrainingMetricsCallback:
 
 
 def _to_float(value):
+    """Convert logger values to floats while preserving missing values."""
     if value is None:
         return None
     try:

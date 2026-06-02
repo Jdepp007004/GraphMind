@@ -27,12 +27,14 @@ BENCHMARK_METRICS = [
 
 
 def provenance_column(metric_name: str) -> str:
+    """Return the provenance column name for a metric value column."""
     return f"{metric_name}_provenance"
 
 
 def attach_row_provenance(row: dict, measured: Iterable[str],
                           estimated: Iterable[str] = (),
                           synthetic: Iterable[str] = ()) -> dict:
+    """Attach provenance labels to benchmark metric fields in a row."""
     measured_set = set(measured)
     estimated_set = set(estimated)
     synthetic_set = set(synthetic)
@@ -53,6 +55,7 @@ def attach_row_provenance(row: dict, measured: Iterable[str],
 
 def metrics_missing_provenance(df: pd.DataFrame,
                                metrics: Iterable[str] = BENCHMARK_METRICS) -> list:
+    """Return metric columns that do not have matching provenance columns."""
     missing = []
     for metric in metrics:
         if metric in df.columns and provenance_column(metric) not in df.columns:

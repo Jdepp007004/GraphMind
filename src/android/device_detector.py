@@ -35,13 +35,16 @@ class DeviceInfo:
 
     @property
     def is_samsung(self) -> bool:
+        """Return True when the device brand is Samsung."""
         return self.brand.lower() in SAMSUNG_BRANDS
 
     @property
     def is_supported(self) -> bool:
+        """Return True when the Samsung device runs a supported Android version."""
         return self.is_samsung and self.android_version in SUPPORTED_ANDROID_VERSIONS
 
     def to_dict(self) -> dict:
+        """Serialize device metadata to a JSON-compatible dict."""
         return {
             "serial": self.serial,
             "model": self.model,
@@ -170,6 +173,7 @@ class DeviceDetector:
 
 
 def _safe_int(val: str) -> int:
+    """Parse an integer string, returning 0 on failure."""
     try:
         return int(val)
     except Exception:

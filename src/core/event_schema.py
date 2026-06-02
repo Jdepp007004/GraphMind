@@ -21,12 +21,15 @@ class EventSchemaRegistry:
         self._required: Dict[str, Set[str]] = {}
 
     def register(self, topic: str, required_fields: Iterable[str]) -> None:
+        """Register required payload fields for a known topic."""
         self._required[topic] = set(required_fields)
 
     def is_known(self, topic: str) -> bool:
+        """Return True when a topic has a registered schema."""
         return topic in self._required
 
     def validate(self, topic: str, payload: dict) -> EventValidationResult:
+        """Validate a topic and payload against the registered schema."""
         if not isinstance(topic, str) or not topic:
             return EventValidationResult(False, "topic must be a non-empty string")
         if not isinstance(payload, dict):
@@ -45,6 +48,7 @@ class EventSchemaRegistry:
 
 
 def build_default_registry(topics) -> EventSchemaRegistry:
+    """Build the default schema registry from EventBus topic constants."""
     registry = EventSchemaRegistry()
     registry.register(topics.TOPIC_APP_LAUNCHED, ["timestamp", "user_id", "app_id"])
     registry.register(topics.TOPIC_BATTERY_UPDATED, ["timestamp", "user_id", "battery"])

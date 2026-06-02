@@ -105,6 +105,7 @@ class TelemetryEventAdapter:
         return int(elapsed / 86400)  # days since session start
 
     def _is_weekend(self) -> bool:
+        """Return True when the current local day is Saturday or Sunday."""
         import datetime
         return datetime.datetime.now().weekday() >= 5
 

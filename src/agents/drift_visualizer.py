@@ -35,6 +35,7 @@ class DriftEvent:
         self.user_id = user_id
 
     def to_dict(self) -> dict:
+        """Serialize the drift event for dashboard rendering."""
         return {
             "timestamp": self.timestamp,
             "kl_value": self.kl_value,

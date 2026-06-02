@@ -41,6 +41,7 @@ class DecisionTrace:
         self.metadata = metadata or {}
 
     def to_dict(self) -> dict:
+        """Serialize the decision trace to a JSON-compatible dict."""
         return {
             "trace_id": self.trace_id,
             "timestamp": self.timestamp,

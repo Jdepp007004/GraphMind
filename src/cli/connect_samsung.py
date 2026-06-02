@@ -17,6 +17,7 @@ from src.cli.wizard import SamsungConnectionWizard
 
 
 def setup_logging(verbose: bool = False) -> None:
+    """Configure CLI logging verbosity."""
     level = logging.DEBUG if verbose else logging.WARNING
     logging.basicConfig(
         level=level,
@@ -25,6 +26,7 @@ def setup_logging(verbose: bool = False) -> None:
 
 
 def parse_args():
+    """Parse command-line arguments for the Samsung connection CLI."""
     parser = argparse.ArgumentParser(
         prog="python -m src.cli.connect_samsung",
         description="GraphMind Samsung Device Connection Wizard",

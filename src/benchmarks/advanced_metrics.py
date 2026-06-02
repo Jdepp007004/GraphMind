@@ -313,6 +313,7 @@ class AdvancedBenchmarkMetrics:
         return row
 
     def _attach_advanced_provenance(self, row: dict, provenance: Dict[str, MetricProvenance]) -> None:
+        """Attach provenance labels to advanced benchmark metrics in-place."""
         for metric, label in provenance.items():
             if metric in row:
                 row[f"{metric}_provenance"] = label.value

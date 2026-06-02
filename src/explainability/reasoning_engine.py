@@ -38,6 +38,7 @@ class ReasoningEngine:
         return f"time bucket {time_bucket}"
 
     def _battery_label(self, battery_pct: float) -> str:
+        """Convert battery percentage to a human-readable prefetch label."""
         if battery_pct >= 80:
             return "high battery (allows prefetch)"
         if battery_pct >= 50:

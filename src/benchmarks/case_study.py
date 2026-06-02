@@ -41,6 +41,7 @@ class UserCaseStudy:
         self.drift_days: List[int] = []
 
     def to_dict(self) -> dict:
+        """Serialize the case study to a JSON-compatible dict."""
         return {
             "user_id": self.user_id,
             "persona_name": self.persona_name,
@@ -96,6 +97,7 @@ class CaseStudyGenerator:
         self._load_logs()
 
     def _load_logs(self) -> None:
+        """Load available simulation logs from the results directory."""
         for profile in USER_PROFILES:
             uid = profile["user_id"]
             path = os.path.join(settings.RESULTS_DIR, f"{uid}_simulation_log.json")
