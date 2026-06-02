@@ -16,6 +16,7 @@ import pandas as pd
 from typing import List, Dict, Optional, Tuple
 
 from config import settings
+from src.benchmarks.provenance import MetricProvenance
 from src.data.dataset_generator import USER_PROFILES
 
 logger = logging.getLogger(__name__)
@@ -255,6 +256,25 @@ class AdvancedBenchmarkMetrics:
                 **growth,
                 **sec,
             }
+            self._attach_advanced_provenance(row, {
+                "prefetch_precision": MetricProvenance.ESTIMATED,
+                "prefetch_recall": MetricProvenance.ESTIMATED,
+                "prefetch_f1": MetricProvenance.ESTIMATED,
+                "p50_ms": MetricProvenance.ESTIMATED,
+                "p95_ms": MetricProvenance.ESTIMATED,
+                "p99_ms": MetricProvenance.ESTIMATED,
+                "ram_estimate_mb": MetricProvenance.ESTIMATED,
+                "warm_cache_estimate_mb": MetricProvenance.ESTIMATED,
+                "cold_storage_estimate_mb": MetricProvenance.ESTIMATED,
+                "total_storage_estimate_mb": MetricProvenance.ESTIMATED,
+                "node_growth_rate": MetricProvenance.MEASURED,
+                "edge_growth_rate": MetricProvenance.MEASURED,
+                "node_churn_rate": MetricProvenance.MEASURED,
+                "edge_churn_rate": MetricProvenance.MEASURED,
+                "flush_accuracy": MetricProvenance.MEASURED,
+                "false_flush_rate": MetricProvenance.MEASURED,
+                "flush_rate_per_1000_events": MetricProvenance.MEASURED,
+            })
             rows.append(row)
 
         df = pd.DataFrame(rows)
@@ -266,7 +286,7 @@ class AdvancedBenchmarkMetrics:
 
     def _generate_estimated_row(self, user_id: str) -> dict:
         """Generate an estimated benchmark row when no simulation log exists."""
-        return {
+        row = {
             "user_id": user_id,
             "prefetch_precision": 0.68,
             "prefetch_recall": 0.64,
@@ -286,3 +306,13 @@ class AdvancedBenchmarkMetrics:
             "false_flush_rate": 0.05,
             "flush_rate_per_1000_events": 0.8,
         }
+        self._attach_advanced_provenance(
+            row,
+            {k: MetricProvenance.ESTIMATED for k in row if k != "user_id"}
+        )
+        return row
+
+    def _attach_advanced_provenance(self, row: dict, provenance: Dict[str, MetricProvenance]) -> None:
+        for metric, label in provenance.items():
+            if metric in row:
+                row[f"{metric}_provenance"] = label.value

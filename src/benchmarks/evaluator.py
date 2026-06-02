@@ -18,6 +18,7 @@ from src.benchmarks.baselines import (
     UsageStatsLRUBaseline, BixbyFrequencyBaseline
 )
 from src.benchmarks.graphmind_policy_runner import GraphMindPolicyRunner
+from src.benchmarks.provenance import attach_row_provenance
 from src.data.dataset_generator import USER_PROFILES
 
 logger = logging.getLogger(__name__)
@@ -29,8 +30,12 @@ class BenchmarkEvaluator:
     Measures: cache hit rate, launch speed gain, thrash events, battery overhead.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, max_events_per_user: Optional[int] = None) -> None:
         """Initialize all 4 baselines. Load all 10 user datasets."""
+        env_limit = os.getenv("GRAPHMIND_BENCHMARK_MAX_EVENTS")
+        if max_events_per_user is None and env_limit:
+            max_events_per_user = int(env_limit)
+        self.max_events_per_user = max_events_per_user if max_events_per_user is not None else 300
         self._baselines: List[BaselinePolicy] = [
             LMKDReactiveBaseline(),
             ARTStaticProfileBaseline(),
@@ -70,6 +75,8 @@ class BenchmarkEvaluator:
         for profile in USER_PROFILES:
             uid = profile["user_id"]
             events = self._user_events.get(uid, [])
+            if self.max_events_per_user:
+                events = events[:self.max_events_per_user]
             if not events:
                 continue
             # Build ART profile from first 7 days
@@ -81,7 +88,7 @@ class BenchmarkEvaluator:
                     policy.build_profile(events)
                 policy.reset()
                 result = self.run_user_policy(uid, policy, events)
-                rows.append({
+                row = {
                     "user_id": uid,
                     "policy_name": policy.get_name(),
                     "day": 29,  # final day aggregate
@@ -90,13 +97,18 @@ class BenchmarkEvaluator:
                     "thrash_rate": result["thrash_rate"],
                     "battery_overhead_pct": result["battery_overhead_pct"],
                     "graph_node_count": result.get("graph_node_count", 0)
-                })
+                }
+                rows.append(attach_row_provenance(
+                    row,
+                    measured={"cache_hit_rate", "thrash_rate", "graph_node_count"},
+                    estimated={"launch_speed_gain_pct", "battery_overhead_pct"},
+                ))
 
             # GraphMind_RL: evaluated through event replay like every baseline.
             lmkd_rate = next(r["cache_hit_rate"] for r in rows
                              if r["user_id"] == uid and r["policy_name"] == settings.BASELINE_LMKD)
             gm_result = self.run_graphmind_policy(uid, events)
-            rows.append({
+            row = {
                 "user_id": uid,
                 "policy_name": settings.BASELINE_GRAPHMIND,
                 "day": 29,
@@ -107,7 +119,12 @@ class BenchmarkEvaluator:
                 "thrash_rate": gm_result["thrash_rate"],
                 "battery_overhead_pct": gm_result["battery_overhead_pct"],
                 "graph_node_count": gm_result.get("graph_node_count", 0)
-            })
+            }
+            rows.append(attach_row_provenance(
+                row,
+                measured={"cache_hit_rate", "thrash_rate", "graph_node_count"},
+                estimated={"launch_speed_gain_pct", "battery_overhead_pct"},
+            ))
 
         df = pd.DataFrame(rows)
         out_path = os.path.join(settings.RESULTS_DIR, "benchmark_results.csv")

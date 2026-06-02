@@ -33,8 +33,10 @@ class GraphMindPolicyRunner:
 
     def __init__(self, user_id: str) -> None:
         self.user_id = user_id
+        EventBus.get_instance().clear_all()
         self.graph = BehaviouralGraph(user_id)
         self.memory_manager = MemoryManager(user_id, self.graph)
+        self._install_in_memory_warm_rebuild()
         self.prefetch = PrefetchDaemon(user_id, self.graph, self.memory_manager)
         self.records: List[dict] = []
 
@@ -86,7 +88,7 @@ class GraphMindPolicyRunner:
 
         total = max(1, cache_hits + cache_misses)
         avg_latency = sum(latency_values) / max(1, len(latency_values))
-        return {
+        result = {
             "cache_hit_rate": cache_hits / total,
             "cache_hits": cache_hits,
             "cache_misses": cache_misses,
@@ -98,6 +100,8 @@ class GraphMindPolicyRunner:
             "graph_edge_count": self.graph.edge_count(),
             "records": self.records,
         }
+        EventBus.get_instance().clear_all()
+        return result
 
     def _tier_for_node(self, node_id: Optional[str], hot_before: set,
                        warm_before: set) -> str:
@@ -124,3 +128,15 @@ class GraphMindPolicyRunner:
             "headphones": bool(event.get("headphones", False)),
             "calendar_event_in_mins": event.get("calendar_event_in_mins"),
         }
+
+    def _install_in_memory_warm_rebuild(self) -> None:
+        def rebuild_warm_from_graph(predicted_node_ids: list) -> None:
+            self.memory_manager._warm.clear()
+            for nid in predicted_node_ids:
+                if nid in self.memory_manager._hot:
+                    continue
+                node = self.graph.get_node(nid)
+                if node:
+                    self.memory_manager._warm[nid] = node
+
+        self.memory_manager.rebuild_warm_from_graph = rebuild_warm_from_graph

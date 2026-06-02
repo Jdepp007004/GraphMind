@@ -15,6 +15,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 from config import settings
+from src.benchmarks.provenance import BENCHMARK_METRICS, provenance_column
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +43,9 @@ def load_data(user_id: str, day: int) -> dict:
     if os.path.exists(curves_path):
         with open(curves_path) as f:
             data["training_curves"] = json.load(f)
+    ppo_metrics_path = os.path.join(settings.RESULTS_DIR, "ppo_training_metrics.csv")
+    if os.path.exists(ppo_metrics_path):
+        data["ppo_training_metrics_df"] = pd.read_csv(ppo_metrics_path)
     return data
 
 
@@ -132,7 +136,7 @@ def _run_dashboard() -> None:
     col1, col2, col3, col4 = st.columns(4)
     with col1:
         hit_rate = state.get("cache_hit_rate", 0.0)
-        st.metric("Cache Hit Rate", f"{hit_rate*100:.1f}%", delta="+18% vs LMKD")
+        st.metric("Cache Hit Rate", f"{hit_rate*100:.1f}%")
     with col2:
         flush_count = state.get("security_flush_count", 0)
         st.metric("Security Flushes", str(flush_count))
@@ -182,6 +186,14 @@ def _run_dashboard() -> None:
                          color="policy_name",
                          color_discrete_map=colors)
             st.plotly_chart(fig, use_container_width=True)
+            provenance_cols = [
+                "policy_name",
+                *[provenance_column(m) for m in BENCHMARK_METRICS
+                  if provenance_column(m) in bench_df.columns]
+            ]
+            if len(provenance_cols) > 1:
+                st.markdown("**Metric Provenance**")
+                st.dataframe(bench_df[provenance_cols].drop_duplicates())
             st.dataframe(bench_df.style.highlight_max(subset=["cache_hit_rate"], color="#003d2e"))
         else:
             st.info("No benchmark data. Click 'Run Benchmarks' in sidebar.")
@@ -189,8 +201,21 @@ def _run_dashboard() -> None:
     # Tab 3: RL Training Curves
     with tab3:
         st.subheader("PPO Training Reward Curves")
+        ppo_metrics = data.get("ppo_training_metrics_df")
         curves = data.get("training_curves", {})
-        if curves:
+        if ppo_metrics is not None and len(ppo_metrics) > 0:
+            fig = go.Figure()
+            for uid, group in ppo_metrics.groupby("user_id"):
+                fig.add_trace(go.Scatter(
+                    x=group["step"], y=group["episode_reward"],
+                    name=uid, mode="lines"
+                ))
+            fig.update_layout(title="Observed PPO Episode Reward",
+                              xaxis_title="Training Steps", yaxis_title="Episode Reward",
+                              template="plotly_dark")
+            st.plotly_chart(fig, use_container_width=True)
+            st.dataframe(ppo_metrics)
+        elif curves:
             fig = go.Figure()
             for uid, curve_data in list(curves.items())[:5]:
                 steps = [c["step"] for c in curve_data]
