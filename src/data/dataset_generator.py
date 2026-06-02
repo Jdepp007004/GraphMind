@@ -334,6 +334,31 @@ class DatasetGenerator:
         """
         return APP_ID_MAP.get(app_name, f"com.unknown.{app_name}")
 
+    def generate_100_users(self) -> None:
+        """
+        Generate event logs for 100 users by expanding the 10 base personas.
+        Saves output to data/synthetic/users/ user_00.json through user_99.json.
+        """
+        profiles = generate_100_user_profiles()
+        os.makedirs(settings.USERS_DIR, exist_ok=True)
+        self.total_events = 0
+        for profile in profiles:
+            uid = profile["user_id"]
+            out_path = os.path.join(settings.USERS_DIR, f"{uid}.json")
+            if os.path.exists(out_path):
+                logger.info(f"Skipping {uid} — already exists")
+                with open(out_path) as f:
+                    self.total_events += len(json.load(f))
+                continue
+            logger.info(f"Generating events for {uid} ({profile['persona']})")
+            events = self.generate_user_events(profile)
+            with open(out_path, "w") as f:
+                json.dump(events, f, indent=2)
+            self.total_events += len(events)
+            logger.info(f"Saved {len(events)} events for {uid}")
+        self._save_metadata()
+        logger.info(f"100-user dataset generation complete. Total events: {self.total_events}")
+
     def _save_metadata(self) -> None:
         """
         PRIVATE. Save data/synthetic/metadata.json with:
@@ -352,3 +377,32 @@ class DatasetGenerator:
         with open(meta_path, "w") as f:
             json.dump(meta, f, indent=2)
         logger.info(f"Metadata saved to {meta_path}")
+
+
+def generate_100_user_profiles() -> list:
+    """
+    Generate 100 user profiles by cloning and mutating the 10 base user personas.
+    Ensures that each of the 100 users has a unique profile and app usage patterns
+    while retaining their base persona behavior archetype.
+    """
+    extended_profiles = []
+    for i in range(100):
+        base_profile = USER_PROFILES[i % 10]
+        uid = f"user_{i:02d}"
+        persona = f"{base_profile['persona']} (variant {i // 10})"
+        # Shuffle top apps slightly or introduce subtle variance
+        top_apps = list(base_profile["top_apps"])
+        random.seed(42 + i)
+        random.shuffle(top_apps)
+        
+        # Shift peak hours slightly
+        peak_hours = [(h + random.choice([-1, 0, 1])) % 24 for h in base_profile["peak_hours"]]
+        
+        extended_profiles.append({
+            "user_id": uid,
+            "persona": persona,
+            "sleep_pattern": base_profile["sleep_pattern"],
+            "peak_hours": peak_hours,
+            "top_apps": top_apps
+        })
+    return extended_profiles

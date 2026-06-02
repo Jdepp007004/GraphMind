@@ -193,7 +193,7 @@ class AdvancedBenchmarkMetrics:
             "flush_rate_per_1000_events": round(len(flush_log) / total_events * 1000, 2),
         }
 
-    def run_advanced_benchmark(self) -> pd.DataFrame:
+    def run_advanced_benchmark(self, runner_result: dict = None) -> pd.DataFrame:
         """
         Run advanced benchmark across all available simulation logs.
         Returns DataFrame with all advanced KPIs.
@@ -221,14 +221,48 @@ class AdvancedBenchmarkMetrics:
             tier_stats = last_day.get("tier_stats", {})
             state = last_day.get("state", {})
 
-            # Estimate hit counts from cache_hit_rate
-            total_events = len(days) * settings.EVENTS_PER_DAY_MEAN
-            hit_rate = state.get("cache_hit_rate", 0.5)
-            hot_hits = int(total_events * hit_rate * 0.6)
-            warm_hits = int(total_events * hit_rate * 0.4)
-            misses = int(total_events * (1.0 - hit_rate))
+            # Dynamically run policy runner to measure actual execution metrics if not supplied
+            user_result = None
+            if runner_result is not None and runner_result.get("user_id") == uid:
+                user_result = runner_result
+            else:
+                try:
+                    from src.benchmarks.graphmind_policy_runner import GraphMindPolicyRunner
+                    runner = GraphMindPolicyRunner(uid)
+                    path = os.path.join(settings.USERS_DIR, f"{uid}.json")
+                    if os.path.exists(path):
+                        with open(path) as f:
+                            events = json.load(f)
+                        env_limit = os.getenv("GRAPHMIND_BENCHMARK_MAX_EVENTS")
+                        max_events = int(env_limit) if env_limit else 300
+                        events = events[:max_events]
+                        user_result = runner.run(events)
+                except Exception as e:
+                    logger.warning(f"Could not run policy runner for {uid}: {e}")
 
-            latency = self.compute_latency_percentiles(hot_hits, warm_hits, misses)
+            result = user_result if user_result is not None else {}
+            records = result.get("records", [])
+            latency_samples = [r["latency_ms"] for r in records]
+
+            if latency_samples:
+                import numpy as np
+                p50 = float(np.percentile(latency_samples, 50))
+                p95 = float(np.percentile(latency_samples, 95))
+                p99 = float(np.percentile(latency_samples, 99))
+                latency = {
+                    "p50_ms": round(p50, 1),
+                    "p95_ms": round(p95, 1),
+                    "p99_ms": round(p99, 1),
+                }
+            else:
+                # Estimate hit counts from cache_hit_rate
+                total_events = len(days) * settings.EVENTS_PER_DAY_MEAN
+                hit_rate = state.get("cache_hit_rate", 0.5)
+                hot_hits = int(total_events * hit_rate * 0.6)
+                warm_hits = int(total_events * hit_rate * 0.4)
+                misses = int(total_events * (1.0 - hit_rate))
+                latency = self.compute_latency_percentiles(hot_hits, warm_hits, misses)
+
             memory = self.compute_memory_estimates(
                 hot_count=tier_stats.get("hot_count", 20),
                 warm_count=tier_stats.get("warm_count", 80),
@@ -236,9 +270,14 @@ class AdvancedBenchmarkMetrics:
             )
             growth = self.compute_graph_growth_metrics(node_counts, edge_counts)
 
-            # Mock prefetch precision (from simulation log would need full trace)
-            prec, rec, f1 = 0.73, 0.68, 0.70  # representative values
+            if user_result is not None:
+                prec = user_result.get("prefetch_precision", 0.0)
+                rec  = user_result.get("prefetch_recall",    0.0)
+                f1   = user_result.get("prefetch_f1",        0.0)
+            else:
+                prec, rec, f1 = 0.73, 0.68, 0.70  # fallback to realistic estimates
 
+            total_events = len(days) * settings.EVENTS_PER_DAY_MEAN
             flush_log = []
             for d in days:
                 for msg in d.get("state", {}).get("messages", []):
@@ -256,13 +295,15 @@ class AdvancedBenchmarkMetrics:
                 **growth,
                 **sec,
             }
+            
+            provenance_level = MetricProvenance.MEASURED if user_result is not None else MetricProvenance.ESTIMATED
             self._attach_advanced_provenance(row, {
-                "prefetch_precision": MetricProvenance.ESTIMATED,
-                "prefetch_recall": MetricProvenance.ESTIMATED,
-                "prefetch_f1": MetricProvenance.ESTIMATED,
-                "p50_ms": MetricProvenance.ESTIMATED,
-                "p95_ms": MetricProvenance.ESTIMATED,
-                "p99_ms": MetricProvenance.ESTIMATED,
+                "prefetch_precision": provenance_level,
+                "prefetch_recall": provenance_level,
+                "prefetch_f1": provenance_level,
+                "p50_ms": provenance_level,
+                "p95_ms": provenance_level,
+                "p99_ms": provenance_level,
                 "ram_estimate_mb": MetricProvenance.ESTIMATED,
                 "warm_cache_estimate_mb": MetricProvenance.ESTIMATED,
                 "cold_storage_estimate_mb": MetricProvenance.ESTIMATED,

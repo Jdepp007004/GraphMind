@@ -38,10 +38,12 @@ def run_scale_case(user_count: int, events_per_user: int = 5) -> dict:
     EventBus.get_instance().clear_all()
     tracemalloc.start()
     start = time.perf_counter()
+    cpu_start = time.process_time()
 
     total_nodes = 0
     total_edges = 0
     serialization_time = 0.0
+    serialization_size_kb = 0.0
     prediction_time = 0.0
 
     for user_idx in range(user_count):
@@ -65,12 +67,15 @@ def run_scale_case(user_count: int, events_per_user: int = 5) -> dict:
                 ser_start = time.perf_counter()
                 graph.save_to_disk(path)
                 serialization_time = time.perf_counter() - ser_start
+                if os.path.exists(path):
+                    serialization_size_kb = os.path.getsize(path) / 1024.0
 
         EventBus.get_instance().clear_all()
 
     current, peak = tracemalloc.get_traced_memory()
     tracemalloc.stop()
     elapsed = time.perf_counter() - start
+    cpu_time = time.process_time() - cpu_start
     return {
         "user_count": user_count,
         "events_per_user": events_per_user,
@@ -78,7 +83,9 @@ def run_scale_case(user_count: int, events_per_user: int = 5) -> dict:
         "edge_count": total_edges,
         "memory_usage_mb": round(peak / (1024 * 1024), 3),
         "serialization_time_ms": round(serialization_time * 1000, 3),
+        "serialization_size_kb": round(serialization_size_kb, 3),
         "prediction_time_ms": round(prediction_time * 1000, 3),
+        "cpu_time_ms": round(cpu_time * 1000, 3),
         "elapsed_seconds": round(elapsed, 3),
         "survived": True,
     }

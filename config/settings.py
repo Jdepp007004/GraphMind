@@ -52,6 +52,7 @@ REWARD_BETA = 0.8     # launch speed gain weight
 REWARD_GAMMA = 0.5    # thrash penalty weight
 REWARD_DELTA = 0.3    # battery cost weight
 REWARD_EPSILON = 0.4  # friction saved weight
+REWARD_ZETA = 0.3     # prefetch false positive penalty weight
 
 # ── Pre-fetch Daemon ───────────────────────────────────────────────────────
 PREFETCH_INTERVAL_MINUTES = 15
