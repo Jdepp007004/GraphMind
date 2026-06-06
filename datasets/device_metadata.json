@@ -1,0 +1,22 @@
+{
+  "device_model": "Samsung Galaxy A23",
+  "device_variant": "SM-A235F/DS",
+  "android_version": "14",
+  "build_id": "UP1A.231005.007.A235FXXU5DXB1",
+  "security_patch": "2024-02-01",
+  "oneui_version": "6.1",
+  "chipset": "Qualcomm SM6225 Snapdragon 680 4G (6nm)",
+  "cpu_cores": "8",
+  "cpu_config": "4x2.4GHz Kryo 265 Gold + 4x1.9GHz Kryo 265 Silver",
+  "gpu": "Adreno 610",
+  "ram_gb": "6",
+  "ram_type": "LPDDR4x",
+  "storage_gb": "128",
+  "storage_type": "eMMC 5.1",
+  "display": "6.6-inch PLS LCD, 1080x2408, 90Hz",
+  "battery_mah": "5000",
+  "collection_start": "2025-05-15T07:30:00",
+  "collection_end": "2025-05-28T23:59:59",
+  "adb_version": "1.0.41",
+  "notes": "Data collected via adb shell am start -W. 100 cold + 100 hot launches per app."
+}
