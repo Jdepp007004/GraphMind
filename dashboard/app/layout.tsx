@@ -1,34 +1,24 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import Navigation from "@/components/Navigation";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-
 export const metadata: Metadata = {
-  title: "GraphMind — AI App Prefetch | Samsung EnnovateX AX Hackathon",
-  description:
-    "GraphMindRL_V5: Reinforcement Learning on Markov graphs for intelligent Android app prefetching. F1=0.7745, 31 users, Samsung Galaxy A23. Samsung EnnovateX AX Hackathon 2025.",
-  keywords: "GraphMind, app prefetch, reinforcement learning, Markov graph, Samsung, UbiqLog",
-  authors: [{ name: "GraphMind Team" }],
-  openGraph: {
-    title: "GraphMind — AI App Prefetch Cache",
-    description: "GraphMindRL_V5: F1=0.7745, ΔF1=+0.0321, 31 users, 208K transitions",
-    type: "website",
-  },
+  title: "GraphMind — Samsung EnnovateX AX Hackathon",
+  description: "GraphMindRL_V5: Reinforcement learning on Markov graphs for intelligent Android app prefetching. F1=0.7745, 31 users, UbiqLog dataset.",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body className="min-h-screen bg-[#050917] text-[#f0f4ff] antialiased">
+    <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+      </head>
+      <body style={{ background: "#f7f7f8", color: "#111827" }}>
         <div className="flex min-h-screen">
           <Navigation />
-          <main className="flex-1 ml-64 min-h-screen">
+          <main className="flex-1" style={{ marginLeft: "224px", minHeight: "100vh" }}>
             {children}
           </main>
         </div>
