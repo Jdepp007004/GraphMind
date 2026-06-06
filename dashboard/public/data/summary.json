@@ -1,0 +1,31 @@
+{
+  "model": "GraphMindRL_V5",
+  "f1": 0.7745,
+  "delta_f1": 0.0321,
+  "baseline_f1": 0.7424,
+  "hit_rate": 0.9307,
+  "latency_saved_ms": 1847,
+  "p_value": 0.0115,
+  "cohen_d": 0.491,
+  "n_users": 31,
+  "n_transitions": 208695,
+  "n_events": 820603,
+  "n_unique_apps": "~280 per user",
+  "dataset": "UbiqLog4UCI",
+  "split": "80/10/10 chronological",
+  "config": {
+    "w_transition": 0.5,
+    "w_recency": 0.1,
+    "w_frequency": 0.4,
+    "w_context": 0.0,
+    "threshold": 0.16,
+    "threshold_adapt_step": 0.005,
+    "hot_size": 5,
+    "warm_size": 15
+  },
+  "cold_start_ms": 2763,
+  "warm_start_ms": 1301,
+  "hot_start_ms": 274,
+  "device": "Samsung Galaxy A23",
+  "measurements": 3900
+}

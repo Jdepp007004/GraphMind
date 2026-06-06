@@ -1,0 +1,82 @@
+[
+  {
+    "phase": "Start",
+    "label": "GraphOnly (= Markov-1)",
+    "f1": 0.7267,
+    "delta": 0.0,
+    "status": "baseline",
+    "description": "Architecture audit proves GraphOnly is mathematically identical to Markov-1. P(next|current) with top-k selection.",
+    "date": "2026-05-15",
+    "result": "baseline"
+  },
+  {
+    "phase": "Phase 3–4",
+    "label": "Markov-2 Order Analysis",
+    "f1": 0.7295,
+    "delta": 0.0028,
+    "status": "weak",
+    "description": "Bigram model P(next|prev,curr) tested. Only +0.003 F1, p>0.05. Not statistically significant on 31 users.",
+    "date": "2026-05-20",
+    "result": "rejected"
+  },
+  {
+    "phase": "Phase 5–6",
+    "label": "Time Context Evaluation",
+    "f1": 0.7241,
+    "delta": -0.0026,
+    "status": "failed",
+    "description": "TimeAwareM1 with 6/12/24/48 time bands. Phase 11C audit: 98.5% coverage but signal quality reduces F1. Excluded from scoring.",
+    "date": "2026-05-25",
+    "result": "rejected"
+  },
+  {
+    "phase": "Phase 7",
+    "label": "RL as Threshold Controller",
+    "f1": 0.7539,
+    "delta": 0.0115,
+    "status": "accepted",
+    "description": "RL agent adapts prefetch threshold ±0.005 based on 20-step rolling hit rate. First statistically significant improvement. p=0.0003, d=0.752.",
+    "date": "2026-05-30",
+    "result": "accepted"
+  },
+  {
+    "phase": "Phase 11D",
+    "label": "Modified Kneser-Ney",
+    "f1": 0.7276,
+    "delta": -0.0148,
+    "status": "failed",
+    "description": "P_MKN = λ2×P(C|A,B) + (1-λ2)×P(C|B). All K values (3/5/10) below baseline. Bigram without unigram fallback is worse.",
+    "date": "2026-06-02",
+    "result": "rejected"
+  },
+  {
+    "phase": "Phase 11A",
+    "label": "Confidence Weight Grid Search",
+    "f1": 0.7733,
+    "delta": 0.0309,
+    "status": "accepted",
+    "description": "Grid over trans/rec/freq weights. Key insight: frequency=0.4 (was 0.2) captures habitual app usage. Recency=0.1 (was 0.3) was overweighted.",
+    "date": "2026-06-06",
+    "result": "accepted"
+  },
+  {
+    "phase": "Phase 11B",
+    "label": "Threshold Optimization",
+    "f1": 0.7564,
+    "delta": 0.014,
+    "status": "accepted",
+    "description": "Sweep threshold 0.02–0.20 with baseline weights. Best: 0.16. Combined with weight optimization for Phase E.",
+    "date": "2026-06-06",
+    "result": "accepted"
+  },
+  {
+    "phase": "Phase 11E",
+    "label": "GraphMindRL_V5 Combined",
+    "f1": 0.7745,
+    "delta": 0.0321,
+    "status": "production",
+    "description": "Best weights (0.5/0.1/0.4) + best threshold (0.16) + adaptive RL mechanism. F1=0.7745, p=0.0115, d=0.491. Meets both success criteria.",
+    "date": "2026-06-06",
+    "result": "production"
+  }
+]

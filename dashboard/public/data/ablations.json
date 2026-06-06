@@ -1,0 +1,50 @@
+[
+  {
+    "component": "Full GraphMindRL_V5",
+    "f1": 0.7745,
+    "delta": 0.0,
+    "note": "Production model"
+  },
+  {
+    "component": "- Frequency weight (freq=0.2)",
+    "f1": 0.755,
+    "delta": -0.0195,
+    "note": "Remove freq boost"
+  },
+  {
+    "component": "- Adaptive threshold (fixed=0.16)",
+    "f1": 0.7564,
+    "delta": -0.0181,
+    "note": "No RL adaptation"
+  },
+  {
+    "component": "- RL (fixed threshold=0.05)",
+    "f1": 0.7539,
+    "delta": -0.0206,
+    "note": "Baseline config"
+  },
+  {
+    "component": "Graph only (= Markov-1)",
+    "f1": 0.7267,
+    "delta": -0.0478,
+    "note": "No confidence layer"
+  },
+  {
+    "component": "Time context added (6-band)",
+    "f1": 0.7241,
+    "delta": -0.0504,
+    "note": "Hurts on short data"
+  },
+  {
+    "component": "Modified KN (K=5)",
+    "f1": 0.7276,
+    "delta": -0.0469,
+    "note": "Bigram smoothing"
+  },
+  {
+    "component": "Global Markov-2",
+    "f1": 0.679,
+    "delta": -0.0955,
+    "note": "Cross-user transfer"
+  }
+]

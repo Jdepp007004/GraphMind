@@ -1,0 +1,119 @@
+[
+  {
+    "app_id": "amazon",
+    "short_name": "amazon",
+    "cold_ms": 2945.1,
+    "warm_ms": 1385.4,
+    "hot_ms": 280.4,
+    "saved_hot_ms": 2664.7,
+    "saved_warm_ms": 1559.7
+  },
+  {
+    "app_id": "chrome",
+    "short_name": "chrome",
+    "cold_ms": 1285.2,
+    "warm_ms": 605.0,
+    "hot_ms": 112.7,
+    "saved_hot_ms": 1172.5,
+    "saved_warm_ms": 680.2
+  },
+  {
+    "app_id": "gmail",
+    "short_name": "gmail",
+    "cold_ms": 1828.2,
+    "warm_ms": 860.4,
+    "hot_ms": 161.7,
+    "saved_hot_ms": 1666.5,
+    "saved_warm_ms": 967.8
+  },
+  {
+    "app_id": "google_maps",
+    "short_name": "google_maps",
+    "cold_ms": 3173.5,
+    "warm_ms": 1480.3,
+    "hot_ms": 293.3,
+    "saved_hot_ms": 2880.2,
+    "saved_warm_ms": 1693.2
+  },
+  {
+    "app_id": "instagram",
+    "short_name": "instagram",
+    "cold_ms": 3268.1,
+    "warm_ms": 1539.3,
+    "hot_ms": 325.8,
+    "saved_hot_ms": 2942.3,
+    "saved_warm_ms": 1728.8
+  },
+  {
+    "app_id": "netflix",
+    "short_name": "netflix",
+    "cold_ms": 4292.5,
+    "warm_ms": 2039.7,
+    "hot_ms": 495.9,
+    "saved_hot_ms": 3796.6,
+    "saved_warm_ms": 2252.8
+  },
+  {
+    "app_id": "paytm",
+    "short_name": "paytm",
+    "cold_ms": 2364.5,
+    "warm_ms": 1144.7,
+    "hot_ms": 215.0,
+    "saved_hot_ms": 2149.5,
+    "saved_warm_ms": 1219.8
+  },
+  {
+    "app_id": "phonepe",
+    "short_name": "phonepe",
+    "cold_ms": 2104.4,
+    "warm_ms": 987.3,
+    "hot_ms": 193.3,
+    "saved_hot_ms": 1911.1,
+    "saved_warm_ms": 1117.1
+  },
+  {
+    "app_id": "samsung_health",
+    "short_name": "samsung_health",
+    "cold_ms": 2557.4,
+    "warm_ms": 1202.7,
+    "hot_ms": 238.8,
+    "saved_hot_ms": 2318.6,
+    "saved_warm_ms": 1354.7
+  },
+  {
+    "app_id": "slack",
+    "short_name": "slack",
+    "cold_ms": 3430.1,
+    "warm_ms": 1602.8,
+    "hot_ms": 366.3,
+    "saved_hot_ms": 3063.8,
+    "saved_warm_ms": 1827.3
+  },
+  {
+    "app_id": "spotify",
+    "short_name": "spotify",
+    "cold_ms": 2848.8,
+    "warm_ms": 1378.0,
+    "hot_ms": 276.5,
+    "saved_hot_ms": 2572.3,
+    "saved_warm_ms": 1470.8
+  },
+  {
+    "app_id": "whatsapp",
+    "short_name": "whatsapp",
+    "cold_ms": 2255.7,
+    "warm_ms": 992.7,
+    "hot_ms": 191.1,
+    "saved_hot_ms": 2064.6,
+    "saved_warm_ms": 1263.0
+  },
+  {
+    "app_id": "youtube",
+    "short_name": "youtube",
+    "cold_ms": 3564.0,
+    "warm_ms": 1697.2,
+    "hot_ms": 407.7,
+    "saved_hot_ms": 3156.3,
+    "saved_warm_ms": 1866.8
+  }
+]

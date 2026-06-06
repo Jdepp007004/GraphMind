@@ -46,8 +46,8 @@ NODE_EVICTION_DAYS = 15           # evict node from COLD if inactive this many d
 MAX_NODES_COLD = 2000             # hard cap on COLD graph size
 
 # ── Memory Manager ─────────────────────────────────────────────────────────
-HOT_TIER_CAPACITY = 30            # max nodes in HOT (simulated RAM)
-WARM_TIER_CAPACITY = 150          # max nodes in WARM (simulated cache)
+HOT_TIER_CAPACITY  = 5             # HOT tier: top-5 apps in RAM (matches benchmark HOT_SIZE=5)
+WARM_TIER_CAPACITY = 15            # WARM tier: top-15 apps pre-loaded (matches benchmark WARM_SIZE=15)
 COLD_DB_PATH = os.path.join(DATA_DIR, "cold_graph.db")
 
 # ── RL Training ────────────────────────────────────────────────────────────

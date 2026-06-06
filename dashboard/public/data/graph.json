@@ -1,0 +1,849 @@
+{
+  "user_id": "31_F",
+  "n_total_apps": 24586,
+  "n_transitions_used": 2999,
+  "nodes": [
+    {
+      "id": "com.sonyericsson.customization",
+      "label": "customization",
+      "full_pkg": "com.sonyericsson.customization",
+      "frequency": 1496,
+      "out_degree": 745
+    },
+    {
+      "id": "com.sonyericsson.home",
+      "label": "home",
+      "full_pkg": "com.sonyericsson.home",
+      "frequency": 1493,
+      "out_degree": 750
+    },
+    {
+      "id": "com.sonyericsson.androidapp.smart",
+      "label": "smart",
+      "full_pkg": "com.sonyericsson.androidapp.smart",
+      "frequency": 1198,
+      "out_degree": 598
+    },
+    {
+      "id": "com.tencent.mm",
+      "label": "mm",
+      "full_pkg": "com.tencent.mm",
+      "frequency": 305,
+      "out_degree": 152
+    },
+    {
+      "id": "com.sec.pcw.device",
+      "label": "device",
+      "full_pkg": "com.sec.pcw.device",
+      "frequency": 271,
+      "out_degree": 135
+    },
+    {
+      "id": "com.broadcom.bt.app.system",
+      "label": "system",
+      "full_pkg": "com.broadcom.bt.app.system",
+      "frequency": 270,
+      "out_degree": 134
+    },
+    {
+      "id": "com.lslk.sleepbot",
+      "label": "sleepbot",
+      "full_pkg": "com.lslk.sleepbot",
+      "frequency": 262,
+      "out_degree": 131
+    },
+    {
+      "id": "me.pou.app",
+      "label": "app",
+      "full_pkg": "me.pou.app",
+      "frequency": 113,
+      "out_degree": 55
+    },
+    {
+      "id": "com.sonyericsson.album",
+      "label": "album",
+      "full_pkg": "com.sonyericsson.album",
+      "frequency": 107,
+      "out_degree": 52
+    },
+    {
+      "id": "com.tencent.mm:tools",
+      "label": "mm:tools",
+      "full_pkg": "com.tencent.mm:tools",
+      "frequency": 60,
+      "out_degree": 29
+    },
+    {
+      "id": "com.sonyericsson.infiniteview",
+      "label": "infiniteview",
+      "full_pkg": "com.sonyericsson.infiniteview",
+      "frequency": 52,
+      "out_degree": 24
+    },
+    {
+      "id": "com.sonyericsson.advancedwidget.onoff",
+      "label": "onoff",
+      "full_pkg": "com.sonyericsson.advancedwidget.onoff",
+      "frequency": 32,
+      "out_degree": 16
+    },
+    {
+      "id": "com.sonyericsson.android.camera",
+      "label": "camera",
+      "full_pkg": "com.sonyericsson.android.camera",
+      "frequency": 30,
+      "out_degree": 15
+    },
+    {
+      "id": "com.sonyericsson.illumination.service",
+      "label": "service",
+      "full_pkg": "com.sonyericsson.illumination.service",
+      "frequency": 28,
+      "out_degree": 14
+    },
+    {
+      "id": "com.sonyericsson.android.socialphonebook",
+      "label": "socialphonebook",
+      "full_pkg": "com.sonyericsson.android.socialphonebook",
+      "frequency": 26,
+      "out_degree": 13
+    },
+    {
+      "id": "com.farsitel.bazaar",
+      "label": "bazaar",
+      "full_pkg": "com.farsitel.bazaar",
+      "frequency": 20,
+      "out_degree": 9
+    },
+    {
+      "id": "com.google.android.deskclock",
+      "label": "deskclock",
+      "full_pkg": "com.google.android.deskclock",
+      "frequency": 20,
+      "out_degree": 10
+    },
+    {
+      "id": "com.sonyericsson.music",
+      "label": "music",
+      "full_pkg": "com.sonyericsson.music",
+      "frequency": 19,
+      "out_degree": 9
+    },
+    {
+      "id": "com.sonyericsson.extras.liveware",
+      "label": "liveware",
+      "full_pkg": "com.sonyericsson.extras.liveware",
+      "frequency": 18,
+      "out_degree": 9
+    },
+    {
+      "id": "com.sonyericsson.lockscreen.notifications",
+      "label": "notifications",
+      "full_pkg": "com.sonyericsson.lockscreen.notifications",
+      "frequency": 18,
+      "out_degree": 9
+    },
+    {
+      "id": "com.kiloo.subwaysurf",
+      "label": "subwaysurf",
+      "full_pkg": "com.kiloo.subwaysurf",
+      "frequency": 14,
+      "out_degree": 7
+    },
+    {
+      "id": "com.pixlr.express",
+      "label": "express",
+      "full_pkg": "com.pixlr.express",
+      "frequency": 14,
+      "out_degree": 7
+    },
+    {
+      "id": "com.sonyericsson.photoeditor",
+      "label": "photoeditor",
+      "full_pkg": "com.sonyericsson.photoeditor",
+      "frequency": 13,
+      "out_degree": 6
+    },
+    {
+      "id": "com.sec.android.app.twlauncher",
+      "label": "twlauncher",
+      "full_pkg": "com.sec.android.app.twlauncher",
+      "frequency": 12,
+      "out_degree": 6
+    },
+    {
+      "id": "com.google.android.apps.plus",
+      "label": "plus",
+      "full_pkg": "com.google.android.apps.plus",
+      "frequency": 12,
+      "out_degree": 5
+    },
+    {
+      "id": "com.cloudmosa.puffin",
+      "label": "puffin",
+      "full_pkg": "com.cloudmosa.puffin",
+      "frequency": 10,
+      "out_degree": 5
+    },
+    {
+      "id": "com.sonyericsson.conversations",
+      "label": "conversations",
+      "full_pkg": "com.sonyericsson.conversations",
+      "frequency": 10,
+      "out_degree": 5
+    },
+    {
+      "id": "com.google.android.apps.maps",
+      "label": "maps",
+      "full_pkg": "com.google.android.apps.maps",
+      "frequency": 8,
+      "out_degree": 4
+    },
+    {
+      "id": "com.sec.android.widgetapp.clockweather.clockwidget",
+      "label": "clockwidget",
+      "full_pkg": "com.sec.android.widgetapp.clockweather.clockwidget",
+      "frequency": 4,
+      "out_degree": 2
+    },
+    {
+      "id": "com.sonyericsson.secureclockservice",
+      "label": "secureclockservice",
+      "full_pkg": "com.sonyericsson.secureclockservice",
+      "frequency": 4,
+      "out_degree": 2
+    }
+  ],
+  "edges": [
+    {
+      "source": "com.sec.android.widgetapp.clockweather.clockwidget",
+      "target": "com.sec.pcw.device",
+      "count": 2,
+      "probability": 1.0,
+      "label": "100%"
+    },
+    {
+      "source": "com.lslk.sleepbot",
+      "target": "com.broadcom.bt.app.system",
+      "count": 126,
+      "probability": 0.9618,
+      "label": "96%"
+    },
+    {
+      "source": "com.sonyericsson.home",
+      "target": "com.sonyericsson.customization",
+      "count": 714,
+      "probability": 0.952,
+      "label": "95%"
+    },
+    {
+      "source": "com.broadcom.bt.app.system",
+      "target": "com.sec.pcw.device",
+      "count": 125,
+      "probability": 0.9328,
+      "label": "93%"
+    },
+    {
+      "source": "com.sec.pcw.device",
+      "target": "com.lslk.sleepbot",
+      "count": 126,
+      "probability": 0.9265,
+      "label": "93%"
+    },
+    {
+      "source": "com.pixlr.express",
+      "target": "com.sonyericsson.album",
+      "count": 6,
+      "probability": 0.8571,
+      "label": "86%"
+    },
+    {
+      "source": "com.sonyericsson.illumination.service",
+      "target": "com.sonyericsson.home",
+      "count": 11,
+      "probability": 0.7857,
+      "label": "79%"
+    },
+    {
+      "source": "com.sonyericsson.androidapp.smart",
+      "target": "com.sonyericsson.home",
+      "count": 450,
+      "probability": 0.7513,
+      "label": "75%"
+    },
+    {
+      "source": "com.sonyericsson.advancedwidget.onoff",
+      "target": "com.sonyericsson.home",
+      "count": 12,
+      "probability": 0.75,
+      "label": "75%"
+    },
+    {
+      "source": "com.google.android.deskclock",
+      "target": "com.sonyericsson.home",
+      "count": 7,
+      "probability": 0.7,
+      "label": "70%"
+    },
+    {
+      "source": "com.farsitel.bazaar",
+      "target": "com.sonyericsson.home",
+      "count": 7,
+      "probability": 0.7,
+      "label": "70%"
+    },
+    {
+      "source": "com.cloudmosa.puffin",
+      "target": "com.tencent.mm",
+      "count": 3,
+      "probability": 0.6,
+      "label": "60%"
+    },
+    {
+      "source": "com.tencent.mm:tools",
+      "target": "com.tencent.mm",
+      "count": 18,
+      "probability": 0.6,
+      "label": "60%"
+    },
+    {
+      "source": "com.sonyericsson.conversations",
+      "target": "com.sonyericsson.home",
+      "count": 3,
+      "probability": 0.6,
+      "label": "60%"
+    },
+    {
+      "source": "com.sonyericsson.customization",
+      "target": "com.sonyericsson.androidapp.smart",
+      "count": 432,
+      "probability": 0.5783,
+      "label": "58%"
+    },
+    {
+      "source": "com.kiloo.subwaysurf",
+      "target": "com.sonyericsson.home",
+      "count": 4,
+      "probability": 0.5714,
+      "label": "57%"
+    },
+    {
+      "source": "com.sonyericsson.music",
+      "target": "com.sonyericsson.home",
+      "count": 5,
+      "probability": 0.5556,
+      "label": "56%"
+    },
+    {
+      "source": "me.pou.app",
+      "target": "com.sonyericsson.home",
+      "count": 31,
+      "probability": 0.5536,
+      "label": "55%"
+    },
+    {
+      "source": "com.sonyericsson.android.socialphonebook",
+      "target": "com.sonyericsson.home",
+      "count": 7,
+      "probability": 0.5385,
+      "label": "54%"
+    },
+    {
+      "source": "com.sonyericsson.secureclockservice",
+      "target": "com.sonyericsson.album",
+      "count": 1,
+      "probability": 0.5,
+      "label": "50%"
+    },
+    {
+      "source": "com.sonyericsson.secureclockservice",
+      "target": "com.sonyericsson.androidapp.smart",
+      "count": 1,
+      "probability": 0.5,
+      "label": "50%"
+    },
+    {
+      "source": "com.google.android.apps.maps",
+      "target": "com.sonyericsson.androidapp.smart",
+      "count": 2,
+      "probability": 0.5,
+      "label": "50%"
+    },
+    {
+      "source": "com.sonyericsson.photoeditor",
+      "target": "com.sonyericsson.album",
+      "count": 3,
+      "probability": 0.5,
+      "label": "50%"
+    },
+    {
+      "source": "com.sonyericsson.infiniteview",
+      "target": "com.sonyericsson.androidapp.smart",
+      "count": 11,
+      "probability": 0.4231,
+      "label": "42%"
+    },
+    {
+      "source": "com.sonyericsson.android.camera",
+      "target": "com.sonyericsson.androidapp.smart",
+      "count": 6,
+      "probability": 0.4,
+      "label": "40%"
+    },
+    {
+      "source": "com.sonyericsson.conversations",
+      "target": "com.sonyericsson.androidapp.smart",
+      "count": 2,
+      "probability": 0.4,
+      "label": "40%"
+    },
+    {
+      "source": "com.sonyericsson.album",
+      "target": "com.sonyericsson.home",
+      "count": 19,
+      "probability": 0.3585,
+      "label": "36%"
+    },
+    {
+      "source": "com.sonyericsson.photoeditor",
+      "target": "com.sonyericsson.home",
+      "count": 2,
+      "probability": 0.3333,
+      "label": "33%"
+    },
+    {
+      "source": "com.sonyericsson.extras.liveware",
+      "target": "com.sonyericsson.androidapp.smart",
+      "count": 3,
+      "probability": 0.3333,
+      "label": "33%"
+    },
+    {
+      "source": "com.sonyericsson.lockscreen.notifications",
+      "target": "com.sonyericsson.androidapp.smart",
+      "count": 3,
+      "probability": 0.3333,
+      "label": "33%"
+    },
+    {
+      "source": "com.sonyericsson.lockscreen.notifications",
+      "target": "com.sonyericsson.home",
+      "count": 3,
+      "probability": 0.3333,
+      "label": "33%"
+    },
+    {
+      "source": "com.sec.android.app.twlauncher",
+      "target": "com.sec.pcw.device",
+      "count": 2,
+      "probability": 0.3333,
+      "label": "33%"
+    },
+    {
+      "source": "com.sec.android.app.twlauncher",
+      "target": "com.broadcom.bt.app.system",
+      "count": 2,
+      "probability": 0.3333,
+      "label": "33%"
+    },
+    {
+      "source": "com.google.android.apps.plus",
+      "target": "com.tencent.mm",
+      "count": 2,
+      "probability": 0.3333,
+      "label": "33%"
+    },
+    {
+      "source": "com.sonyericsson.android.socialphonebook",
+      "target": "com.sonyericsson.androidapp.smart",
+      "count": 4,
+      "probability": 0.3077,
+      "label": "31%"
+    },
+    {
+      "source": "com.kiloo.subwaysurf",
+      "target": "com.sonyericsson.androidapp.smart",
+      "count": 2,
+      "probability": 0.2857,
+      "label": "29%"
+    },
+    {
+      "source": "com.tencent.mm",
+      "target": "com.sonyericsson.home",
+      "count": 42,
+      "probability": 0.2763,
+      "label": "28%"
+    },
+    {
+      "source": "com.sonyericsson.android.camera",
+      "target": "com.sonyericsson.android.camera",
+      "count": 4,
+      "probability": 0.2667,
+      "label": "27%"
+    },
+    {
+      "source": "com.google.android.apps.maps",
+      "target": "com.sonyericsson.home",
+      "count": 1,
+      "probability": 0.25,
+      "label": "25%"
+    },
+    {
+      "source": "com.google.android.apps.maps",
+      "target": "com.google.android.apps.plus",
+      "count": 1,
+      "probability": 0.25,
+      "label": "25%"
+    },
+    {
+      "source": "com.tencent.mm",
+      "target": "com.sonyericsson.androidapp.smart",
+      "count": 37,
+      "probability": 0.2434,
+      "label": "24%"
+    },
+    {
+      "source": "com.sonyericsson.extras.liveware",
+      "target": "com.sonyericsson.customization",
+      "count": 2,
+      "probability": 0.2222,
+      "label": "22%"
+    },
+    {
+      "source": "com.sonyericsson.extras.liveware",
+      "target": "com.sonyericsson.home",
+      "count": 2,
+      "probability": 0.2222,
+      "label": "22%"
+    },
+    {
+      "source": "com.sonyericsson.lockscreen.notifications",
+      "target": "me.pou.app",
+      "count": 2,
+      "probability": 0.2222,
+      "label": "22%"
+    },
+    {
+      "source": "com.sonyericsson.music",
+      "target": "com.sonyericsson.androidapp.smart",
+      "count": 2,
+      "probability": 0.2222,
+      "label": "22%"
+    },
+    {
+      "source": "com.sonyericsson.music",
+      "target": "com.sonyericsson.music",
+      "count": 2,
+      "probability": 0.2222,
+      "label": "22%"
+    },
+    {
+      "source": "com.sonyericsson.illumination.service",
+      "target": "com.sonyericsson.androidapp.smart",
+      "count": 3,
+      "probability": 0.2143,
+      "label": "21%"
+    },
+    {
+      "source": "com.cloudmosa.puffin",
+      "target": "com.cloudmosa.puffin",
+      "count": 1,
+      "probability": 0.2,
+      "label": "20%"
+    },
+    {
+      "source": "com.cloudmosa.puffin",
+      "target": "com.sonyericsson.home",
+      "count": 1,
+      "probability": 0.2,
+      "label": "20%"
+    },
+    {
+      "source": "com.sonyericsson.android.camera",
+      "target": "com.sonyericsson.album",
+      "count": 3,
+      "probability": 0.2,
+      "label": "20%"
+    },
+    {
+      "source": "com.tencent.mm:tools",
+      "target": "com.sonyericsson.home",
+      "count": 6,
+      "probability": 0.2,
+      "label": "20%"
+    },
+    {
+      "source": "com.sonyericsson.infiniteview",
+      "target": "com.sonyericsson.home",
+      "count": 5,
+      "probability": 0.1923,
+      "label": "19%"
+    },
+    {
+      "source": "com.tencent.mm",
+      "target": "com.sonyericsson.customization",
+      "count": 29,
+      "probability": 0.1908,
+      "label": "19%"
+    },
+    {
+      "source": "com.sonyericsson.album",
+      "target": "com.tencent.mm:tools",
+      "count": 10,
+      "probability": 0.1887,
+      "label": "19%"
+    },
+    {
+      "source": "com.sonyericsson.advancedwidget.onoff",
+      "target": "com.sonyericsson.androidapp.smart",
+      "count": 3,
+      "probability": 0.1875,
+      "label": "19%"
+    },
+    {
+      "source": "me.pou.app",
+      "target": "com.sonyericsson.androidapp.smart",
+      "count": 10,
+      "probability": 0.1786,
+      "label": "18%"
+    },
+    {
+      "source": "me.pou.app",
+      "target": "me.pou.app",
+      "count": 10,
+      "probability": 0.1786,
+      "label": "18%"
+    },
+    {
+      "source": "com.sonyericsson.photoeditor",
+      "target": "com.sonyericsson.photoeditor",
+      "count": 1,
+      "probability": 0.1667,
+      "label": "17%"
+    },
+    {
+      "source": "com.sec.android.app.twlauncher",
+      "target": "com.lslk.sleepbot",
+      "count": 1,
+      "probability": 0.1667,
+      "label": "17%"
+    },
+    {
+      "source": "com.sec.android.app.twlauncher",
+      "target": "com.sec.android.app.twlauncher",
+      "count": 1,
+      "probability": 0.1667,
+      "label": "17%"
+    },
+    {
+      "source": "com.google.android.apps.plus",
+      "target": "com.google.android.deskclock",
+      "count": 1,
+      "probability": 0.1667,
+      "label": "17%"
+    },
+    {
+      "source": "com.google.android.apps.plus",
+      "target": "com.farsitel.bazaar",
+      "count": 1,
+      "probability": 0.1667,
+      "label": "17%"
+    },
+    {
+      "source": "com.google.android.apps.plus",
+      "target": "com.sonyericsson.music",
+      "count": 1,
+      "probability": 0.1667,
+      "label": "17%"
+    },
+    {
+      "source": "com.sonyericsson.customization",
+      "target": "com.sonyericsson.home",
+      "count": 120,
+      "probability": 0.1606,
+      "label": "16%"
+    },
+    {
+      "source": "com.sonyericsson.infiniteview",
+      "target": "com.sonyericsson.infiniteview",
+      "count": 4,
+      "probability": 0.1538,
+      "label": "15%"
+    },
+    {
+      "source": "com.pixlr.express",
+      "target": "com.sonyericsson.androidapp.smart",
+      "count": 1,
+      "probability": 0.1429,
+      "label": "14%"
+    },
+    {
+      "source": "com.kiloo.subwaysurf",
+      "target": "com.kiloo.subwaysurf",
+      "count": 1,
+      "probability": 0.1429,
+      "label": "14%"
+    },
+    {
+      "source": "com.tencent.mm",
+      "target": "com.tencent.mm",
+      "count": 21,
+      "probability": 0.1382,
+      "label": "14%"
+    },
+    {
+      "source": "com.sonyericsson.android.camera",
+      "target": "com.sonyericsson.home",
+      "count": 2,
+      "probability": 0.1333,
+      "label": "13%"
+    },
+    {
+      "source": "com.sonyericsson.album",
+      "target": "com.sonyericsson.photoeditor",
+      "count": 6,
+      "probability": 0.1132,
+      "label": "11%"
+    },
+    {
+      "source": "com.sonyericsson.extras.liveware",
+      "target": "com.sonyericsson.album",
+      "count": 1,
+      "probability": 0.1111,
+      "label": "11%"
+    },
+    {
+      "source": "com.sonyericsson.extras.liveware",
+      "target": "com.sonyericsson.extras.liveware",
+      "count": 1,
+      "probability": 0.1111,
+      "label": "11%"
+    },
+    {
+      "source": "com.sonyericsson.lockscreen.notifications",
+      "target": "com.sonyericsson.infiniteview",
+      "count": 1,
+      "probability": 0.1111,
+      "label": "11%"
+    },
+    {
+      "source": "com.sonyericsson.androidapp.smart",
+      "target": "com.sonyericsson.androidapp.smart",
+      "count": 64,
+      "probability": 0.1068,
+      "label": "11%"
+    },
+    {
+      "source": "com.google.android.deskclock",
+      "target": "com.sonyericsson.advancedwidget.onoff",
+      "count": 1,
+      "probability": 0.1,
+      "label": "10%"
+    },
+    {
+      "source": "com.google.android.deskclock",
+      "target": "com.sonyericsson.androidapp.smart",
+      "count": 1,
+      "probability": 0.1,
+      "label": "10%"
+    },
+    {
+      "source": "com.google.android.deskclock",
+      "target": "com.google.android.deskclock",
+      "count": 1,
+      "probability": 0.1,
+      "label": "10%"
+    },
+    {
+      "source": "com.farsitel.bazaar",
+      "target": "com.sonyericsson.androidapp.smart",
+      "count": 1,
+      "probability": 0.1,
+      "label": "10%"
+    },
+    {
+      "source": "com.farsitel.bazaar",
+      "target": "com.tencent.mm",
+      "count": 1,
+      "probability": 0.1,
+      "label": "10%"
+    },
+    {
+      "source": "com.sonyericsson.album",
+      "target": "com.pixlr.express",
+      "count": 5,
+      "probability": 0.0943,
+      "label": "9%"
+    },
+    {
+      "source": "com.sonyericsson.android.socialphonebook",
+      "target": "com.sonyericsson.android.socialphonebook",
+      "count": 1,
+      "probability": 0.0769,
+      "label": "8%"
+    },
+    {
+      "source": "com.sonyericsson.android.socialphonebook",
+      "target": "com.sonyericsson.extras.liveware",
+      "count": 1,
+      "probability": 0.0769,
+      "label": "8%"
+    },
+    {
+      "source": "com.sonyericsson.album",
+      "target": "com.sonyericsson.androidapp.smart",
+      "count": 4,
+      "probability": 0.0755,
+      "label": "8%"
+    },
+    {
+      "source": "com.sonyericsson.customization",
+      "target": "com.tencent.mm",
+      "count": 56,
+      "probability": 0.075,
+      "label": "7%"
+    },
+    {
+      "source": "com.tencent.mm:tools",
+      "target": "com.sonyericsson.album",
+      "count": 2,
+      "probability": 0.0667,
+      "label": "7%"
+    },
+    {
+      "source": "com.tencent.mm:tools",
+      "target": "com.sonyericsson.androidapp.smart",
+      "count": 2,
+      "probability": 0.0667,
+      "label": "7%"
+    },
+    {
+      "source": "com.sonyericsson.advancedwidget.onoff",
+      "target": "com.google.android.apps.plus",
+      "count": 1,
+      "probability": 0.0625,
+      "label": "6%"
+    },
+    {
+      "source": "com.sonyericsson.album",
+      "target": "com.sonyericsson.android.camera",
+      "count": 3,
+      "probability": 0.0566,
+      "label": "6%"
+    },
+    {
+      "source": "com.tencent.mm",
+      "target": "com.tencent.mm:tools",
+      "count": 8,
+      "probability": 0.0526,
+      "label": "5%"
+    },
+    {
+      "source": "com.sec.pcw.device",
+      "target": "com.broadcom.bt.app.system",
+      "count": 7,
+      "probability": 0.0515,
+      "label": "5%"
+    }
+  ]
+}
