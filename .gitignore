@@ -61,3 +61,17 @@ archive/
 # Windows
 Thumbs.db
 desktop.ini
+
+# Runtime logs
+logs/
+*.log
+
+# Result snapshots (large run artifacts)
+results/snapshots/
+results/reports/
+
+
+# Node
+node_modules/
+.next/
+
