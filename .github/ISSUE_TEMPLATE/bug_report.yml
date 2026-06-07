@@ -1,0 +1,85 @@
+name: Bug Report
+description: File a bug report for GraphMind
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report! Please provide as much detail as possible.
+
+  - type: input
+    id: version
+    attributes:
+      label: GraphMind Version
+      description: Which version of GraphMind are you using?
+      placeholder: e.g., V5 (production)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      description: Which component does the bug affect?
+      options:
+        - Core Graph Engine
+        - RL Environment / Trainer
+        - Prefetch Engine
+        - Agents (Orchestrator, Prefetch, etc.)
+        - Dashboard (Next.js)
+        - Android Integration
+        - Data Pipeline
+        - Tests
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear and concise description of the bug.
+      placeholder: Tell us what you see...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: How can we reproduce this issue?
+      placeholder: |
+        1. Run `python scripts/run_phase11_e.py`
+        2. Observe output...
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: |
+        Please provide your environment details.
+      placeholder: |
+        - OS: Windows 11 / Ubuntu 22.04 / macOS 14
+        - Python version: 3.10.x
+        - Node.js version: 18.x (if dashboard related)
+        - PyTorch version: 2.x
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code.
+      render: shell
