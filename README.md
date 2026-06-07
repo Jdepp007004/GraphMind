@@ -1,114 +1,161 @@
-# [PROJECT_NAME]
+<div align="center">
 
-> **Samsung EnnovateX AX Hackathon 2025 — Phase 2 Submission**
-> Problem Statement [PROBLEM_STATEMENT_NUMBER]: [PROBLEM_STATEMENT_TITLE]
+<img src="https://img.shields.io/badge/Samsung-EnnovateX%20AX%202025-1428A0?style=for-the-badge&logo=samsung&logoColor=white" alt="Samsung Hackathon"/>
+<img src="https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python"/>
+<img src="https://img.shields.io/badge/Next.js-15-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" alt="Next.js"/>
+<img src="https://img.shields.io/badge/Reinforcement%20Learning-Enabled-FF6B35?style=for-the-badge&logo=openai&logoColor=white" alt="RL"/>
+<img src="https://img.shields.io/badge/F1%20Score-0.7745-00C851?style=for-the-badge" alt="F1 Score"/>
 
----
-
-## 1. Project Information
-
-| Field | Value |
-|---|---|
-| **Project Name** | [PROJECT_NAME] |
-| **Problem Statement** | [PROBLEM_STATEMENT_NUMBER] — [PROBLEM_STATEMENT_TITLE] |
-| **Team Name** | [TEAM_NAME] |
-| **Member 1** | [MEMBER_1] |
-| **Member 2** | [MEMBER_2] |
-| **College** | [COLLEGE_NAME] |
-| **Address** | [COLLEGE_ADDRESS] |
-
----
-
-## 2. Submission Links
-
-| Asset | Link |
-|---|---|
-| 📊 Presentation | [PRESENTATION_LINK] |
-| 🎬 Demo Video | [DEMO_VIDEO_LINK] |
-| 🔁 Reproducibility Video | [REPRODUCIBILITY_VIDEO_LINK] |
-| 📦 Dataset | [DATASET_LINK] |
-| 🤖 Model | [MODEL_LINK] |
-| 🌐 Published Model | [MODEL_PUBLISH_LINK] |
-| 📂 Published Dataset | [DATASET_PUBLISH_LINK] |
-
----
-
-## 3. Executive Summary
-
-**GraphMindRL V5** is a reinforcement-learning–enhanced Markov-graph prefetch engine for Android smartphone applications. It predicts which apps a user will open next and pre-loads them into a two-tier RAM cache, eliminating cold-launch latency.
-
-Validated on the UbiqLog4UCI dataset across **31 real smartphone users**, the system achieves:
-
-| Metric | Value |
-|---|---|
-| **F1 Score** | **0.7745** |
-| **Improvement over baseline** | **+0.0321 (+4.3%)** |
-| **p-value (paired t-test)** | **0.0115 < 0.05** ✓ |
-| **Cohen's d** | **0.491 (medium-large)** |
-| **Cache hit rate** | 93.1% |
-| **Latency saved** | ~1,847 ms per launch |
-
-The result is **statistically significant** and **fully reproducible** (confirmed on two independent runs).
-
----
-
-## 4. Problem Statement
-
-Modern Android smartphones suffer from **cold-launch latency**: when an app is not in RAM, the OS must load its code, resources, and data from storage before it becomes interactive. On mid-range devices such as the **Samsung Galaxy A23**, this can exceed **1,800 ms per launch**.
-
-Intelligent prefetching — pre-loading apps the user is likely to open before they tap — eliminates this penalty. The challenge is predicting the next app accurately enough that prefetching saves more time than it wastes on unnecessary loads.
-
-Existing solutions:
-- **Static frequency** approaches miss temporal patterns.
-- **Pure Markov chains** ignore recency and frequency signals.
-- **Deep learning** models are too expensive for on-device inference.
-
-**GraphMindRL V5** combines all three signals in a confidence scorer with an RL-controlled adaptive threshold, striking the optimal precision/recall balance without any neural network.
-
----
-
-## 5. Innovation
-
-### 1. Behaviour Graph with Confidence Scoring
-
-Each user's app-switching behaviour is represented as a **weighted directed Markov graph**. The confidence score fuses three complementary signals:
+<br/><br/>
 
 ```
-score(app) = 0.5 × P(app | current)          # Markov transition probability
-           + 0.1 × recency_score(app)         # exponential decay from last use
-           + 0.4 × frequency_score(app)       # normalised historical frequency
+  ██████╗ ██████╗  █████╗ ██████╗ ██╗  ██╗███╗   ███╗██╗███╗   ██╗██████╗ 
+ ██╔════╝ ██╔══██╗██╔══██╗██╔══██╗██║  ██║████╗ ████║██║████╗  ██║██╔══██╗
+ ██║  ███╗██████╔╝███████║██████╔╝███████║██╔████╔██║██║██╔██╗ ██║██║  ██║
+ ██║   ██║██╔══██╗██╔══██║██╔═══╝ ██╔══██║██║╚██╔╝██║██║██║╚██╗██║██║  ██║
+ ╚██████╔╝██║  ██║██║  ██║██║     ██║  ██║██║ ╚═╝ ██║██║██║ ╚████║██████╔╝
+  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝  ╚═╝╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝╚═════╝ 
 ```
 
-This outperforms any single signal alone (ablation study confirms each component contributes positively).
+### 🧠 RL-Powered Graph Memory Management for Android Edge Devices
 
-### 2. RL-Controlled Adaptive Threshold
+*Samsung EnnovateX AX Hackathon 2025 — Phase 2 Submission*
 
-A lightweight RL controller monitors the **rolling 20-step hit rate** and adjusts the confidence threshold in real time:
-
-- Hit rate > 80% → threshold += 0.005 (more selective)
-- Hit rate < 50% → threshold -= 0.005 (more permissive)
-
-This replaces a static threshold (which must be hand-tuned per user) with a self-calibrating mechanism that works out-of-the-box for all 31 users.
-
-### 3. Two-Tier Cache Architecture
-
-| Tier | Capacity | Storage | Latency Profile |
-|------|----------|---------|-----------------|
-| HOT | 5 apps | RAM | 0 ms |
-| WARM | 15 apps | Pre-loaded | ~200 ms |
-| COLD | Unlimited | SQLite | ~1,800 ms |
-
-Predictions above the confidence threshold are loaded into WARM; the most recent HOT apps come from direct interaction.
-
-### 4. Empirical Research Methodology
-
-Every design decision was driven by benchmarks, not intuition. Eight hypothesis-test-decision cycles are documented with full statistical evidence, making the engineering process transparent and reproducible.
+</div>
 
 ---
 
-## 6. Architecture Overview
+<div align="center">
 
-![Architecture Diagram](assets/screenshots/architecture.png)
+| 🏆 F1 Score | 📈 Improvement | 🎯 Cache Hit Rate | ⚡ Latency Saved | 📊 Users Tested |
+|:-----------:|:--------------:|:-----------------:|:----------------:|:---------------:|
+| **0.7745** | **+4.3%** | **93.1%** | **~1,847 ms** | **31 real users** |
+
+*Statistically significant: p = 0.0115 < 0.05 ✓ · Cohen's d = 0.491 (medium-large)*
+
+</div>
+
+---
+
+## 📋 Table of Contents
+
+- [🌟 What is GraphMind?](#-what-is-graphmind)
+- [🚀 Key Results](#-key-results)
+- [💡 Core Innovations](#-core-innovations)
+- [🏗️ System Architecture](#️-system-architecture)
+- [🛠️ Technical Stack](#️-technical-stack)
+- [📂 Repository Structure](#-repository-structure)
+- [⚙️ Installation](#️-installation)
+- [▶️ Reproducing Results](#️-reproducing-results)
+- [📊 Dashboard](#-dashboard)
+- [📚 Documentation](#-documentation)
+- [🤖 Models Evaluated](#-models-evaluated)
+- [🗄️ Dataset](#️-dataset)
+- [📜 License](#-license)
+
+---
+
+## 🌟 What is GraphMind?
+
+**GraphMind (GraphMindRL V5)** is a reinforcement-learning–enhanced Markov-graph prefetch engine designed for Android smartphones and edge devices. It intelligently predicts which apps a user will open next and **pre-loads them into a two-tier RAM cache**, eliminating cold-launch latency without requiring a neural network.
+
+> 💡 **The core problem:** On mid-range devices like the Samsung Galaxy A23, cold-launching an app takes **over 1,800 ms**. GraphMind reduces this to near-zero by predicting and pre-loading the right apps ahead of time.
+
+### Why GraphMind is Different
+
+| Approach | Weakness | GraphMind's Solution |
+|----------|----------|---------------------|
+| Static frequency counters | Misses temporal patterns | Weighted Markov graph |
+| Pure Markov chains | Ignores recency & frequency | Confidence score fusion |
+| Deep learning | Too expensive for edge | Lightweight RL controller |
+| Static thresholds | Requires per-user tuning | Self-calibrating RL threshold |
+
+---
+
+## 🚀 Key Results
+
+### Official Benchmark Results (Frozen — Reproduced Twice)
+
+| Policy | F1 Score | Hit Rate | Latency Saved | ΔF1 | p-value | Cohen's d | Significant |
+|--------|----------|----------|---------------|-----|---------|-----------|-------------|
+| 🥇 **GraphMindRL_V5** | **0.7745** | **93.1%** | **1,847 ms** | **+0.0321** | **0.0115** | **0.491** | ✅ |
+| GraphMindRL_V5 (t=0.10) | 0.7733 | 93.3% | 1,849 ms | +0.0309 | 0.0105 | 0.498 | ✅ |
+| RL_LatencyFocus | 0.7539 | 90.7% | 1,726 ms | +0.0116 | 0.0003 | 0.752 | ✅ |
+| GraphMindRL Baseline | 0.7424 | 93.6% | 2,002 ms | 0.0000 | — | — | — |
+| Graph+Confidence | 0.7369 | 91.8% | 1,724 ms | −0.0055 | — | — | n.s. |
+| Markov-2 | 0.7355 | 91.4% | 1,710 ms | −0.0069 | — | — | n.s. |
+| Markov-1 (Baseline) | 0.7267 | 92.4% | 1,682 ms | −0.0157 | — | — | n.s. |
+
+```
+F1 Score Progression
+0.80 ┤
+0.78 ┤                                                    ●  ← GraphMindRL V5 (0.7745)
+0.76 ┤                                               ●
+0.74 ┤                          ●         ●
+0.72 ┤               ●     ●
+0.70 ┤          ●
+0.68 ┤     ●
+     └────────────────────────────────────────────────────
+      Markov-1  Markov-2  G+C  Baseline  RL-Lat  V5(0.10)  V5
+```
+
+**Key findings:**
+- **+4.3% improvement** over the GraphMindRL baseline (statistically significant)
+- **Independently reproduced on two separate runs** with identical outputs
+- Effect size (Cohen's d = 0.491) is in the **medium-to-large range**
+- Validated across **31 real smartphone users** from the UbiqLog4UCI dataset
+
+---
+
+## 💡 Core Innovations
+
+### 1. 📊 Behaviour Graph with Confidence Scoring
+
+Each user's app-switching behaviour is modelled as a **weighted directed Markov graph**. Instead of relying on a single signal, GraphMind fuses three complementary signals into a confidence score:
+
+```python
+score(app) = 0.5 × P(app | current)       # Markov transition probability
+           + 0.1 × recency_score(app)      # exponential decay from last use
+           + 0.4 × frequency_score(app)    # normalised historical frequency
+```
+
+> Each component contributes positively — confirmed via ablation study.
+
+### 2. 🤖 RL-Controlled Adaptive Threshold
+
+A lightweight RL controller monitors the **rolling 20-step hit rate** and dynamically adjusts the confidence threshold:
+
+```
+Rolling Hit Rate > 80%  →  threshold += 0.005  (more selective)
+Rolling Hit Rate < 50%  →  threshold -= 0.005  (more permissive)
+Rolling Hit Rate ∈ [50%, 80%]  →  threshold unchanged
+```
+
+This replaces manual per-user threshold tuning with a **self-calibrating mechanism** that works out-of-the-box for all 31 users.
+
+### 3. 🗄️ Two-Tier Cache Architecture
+
+```
+┌─────────────────────────────────────────────────┐
+│                  Cache Tiers                     │
+├──────────┬──────────────┬────────────────────────┤
+│   Tier   │   Capacity   │   Latency Profile      │
+├──────────┼──────────────┼────────────────────────┤
+│  🔥 HOT  │   5 apps     │   0 ms (in RAM)        │
+│  🌡️ WARM │  15 apps     │   ~200 ms (pre-loaded) │
+│  ❄️ COLD  │  Unlimited   │   ~1,800 ms (SQLite)   │
+└──────────┴──────────────┴────────────────────────┘
+```
+
+Predictions above the confidence threshold are loaded into **WARM**; the most recent HOT apps come from direct user interaction.
+
+### 4. 🔬 Empirical Research Methodology
+
+Every design decision was driven by benchmarks — **8 hypothesis-test-decision cycles** documented with full statistical evidence, making the engineering process transparent and reproducible.
+
+---
+
+## 🏗️ System Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -116,158 +163,200 @@ Every design decision was driven by benchmarks, not intuition. Eight hypothesis-
 │                                                                      │
 │  ┌──────────────┐   ┌──────────────────┐   ┌──────────────────────┐ │
 │  │  UbiqLog     │──▶│  Transition      │──▶│  Behaviour           │ │
-│  │  Dataset     │   │  Extractor       │   │  Graph               │ │
+│  │  Dataset     │   │  Extractor       │   │  Graph (NetworkX)    │ │
 │  └──────────────┘   └──────────────────┘   └──────────────────────┘ │
 │                                                        │             │
 │                                                        ▼             │
 │  ┌──────────────────────────────────────────────────────────────┐   │
-│  │                 Confidence Prefetch Engine                    │   │
+│  │              Confidence Prefetch Engine                       │   │
 │  │                                                              │   │
-│  │  score = 0.5×trans + 0.1×recency + 0.4×frequency            │   │
-│  │  threshold = 0.16  (adaptive ±0.005 via RL controller)       │   │
-│  └──────────────────────────────────────────────────────────────┘   │
-│                                │                                     │
-│              ┌─────────────────┼─────────────────┐                  │
-│              ▼                 ▼                  ▼                  │
-│        ┌──────────┐     ┌──────────┐     ┌──────────────┐          │
-│        │ HOT Cache│     │WARM Cache│     │  COLD Store  │          │
-│        │  (5 apps)│     │(15 apps) │     │   (SQLite)   │          │
-│        └──────────┘     └──────────┘     └──────────────┘          │
+│  │   score = 0.5×trans + 0.1×recency + 0.4×frequency           │   │
+│  │   threshold = 0.16  (adaptive ±0.005 via RL controller)      │   │
+│  └────────────────────────────┬─────────────────────────────────┘   │
+│                               │                                      │
+│              ┌────────────────┼────────────────┐                    │
+│              ▼                ▼                 ▼                    │
+│        ┌──────────┐    ┌──────────┐    ┌──────────────┐            │
+│        │🔥 HOT    │    │🌡️ WARM   │    │❄️ COLD Store  │            │
+│        │ (5 apps) │    │(15 apps) │    │  (SQLite)    │            │
+│        └──────────┘    └──────────┘    └──────────────┘            │
+│                                                                      │
+│  ┌───────────────────────────────────────────────────────────────┐  │
+│  │               Multi-Agent Orchestration Layer                  │  │
+│  │  Prefetch Agent · RL Trainer · Graph Manager · Drift Detector  │  │
+│  └───────────────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-See [docs/architecture.md](docs/architecture.md) for the full technical specification.
+The system is organized into modular agents:
+
+| Agent | Responsibility |
+|-------|---------------|
+| `PrefetchAgent` | Generates prefetch predictions using the confidence engine |
+| `RLTrainerAgent` | Trains and updates the RL threshold controller |
+| `GraphManagerAgent` | Maintains and updates the Markov behaviour graph |
+| `DriftDetectorAgent` | Detects user behaviour drift and triggers re-calibration |
+| `SecurityAgent` | Handles unknown apps and enforces retention policies |
+| `Orchestrator` | Coordinates all agents via event bus |
 
 ---
 
-## 7. Technical Stack
+## 🛠️ Technical Stack
 
-| Layer | Technology |
-|---|---|
-| Language | Python 3.10+ |
-| Data processing | pandas, numpy |
-| Graph engine | NetworkX |
-| Statistical testing | scipy.stats (paired t-test) |
-| Dashboard | Next.js 15, TypeScript, Recharts, React Flow |
-| Visualization | Recharts, Framer Motion |
-| Version control | Git |
+<div align="center">
+
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| **Language** | Python 3.10+ | Core backend |
+| **Graph Engine** | NetworkX | Markov behaviour graph |
+| **RL Framework** | Stable-Baselines3 + Gymnasium | RL threshold controller |
+| **Data Processing** | pandas, NumPy | Dataset pipeline |
+| **Statistical Testing** | SciPy | Paired t-test, Cohen's d |
+| **Deep Learning** | PyTorch | RL policy network |
+| **Dashboard** | Next.js 15 + TypeScript | Interactive web dashboard |
+| **Visualization** | Recharts + React Flow | Charts & graph rendering |
+| **Animations** | Framer Motion | Smooth UI transitions |
+| **Scheduling** | APScheduler | Periodic agent tasks |
+
+</div>
 
 ---
 
-## 8. Repository Structure
+## 📂 Repository Structure
 
 ```
-Samsung/
-├── README.md                        # This file
-├── config/
-│   └── settings.py                  # Production configuration (frozen)
-├── src/
-│   ├── data/
-│   │   ├── ubiqlog_loader.py        # Dataset loading and cleaning
-│   │   └── transition_extractor.py  # Transition sequence extraction
-│   ├── models/
-│   │   ├── markov.py                # Markov-1 and Markov-2 models
-│   │   ├── graph_model.py           # Behaviour graph construction
-│   │   └── rl_environment.py        # RL environment definition
+GraphMind/
+│
+├── 📄 README.md                           # You are here
+├── 📋 requirements.txt                    # Python dependencies
+├── 🔒 .env.example                        # Environment variable template
+├── 🔒 .gitignore
+│
+├── ⚙️  config/
+│   └── settings.py                        # Production configuration (frozen)
+│
+├── 🧠 src/
+│   ├── agents/
+│   │   ├── orchestrator.py               # Multi-agent coordinator
+│   │   ├── prefetch_agent.py             # Prediction + prefetch logic
+│   │   ├── rl_trainer_agent.py           # RL policy training
+│   │   ├── graph_manager_agent.py        # Graph maintenance
+│   │   ├── drift_detector_agent.py       # Behaviour drift detection
+│   │   ├── drift_visualizer.py           # Drift visualization
+│   │   └── security_agent.py            # Security & retention policy
+│   │
+│   ├── core/
+│   │   ├── graph_engine.py               # Markov graph engine
+│   │   ├── memory_manager.py             # HOT/WARM/COLD cache
+│   │   ├── event_bus.py                  # Agent communication bus
+│   │   └── event_schema.py              # Event type definitions
+│   │
+│   ├── rl/
+│   │   ├── environment_v2.py             # RL environment (Gymnasium)
+│   │   ├── trainer.py                    # Training loop
+│   │   ├── reward_v2.py                  # Reward shaping
+│   │   └── evaluation.py                # Policy evaluation
+│   │
 │   ├── prefetch/
-│   │   └── confidence_prefetch.py   # Production prefetch engine (FROZEN)
-│   └── evaluation/
-│       └── evaluator.py             # F1, hit rate, latency evaluation
-├── scripts/
-│   ├── run_phase11_e.py             # ← Official benchmark entry point
-│   ├── run_v5_rl_graph.py           # V5 RL graph runner
-│   └── generate_dashboard_data.py  # Dashboard JSON generation
-├── data/
-│   ├── raw/                         # Raw UbiqLog CSV files
-│   └── processed/                   # Cleaned transition sequences
-├── results/
-│   ├── final_production_results.csv # OFFICIAL FROZEN RESULT
-│   ├── v5_all_experiments.csv       # Complete experiment log
-│   ├── v5_weight_grid.csv           # Phase 11A weight search
-│   └── v5_threshold_sweep.csv       # Phase 11B threshold sweep
-├── reports/
-│   ├── final_production_report.md   # Key result narrative
-│   └── v5_decision_gate.md          # Go/no-go decision
-├── docs/
-│   ├── ax.md                        # AX methodology
-│   ├── architecture.md              # System design
-│   ├── benchmarking.md              # Evaluation details
-│   ├── reproducibility.md           # Step-by-step instructions
-│   ├── dashboard.md                 # Dashboard feature guide
-│   ├── user_guide.md                # User manual
-│   ├── datasets.md                  # Dataset documentation
-│   └── models.md                    # Model catalogue
-├── dashboard/                       # Next.js dashboard application
-│   ├── app/                         # Page components (7 pages)
-│   └── public/data/                 # Pre-generated JSON data files
-├── archive/                         # Archived failed experiments
-└── assets/
-    └── screenshots/                 # Placeholder for submission screenshots
+│   │   └── confidence_prefetch.py        # Production prefetch engine (FROZEN)
+│   │
+│   ├── data/
+│   │   ├── ubiqlog_loader.py             # Dataset loading & cleaning
+│   │   └── transition_extractor.py       # Transition sequence extraction
+│   │
+│   ├── models/
+│   │   ├── markov.py                     # Markov-1 and Markov-2
+│   │   └── graph_model.py               # Behaviour graph construction
+│   │
+│   ├── android/                          # Android integration layer
+│   ├── benchmarks/                       # Benchmark suite
+│   ├── experiments/                      # Experimental scripts
+│   ├── explainability/                   # Model explainability tools
+│   ├── graph_playback/                   # Graph replay visualization
+│   └── security/                         # Security hardening modules
+│
+├── 📜 scripts/
+│   ├── run_phase11_e.py                  # ← OFFICIAL benchmark entry point
+│   ├── run_phase11.py                    # Full phase 11 experiments
+│   ├── run_v5_validation.py              # V5 validation suite
+│   ├── generate_dashboard_data.py        # Dashboard JSON generation
+│   ├── ubiqlog_transition_pipeline.py    # Data processing pipeline
+│   └── run_statistical_analysis.py       # Statistical analysis tools
+│
+├── 📊 dashboard/                          # Next.js 15 web dashboard
+│   ├── app/                              # 7-page Next.js app router
+│   ├── components/                       # Reusable React components
+│   └── public/data/                      # Pre-generated JSON data files
+│
+├── 📁 data/
+│   ├── raw/                              # Raw UbiqLog CSV files
+│   └── processed/                        # Cleaned transition sequences
+│
+├── 📈 results/
+│   ├── final_production_results.csv      # OFFICIAL FROZEN RESULT
+│   ├── v5_all_experiments.csv            # Complete experiment log
+│   └── v5_threshold_sweep.csv            # Phase 11B threshold sweep
+│
+├── 📝 reports/
+│   └── final_production_report.md        # Key result narrative
+│
+├── 📚 docs/
+│   ├── architecture.md                   # System architecture
+│   ├── ax.md                             # AX methodology
+│   ├── benchmarking.md                   # Evaluation methodology
+│   ├── reproducibility.md                # Step-by-step reproduction guide
+│   ├── dashboard.md                      # Dashboard feature guide
+│   ├── models.md                         # Model catalogue
+│   ├── datasets.md                       # Dataset documentation
+│   ├── user_guide.md                     # User manual
+│   └── installation.md                   # Detailed installation guide
+│
+├── 🧪 tests/                              # Test suite (pytest)
+└── 🗄️  archive/                            # Archived failed experiments
 ```
 
 ---
 
-## 9. Results
-
-### Official Result (Frozen — do not modify)
-
-| Policy | F1 | Hit Rate | Latency Saved | ΔF1 | p-value | Cohen's d | Sig |
-|---|---|---|---|---|---|---|---|
-| **GraphMindRL_V5** | **0.7745** | **93.1%** | **1,847 ms** | **+0.0321** | **0.0115** | **0.491** | ✓ |
-| GraphMindRL_V5 (t=0.10) | 0.7733 | 93.3% | 1,849 ms | +0.0309 | 0.0105 | 0.498 | ✓ |
-| RL_LatencyFocus | 0.7539 | 90.7% | 1,726 ms | +0.0116 | 0.0003 | 0.752 | ✓ |
-| GraphMindRL Baseline | 0.7424 | 93.6% | 2,002 ms | 0.0000 | — | — | — |
-| Graph+Confidence | 0.7369 | 91.8% | 1,724 ms | −0.0055 | — | — | n.s. |
-| Markov-2 | 0.7355 | 91.4% | 1,710 ms | −0.0069 | — | — | n.s. |
-| Markov-1 | 0.7267 | 92.4% | 1,682 ms | −0.0157 | — | — | n.s. |
-
-![Benchmark Results](assets/screenshots/results.png)
-
-### Interpretation
-
-- GraphMindRL_V5 achieves **F1 = 0.7745**, a statistically significant improvement of **+0.0321 (+4.3%)** over the GraphMindRL baseline.
-- The result was **independently reproduced on two separate runs** with identical outputs.
-- The effect size (Cohen's d = 0.491) is in the **medium-to-large range**, indicating practical significance beyond statistical significance.
-
----
-
-## 10. Technical Documentation
-
-| Document | Description |
-|---|---|
-| [docs/ax.md](docs/ax.md) | AX methodology — agentic development workflow |
-| [docs/architecture.md](docs/architecture.md) | System architecture with Mermaid diagrams |
-| [docs/benchmarking.md](docs/benchmarking.md) | Evaluation methodology, baselines, statistical testing |
-| [docs/reproducibility.md](docs/reproducibility.md) | Exact commands to reproduce the official result |
-| [docs/dashboard.md](docs/dashboard.md) | Dashboard feature guide (7 pages) |
-| [docs/user_guide.md](docs/user_guide.md) | User manual |
-| [docs/datasets.md](docs/datasets.md) | Dataset documentation |
-| [docs/models.md](docs/models.md) | Model catalogue — all 9 policies evaluated |
-| [reports/final_production_report.md](reports/final_production_report.md) | Production result narrative |
-| [reports/submission_readiness.md](reports/submission_readiness.md) | Rubric self-assessment |
-
----
-
-## 11. Installation
+## ⚙️ Installation
 
 ### Prerequisites
 
-- Python 3.10+
-- Node.js 18+ (for dashboard)
-- 4 GB RAM minimum
+- **Python 3.10+**
+- **Node.js 18+** (for the dashboard)
+- **4 GB RAM minimum** (8 GB recommended)
+- **Git**
 
-### Backend
+### 1. Clone the Repository
 
 ```bash
-# Clone the repository
-git clone <repo-url>
-cd Samsung
+git clone https://github.com/Jdepp007004/GraphMind.git
+cd GraphMind
+```
 
-# Install Python dependencies
+### 2. Set Up Python Environment
+
+```bash
+# Create a virtual environment (recommended)
+python -m venv venv
+
+# Activate it
+# On Windows:
+venv\Scripts\activate
+# On macOS/Linux:
+source venv/bin/activate
+
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-### Dashboard
+### 3. Configure Environment Variables
+
+```bash
+cp .env.example .env
+# Edit .env with your configuration (if needed)
+```
+
+### 4. Set Up the Dashboard
 
 ```bash
 cd dashboard
@@ -278,95 +367,139 @@ npm run dev
 
 ---
 
-## 12. Reproducing Results
+## ▶️ Reproducing Results
 
-The official benchmark is a single command:
+The official benchmark runs with a **single command**:
 
 ```bash
 python scripts/run_phase11_e.py
 ```
 
-**Expected output:**
+### Expected Output
 
 ```
-GraphMindRL_V5   F1=0.7745   p=0.0115   Cohen_d=0.491
+============================================================
+GraphMind RL V5 — Official Benchmark
+============================================================
+Loading UbiqLog dataset...  ✓ (31 users, 208,695 transitions)
+Building behaviour graphs...  ✓
+Running evaluation (all policies)...
+
+Policy               F1        Hit Rate   Latency    ΔF1      p-value    Cohen's d
+──────────────────────────────────────────────────────────────────────────────────
+GraphMindRL_V5      0.7745    93.1%      1847ms     +0.0321  0.0115     0.491  ✓
+GraphMindRL_V5(0.1) 0.7733    93.3%      1849ms     +0.0309  0.0105     0.498  ✓
+RL_LatencyFocus     0.7539    90.7%      1726ms     +0.0116  0.0003     0.752  ✓
+GraphMindRL_Base    0.7424    93.6%      2002ms     0.0000   —          —
+──────────────────────────────────────────────────────────────────────────────────
+
+✅ PRODUCTION RESULT CONFIRMED: F1 = 0.7745
 ```
 
-Full step-by-step instructions: [docs/reproducibility.md](docs/reproducibility.md)
+> 📖 Full step-by-step instructions: [docs/reproducibility.md](docs/reproducibility.md)
 
 ---
 
-## 13. Dashboard Features
+## 📊 Dashboard
 
-The GraphMind dashboard is a 7-page Next.js application running at `http://localhost:3000`.
+GraphMind includes a **7-page interactive Next.js dashboard** for exploring results:
+
+```bash
+cd dashboard
+npm run dev
+# Open http://localhost:3000
+```
 
 | Page | URL | Description |
-|---|---|---|
-| Executive Overview | `/` | Key metrics, system pipeline, production config |
-| Benchmark Explorer | `/benchmark` | Interactive policy comparison table and charts |
-| Optimization Journey | `/journey` | F1 trajectory across 8 research phases |
-| Graph Explorer | `/graph` | Interactive Markov transition graph |
-| Cache Simulator | `/simulator` | Live HOT/WARM cache animation |
-| User Playback | `/playback` | Step-through of real user event sequences |
-| Research Validation | `/research` | Ablations, statistical testing, reproducibility |
-
-![Dashboard Overview](assets/screenshots/dashboard-overview.png)
+|------|-----|-------------|
+| 🏠 **Executive Overview** | `/` | Key metrics, system pipeline, production config |
+| 📊 **Benchmark Explorer** | `/benchmark` | Interactive policy comparison table & charts |
+| 🗺️ **Optimization Journey** | `/journey` | F1 trajectory across 8 research phases |
+| 🕸️ **Graph Explorer** | `/graph` | Interactive Markov transition graph |
+| 🎮 **Cache Simulator** | `/simulator` | Live HOT/WARM cache animation |
+| 📼 **User Playback** | `/playback` | Step-through of real user event sequences |
+| 🔬 **Research Validation** | `/research` | Ablations, statistical testing, reproducibility |
 
 ---
 
-## 14. Models Used
+## 📚 Documentation
 
-| Model | F1 | Status |
-|---|---|---|
-| Markov-1 (GraphOnly) | 0.7267 | Baseline |
-| Markov-2 | 0.7355 | Rejected |
-| Graph+Confidence | 0.7369 | Intermediate |
-| GraphMindRL Baseline | 0.7424 | Reference |
-| RL_LatencyFocus | 0.7539 | Candidate |
-| **GraphMindRL_V5** | **0.7745** | **Production** |
-
-Full model documentation: [docs/models.md](docs/models.md)
-
----
-
-## 15. Datasets Used
-
-| Dataset | Source | Size | License |
-|---|---|---|---|
-| UbiqLog4UCI | UCI ML Repository | 9.7M events, 35 users | CC BY 4.0 |
-
-- Transitions extracted: **208,695**
-- Users retained: **31** (after quality filtering)
-- Split: **80 / 10 / 10** (chronological)
-
-Full dataset documentation: [docs/datasets.md](docs/datasets.md)
+| Document | Description |
+|----------|-------------|
+| [docs/architecture.md](docs/architecture.md) | System architecture with detailed Mermaid diagrams |
+| [docs/ax.md](docs/ax.md) | AX methodology — agentic development workflow |
+| [docs/benchmarking.md](docs/benchmarking.md) | Evaluation methodology, baselines, statistical testing |
+| [docs/reproducibility.md](docs/reproducibility.md) | Exact commands to reproduce the official result |
+| [docs/dashboard.md](docs/dashboard.md) | Dashboard feature guide (all 7 pages) |
+| [docs/models.md](docs/models.md) | Model catalogue — all 9 policies evaluated |
+| [docs/datasets.md](docs/datasets.md) | Dataset documentation & preprocessing |
+| [docs/user_guide.md](docs/user_guide.md) | End-user manual |
+| [docs/installation.md](docs/installation.md) | Detailed installation guide |
+| [reports/final_production_report.md](reports/final_production_report.md) | Production result narrative |
 
 ---
 
-## 16. Attribution
+## 🤖 Models Evaluated
 
-- **UbiqLog Dataset**: Montanari, A., et al. "UbiqLog: a cheap, unintrusive smartphone-based diet logger." *Proceedings of the 2013 ACM conference on Pervasive and ubiquitous computing adjunct publication.* 2013.
-- **Markov-chain prefetching**: Standard literature approach used as baseline.
-- All research, implementation, and analysis in this repository is original work by [TEAM_NAME].
+| # | Model | F1 Score | Status |
+|---|-------|----------|--------|
+| 1 | Markov-1 (GraphOnly) | 0.7267 | 📍 Baseline |
+| 2 | Markov-2 | 0.7355 | ❌ Rejected |
+| 3 | Graph + Confidence | 0.7369 | ❌ Rejected |
+| 4 | GraphMindRL Baseline | 0.7424 | 📍 Reference |
+| 5 | RL_LatencyFocus | 0.7539 | ✅ Candidate |
+| 6 | **GraphMindRL_V5** | **0.7745** | 🏆 **PRODUCTION** |
 
----
-
-## 17. License
-
-This project is submitted for the **Samsung EnnovateX AX Hackathon 2025**. All code and documentation are the original work of [TEAM_NAME] from [COLLEGE_NAME].
-
-The UbiqLog4UCI dataset is used under the **Creative Commons Attribution 4.0 International (CC BY 4.0)** license. See [docs/datasets.md](docs/datasets.md) for full attribution.
-
----
-
-## 18. Contact
-
-| Member | Contact |
-|---|---|
-| [MEMBER_1] | — |
-| [MEMBER_2] | — |
-| College | [COLLEGE_NAME], [COLLEGE_ADDRESS] |
+> Full model documentation: [docs/models.md](docs/models.md)
 
 ---
 
-*Submitted to Samsung EnnovateX AX Hackathon 2025. Backend frozen at tag `pre-dashboard-freeze`. Official result: F1 = 0.7745.*
+## 🗄️ Dataset
+
+| Field | Value |
+|-------|-------|
+| **Name** | UbiqLog4UCI |
+| **Source** | [UCI ML Repository](https://archive.ics.uci.edu/ml/datasets/UbiqLog+(Life+Logging)) |
+| **Size** | 9.7M events, 35 users |
+| **License** | CC BY 4.0 |
+| **Transitions extracted** | 208,695 |
+| **Users retained** | 31 (after quality filtering) |
+| **Split** | 80 / 10 / 10 (chronological) |
+
+**Attribution:** Montanari, A., et al. *"UbiqLog: a cheap, unintrusive smartphone-based diet logger."* ACM Conference on Pervasive and Ubiquitous Computing, 2013.
+
+> Full dataset documentation: [docs/datasets.md](docs/datasets.md)
+
+---
+
+## 🧪 Running Tests
+
+```bash
+# Run full test suite
+pytest tests/ -v
+
+# Run with coverage report
+pytest tests/ --cov=src --cov-report=html
+```
+
+---
+
+## 📜 License
+
+This project was developed and submitted for the **Samsung EnnovateX AX Hackathon 2025**.
+
+The **UbiqLog4UCI dataset** is used under the [Creative Commons Attribution 4.0 International (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/) license. See [docs/datasets.md](docs/datasets.md) for full attribution.
+
+The source code in this repository is the **original work** of the project team.
+
+---
+
+<div align="center">
+
+**GraphMindRL V5** · Samsung EnnovateX AX Hackathon 2025
+
+*Backend frozen · Official result: F1 = 0.7745 · p = 0.0115 · Cohen's d = 0.491*
+
+[![GitHub](https://img.shields.io/badge/GitHub-Jdepp007004%2FGraphMind-181717?style=flat-square&logo=github)](https://github.com/Jdepp007004/GraphMind)
+
+</div>
