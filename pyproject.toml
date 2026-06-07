@@ -1,0 +1,96 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "graphmind"
+version = "5.0.0"
+description = "RL-powered graph memory management for Android edge devices"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "CC BY 4.0" }
+authors = [
+  { name = "GraphMind Team" }
+]
+keywords = [
+  "reinforcement-learning",
+  "graph",
+  "memory-management",
+  "android",
+  "edge-computing",
+  "prefetching",
+  "markov-chain",
+]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+]
+dependencies = [
+  "networkx>=3.3",
+  "numpy",
+  "pandas",
+  "scipy",
+  "gymnasium",
+  "stable-baselines3",
+  "shimmy",
+  "python-dotenv",
+  "langgraph==0.1.14",
+  "pyvis",
+  "plotly",
+  "apscheduler",
+  "torch",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=7.0",
+  "pytest-cov",
+  "black",
+  "flake8",
+  "mypy",
+]
+dashboard = [
+  "streamlit",
+]
+
+[project.scripts]
+graphmind-benchmark = "scripts.run_phase11_e:main"
+
+[project.urls]
+Homepage = "https://github.com/Jdepp007004/GraphMind"
+Repository = "https://github.com/Jdepp007004/GraphMind"
+Issues = "https://github.com/Jdepp007004/GraphMind/issues"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+[tool.black]
+line-length = 100
+target-version = ["py310", "py311"]
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.venv
+  | venv
+  | __pycache__
+  | \.pytest_cache
+  | dashboard/node_modules
+  | archive
+)/
+'''
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
