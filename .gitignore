@@ -38,40 +38,53 @@ coverage.xml
 # Jupyter
 .ipynb_checkpoints/
 
+# Node
+node_modules/
+.next/
+
 # Large binary / database files
 data/cold_graph.db
 data/base_graphs/
 models/rl_policies/
 
-# Simulation logs (large files)
-results/user_*_simulation_log.json
-
-# macOS artifacts (from zip extraction)
-.DS_Store
-__MACOSX/
-._*
-
-# Large data files tracked via Git LFS or excluded
+# Large data files
 data/processed/graphs/*.pkl
 data/processed/markov/*.pkl
 
-# Archive (kept locally, not for submission)
-archive/
+# Simulation logs and run artifacts
+results/user_*_simulation_log.json
+results/snapshots/
+results/reports/
+logs/
+*.log
+
+# macOS artifacts
+.DS_Store
+__MACOSX/
+._*
 
 # Windows
 Thumbs.db
 desktop.ini
 
-# Runtime logs
-logs/
-*.log
+# Archive
+archive/
 
-# Result snapshots (large run artifacts)
-results/snapshots/
-results/reports/
+# Type checker caches
+.mypy_cache/
+.pytype/
+.pyre/
 
+# Profiling artifacts
+*.prof
+*.pstats
 
-# Node
-node_modules/
-.next/
+# Dataset raw files (too large for git — use Git LFS)
+data/raw/*.csv
+datasets/*.csv
 
+# Model weights (use Git LFS for large checkpoints)
+*.pt
+*.pth
+*.ckpt
+*.safetensors
