@@ -1,21 +1,25 @@
 # System Architecture
 
 > **GraphMindRL V5 — Technical Architecture Reference**
+> Samsung EnnovateX AX Hackathon 2026 — PS03
 
 ---
 
 ## Table of Contents
 
 1. [System Overview](#system-overview)
-2. [Data Pipeline](#data-pipeline)
-3. [Behaviour Graph](#behaviour-graph)
-4. [Confidence Engine](#confidence-engine)
-5. [RL Controller](#rl-controller)
-6. [Cache Layer](#cache-layer)
-7. [Evaluation Pipeline](#evaluation-pipeline)
-8. [Dashboard Layer](#dashboard-layer)
-9. [Component Dependencies](#component-dependencies)
-10. [Configuration Reference](#configuration-reference)
+2. [Six-Layer Architecture](#six-layer-architecture)
+3. [Data Flow Description](#data-flow-description)
+4. [Component Interaction](#component-interaction)
+5. [Data Pipeline](#data-pipeline)
+6. [Behaviour Graph](#behaviour-graph)
+7. [Confidence Engine](#confidence-engine)
+8. [RL Controller](#rl-controller)
+9. [Cache Layer](#cache-layer)
+10. [Evaluation Pipeline](#evaluation-pipeline)
+11. [Dashboard Layer](#dashboard-layer)
+12. [Component Dependencies](#component-dependencies)
+13. [Configuration Reference](#configuration-reference)
 
 ---
 
@@ -23,23 +27,7 @@
 
 GraphMindRL V5 is a **per-user, graph-based app prefetch engine** with a reinforcement-learning controlled adaptive threshold. It operates entirely on-device (no server required) and uses only the user's own app-switching history as input.
 
-![System Architecture](../assets/screenshots/system-architecture.png)
-
-### High-Level Flow
-
-```mermaid
-flowchart LR
-    A[UbiqLog Dataset] --> B[Preprocessing]
-    B --> C[Transition Extractor]
-    C --> D[Behaviour Graph]
-    D --> E[Confidence Engine]
-    E --> F{Threshold Test}
-    F -->|score ≥ threshold| G[WARM Cache]
-    F -->|score < threshold| H[COLD Store]
-    G --> I[HOT Cache]
-    J[RL Controller] --> F
-    K[Rolling Hit Rate] --> J
-```
+> Architecture Diagram: [ARCHITECTURE_DIAGRAM_LINK]
 
 ### Design Principles
 
@@ -47,11 +35,156 @@ flowchart LR
 |---|---|
 | Per-user personalisation | Each user has an independent graph and model |
 | On-device inference | All computation is O(k·log k) where k = number of candidates |
-| No neural network | Avoids GPU dependency and inference latency |
+| No neural network required | Avoids GPU dependency and inference latency for core pipeline |
 | Self-calibrating | RL controller adjusts threshold without manual tuning |
 | Interpretable | Every prefetch decision can be traced to explicit scores |
+| Agentic | 7-step closed-loop pipeline with tool use and reward feedback |
 
 ---
+
+## Six-Layer Architecture
+
+GraphMind V5 is organised into **six architectural layers**, each with a distinct responsibility:
+
+### Layer 1 — EventBus (Perception / Event Stream)
+
+**Files**: `src/core/event_bus.py`, `src/core/event_schema.py`
+
+The EventBus is the system's sensory layer. It subscribes to Android's app launch event stream and extracts structured events from raw sensor data:
+
+```
+Input:  Raw Android app-launch intent (app_id, timestamp, battery, sensors)
+Output: Structured AppLaunchEvent(app_id, time_bucket, battery_bucket, weekend)
+```
+
+All other layers communicate through the EventBus using a publish/subscribe pattern. This decouples the perception layer from all downstream processing.
+
+### Layer 2 — BehaviouralGraph (Memory / Knowledge Store)
+
+**Files**: `src/core/graph_engine.py`, `src/models/graph_model.py`
+
+The BehaviouralGraph is the system's long-term memory. It maintains a per-user **weighted directed graph** where:
+
+- Nodes = unique apps (identified by package name)
+- Edges = observed transitions (A → B), weighted by count
+- Derived: transition probabilities P(B | A), frequency scores, recency scores
+
+The graph is updated on every event and persisted to SQLite for on-device longevity.
+
+### Layer 3 — MemoryManager (Cache / Resource Manager)
+
+**Files**: `src/core/memory_manager.py`
+
+The MemoryManager maintains the three-tier cache hierarchy:
+
+```
+HOT  (5 apps)   → In-RAM, LRU eviction from user interactions
+WARM (15 apps)  → Pre-loaded by prefetch engine
+COLD (∞ apps)   → SQLite, evicted after 15 days of inactivity
+```
+
+It executes the PPO agent's resource allocation decisions and exposes APIs for the benchmark runner to query cache state.
+
+### Layer 4 — ConfidencePrefetch (Reasoning / Decision Engine)
+
+**Files**: `src/prefetch/confidence_prefetch.py`
+
+The ConfidencePrefetch engine is the system's core reasoning layer. It fuses four signals into a ranked candidate list and filters by the adaptive threshold:
+
+```
+score(app) = 0.50 × P(app | current)   [transition probability]
+           + 0.40 × freq_score(app)     [normalised frequency]
+           + 0.10 × recency_score(app)  [exponential decay]
+           + 0.00 × context_score(app)  [zeroed on short datasets]
+```
+
+### Layer 5 — RL Environment (Planning / Adaptive Control)
+
+**Files**: `src/rl/environment_v2.py`, `src/rl/trainer.py`, `src/rl/reward_v2.py`
+
+The RL environment implements the adaptive threshold controller as a PPO-compatible Gymnasium environment:
+
+- **State**: 109-dimensional vector (app one-hot, time, battery, hit history)
+- **Action**: `MultiDiscrete([5, 5, 5])` — hot budget × warm budget × threshold
+- **Reward**: Multi-component signal weighting hits, latency savings, battery, thrash
+
+### Layer 6 — RewardV2 (Feedback / Policy Update)
+
+**Files**: `src/rl/reward_v2.py`
+
+The RewardV2 component computes the reward signal after each actuation step and feeds it back to the PPO agent:
+
+```
+R = 2.0 × cache_hit_rate
+  + 1.0 × (latency_saved_ms / 800)
+  - 0.5 × battery_overhead_pct
+  - 0.8 × false_prefetch_rate
+  - 1.2 × thrash_rate
+```
+
+---
+
+## Data Flow Description
+
+```
+[User opens app]
+     │
+     ▼
+Layer 1: EventBus
+  - Publishes AppLaunchEvent
+  - Extracts (app_id, time_bucket, battery_bucket)
+     │
+     ▼
+Layer 2: BehaviouralGraph
+  - Updates edge weight for (prev_app → current_app)
+  - Queries P(next | current) for all candidate apps
+     │
+     ▼
+Layer 4: ConfidencePrefetch
+  - Fuses transition + frequency + recency scores
+  - Filters by adaptive threshold (from Layer 5)
+  - Returns ranked prefetch list
+     │
+     ▼
+Layer 3: MemoryManager
+  - Allocates WARM cache slots to top candidates
+  - Evicts lowest-score WARM residents if full
+  - Reports tier stats to Layer 5
+     │
+     ▼
+[Gemma: generates NL explanation — async, post-actuation]
+     │
+     ▼
+Layer 6: RewardV2
+  - Computes reward from hit rate, latency, battery, thrash
+  - Passes reward to PPO agent in Layer 5
+     │
+     ▼
+Layer 5: RL Environment
+  - PPO agent observes state, reward
+  - Adjusts hot/warm budget and threshold for next cycle
+  - Loop repeats on next event
+```
+
+---
+
+## Component Interaction
+
+```mermaid
+graph TD
+    EB[EventBus<br/>src/core/event_bus.py] -->|app_launch_event| BG[BehaviouralGraph<br/>src/core/graph_engine.py]
+    BG -->|transition_distribution| CP[ConfidencePrefetch<br/>src/prefetch/confidence_prefetch.py]
+    CP -->|ranked_candidates| MM[MemoryManager<br/>src/core/memory_manager.py]
+    MM -->|tier_stats| RV[RewardV2<br/>src/rl/reward_v2.py]
+    RV -->|reward_signal| RL[RL Environment<br/>src/rl/environment_v2.py]
+    RL -->|threshold_adjustment| CP
+    RL -->|budget_allocation| MM
+    MM -->|prefetch_context| GE[GemmaExplainer<br/>src/gemma_explainer.py]
+    GE -->|explanation_str| DB[Dashboard<br/>User Journey page]
+```
+
+---
+
 
 ## Data Pipeline
 
