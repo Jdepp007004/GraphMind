@@ -1,0 +1,11 @@
+policy,cache_hit_rate,vs_graph_only,t_statistic,p_value,significant,cohens_d,magnitude
+Random,0.161,0.0144,,,,14400000.0,large
+LRU,0.1969,0.0503,,,,50300000.0,large
+LFU,0.2712,0.1246,,,,124600000.0,large
+MRU,0.1969,0.0503,,,,50300000.0,large
+Frequency,0.2429,0.0963,,,,96300000.0,large
+RecencyFrequency,0.2087,0.0621,,,,62100000.0,large
+FirstOrderMarkov,0.2649,0.1183,,,,118300000.0,large
+SecondOrderMarkov,0.1956,0.049,,,,49000000.0,large
+GraphOnly,0.1466,0.0,,,,0.0,negligible
+GraphMind_RL,0.32728040540540543,0.1807,,,,180680405.4054,large
