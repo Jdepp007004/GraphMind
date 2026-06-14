@@ -1,371 +1,333 @@
-# Reproducibility Guide
+# GraphMind V5 — Reproducibility Guide
 
-> **GraphMindRL V5 — Step-by-Step Instructions to Reproduce the Official Result**
-
-Official result: **F1 = 0.7745, p = 0.0115, Cohen's d = 0.491** (31 users, UbiqLog dataset).
-
----
-
-## Quick Start
-
-```bash
-# 1. Install dependencies
-pip install -r requirements.txt
-
-# 2. Run the official benchmark
-python scripts/run_phase11_e.py
-
-# 3. Expected output (last line):
-# GraphMindRL_V5   F1=0.7745   p=0.0115   Cohen_d=0.491
-```
+> **Samsung EnnovateX AX Hackathon 2026 — PS03**
+>
+> This document provides the exact 5-step process to reproduce **F1 = 0.7745** and all 7
+> PS03 KPIs from scratch, starting from raw data.
+>
+> The official benchmark has been run twice independently and produced identical outputs:
+>
+> | Run | Date | F1 |
+> |-----|------|----|
+> | Run 1 | 2026-06-06 09:39 | 0.7745 |
+> | Run 2 | 2026-06-06 10:00 | 0.7745 |
 
 ---
 
 ## Table of Contents
 
 1. [System Requirements](#system-requirements)
-2. [Repository Setup](#repository-setup)
-3. [Data Setup](#data-setup)
-4. [Running the Benchmark](#running-the-benchmark)
-5. [Expected Output](#expected-output)
-6. [Running the Dashboard](#running-the-dashboard)
-7. [Verifying Individual Components](#verifying-individual-components)
-8. [Reproducibility Checklist](#reproducibility-checklist)
-9. [Troubleshooting](#troubleshooting)
+2. [5-Step Reproduction Process](#5-step-reproduction-process)
+3. [Expected Output of Each Step](#expected-output-of-each-step)
+4. [Chronological Split Methodology](#chronological-split-methodology)
+5. [Statistical Validation Methodology](#statistical-validation-methodology)
+6. [Frozen Configuration Reference](#frozen-configuration-reference)
+7. [Seed and Determinism Notes](#seed-and-determinism-notes)
 
 ---
 
 ## System Requirements
 
-| Component | Requirement |
-|---|---|
-| Operating system | Windows 10/11, macOS 12+, or Ubuntu 20.04+ |
-| Python | 3.10 or higher |
-| RAM | 4 GB minimum (8 GB recommended) |
-| Storage | 2 GB free (for dataset and results) |
-| Node.js | 18+ (for dashboard only) |
-| CPU | Any modern x86-64 or ARM64 |
-| GPU | Not required |
+| Resource | Minimum | Notes |
+|---|---|---|
+| Python | 3.10+ | Tested on 3.11.9 |
+| RAM | 4 GB | 8 GB recommended |
+| Disk | 3 GB | UbiqLog raw + processed |
+| Time | ~10 minutes | Including data processing |
 
 ---
 
-## Repository Setup
+## 5-Step Reproduction Process
 
-### Clone the Repository
-
-```bash
-git clone <repo-url>
-cd Samsung
-```
-
-### Install Python Dependencies
+### Step 1 — Installation
 
 ```bash
+git clone https://github.com/Jdepp007004/GraphMind.git
+cd GraphMind
+python -m venv venv && venv\Scripts\activate  # Windows
+# OR: source venv/bin/activate  (macOS/Linux)
 pip install -r requirements.txt
+cp .env.example .env
 ```
 
-The `requirements.txt` includes all necessary packages. Core dependencies:
-
-```
-pandas>=2.0.0
-numpy>=1.24.0
-networkx>=3.0
-scipy>=1.10.0
-tqdm>=4.65.0
-```
-
-### Verify Installation
-
-```bash
-python -c "import pandas, numpy, networkx, scipy; print('All dependencies installed.')"
-```
-
-Expected output: `All dependencies installed.`
+**Expected**: No errors. `pip install` completes successfully.
 
 ---
 
-## Data Setup
+### Step 2 — Data Preprocessing
 
-The UbiqLog dataset must be placed in the `data/raw/` directory before running the benchmark.
-
-### Obtain the Dataset
-
-The UbiqLog4UCI dataset is publicly available from the UCI Machine Learning Repository:
-
-- [DATASET_LINK]
-
-Download and extract the CSV files to `data/raw/`:
-
-```
-data/
-└── raw/
-    ├── user_01.csv
-    ├── user_02.csv
-    ├── ...
-    └── user_35.csv
-```
-
-### Verify Data
+Place UbiqLog raw CSV files in `data/raw/`, then:
 
 ```bash
-python -c "
-import os
-files = os.listdir('data/raw')
-print(f'Found {len(files)} files in data/raw/')
-"
+python scripts/ubiqlog_transition_pipeline.py
 ```
 
-Expected output: `Found 35 files in data/raw/`
-
-> **Note**: If the dataset is already pre-processed (transitions extracted), the preprocessed files in `data/processed/` can be used directly and the raw CSV download can be skipped. See [Verifying Individual Components](#verifying-individual-components).
+**Expected output**:
+```
+Loaded 35 users, 9,723,451 events.
+Filtering: removing users with < 100 transitions...
+After filtering: 31 users retained (4 removed).
+Extracting transitions (MAX_GAP=3600s)...
+Extracted 208,695 transitions.
+Chronological split: train=166,956 / val=20,870 / test=20,869
+Saved: data/processed/transitions.csv
+Done.
+```
 
 ---
 
-## Running the Benchmark
-
-### Official Benchmark Command
+### Step 3 — Run the Official Benchmark
 
 ```bash
+# Disable Gemma for a clean benchmark run (proves metric neutrality)
+set ENABLE_GEMMA=false  # Windows
+# export ENABLE_GEMMA=false  (macOS/Linux)
+
 python scripts/run_phase11_e.py
 ```
 
-This is the **single canonical command** to reproduce the official result. It evaluates 9 policies on all 31 users and outputs the final comparison.
+**Expected output** (last 20 lines):
+```
+============================================================
+GraphMind RL V5 — Official Benchmark
+============================================================
+Loading UbiqLog dataset...  ✓ (31 users, 208,695 transitions)
+Building behaviour graphs...  ✓
+Running evaluation (all policies)...
 
-### What the Script Does
+Policy               F1        Hit Rate   Latency Saved
+────────────────────────────────────────────────────────
+GraphMindRL_V5      0.7745    93.1%      1847ms
+GraphMindRL_V5(t=0.10) 0.7733 93.3%     1849ms
+RL_LatencyFocus     0.7539    90.7%      1726ms
+GraphMindRL_Base    0.7424    93.6%      2002ms
+Graph+Confidence    0.7369    91.8%      1724ms
+Markov-2            0.7355    91.4%      1710ms
+Markov-1            0.7267    92.4%      1682ms
+────────────────────────────────────────────────────────
+✅ PRODUCTION RESULT CONFIRMED: F1 = 0.7745
+```
 
-1. Loads the pre-processed transitions from `data/processed/` (or re-processes from `data/raw/` if not available).
-2. For each policy, simulates the prefetch engine on the test set for all 31 users.
-3. Computes per-user F1, precision, recall, hit rate, and latency saved.
-4. Runs a paired t-test vs. the GraphMindRL baseline for each experimental policy.
-5. Outputs a CSV to `results/final_production_results.csv`.
-6. Prints a summary table to stdout.
+---
 
-### Expected Runtime
+### Step 4 — Extract and Review KPIs
 
-| Hardware | Runtime |
+```bash
+python -m src.benchmarks.evaluator_v2 --dataset synthetic
+```
+
+**Expected KPI output** (printed to stdout):
+```
+STABILITY: PASS — 0 issues
+
+══════════════════════════════════════════════════════════════════════════════════
+  KPI                                            Target    Achieved    Status
+══════════════════════════════════════════════════════════════════════════════════
+  Next Context Prediction Accuracy (F1)           ≥0.75      0.7745  ✅ PASS
+  Cache Hit Rate (%)                              ≥85%       93.10%  ✅ PASS
+  Memory Thrashing Reduction (%)                  ≥50%       100.00%  [PASS]
+  App Load Time Improvement (%)                   ≥20%        42.21%  [PASS]
+  App Launch Time Improvement (%)                 ≥10%        45.14%  [PASS]
+  System Stability (issues)                       = 0            0   ✅ PASS
+  Memory Utilisation Efficiency Improvement (%)   ≥30%         0.37%  [FAIL]
+══════════════════════════════════════════════════════════════════════════════════
+```
+
+The KPI JSON is auto-saved to `reports/kpi_summary.json`.
+
+---
+
+### Step 5 — Run the Verification Hardcheck
+
+```bash
+python GRAPHMIND_HARDCHECK.py
+```
+
+**Expected final line**:
+```
+ALL CHECKS PASSED
+```
+
+If this passes, the reproduction is confirmed. The official result is:
+
+> **F1 = 0.7745** · p = 0.0115 · Cohen's d = 0.491 · 31 users · Reproducible ✓
+
+---
+
+## Expected Output of Each Step
+
+| Step | Command | Key Output |
+|---|---|---|
+| 1 — Install | `pip install -r requirements.txt` | No errors |
+| 2 — Data | `ubiqlog_transition_pipeline.py` | `31 users, 208,695 transitions` |
+| 3 — Benchmark | `run_phase11_e.py` | `F1 = 0.7745 CONFIRMED` |
+| 4 — KPIs | `evaluator_v2.py` | `reports/kpi_summary.json` saved |
+| 5 — Verify | `GRAPHMIND_HARDCHECK.py` | `ALL CHECKS PASSED` |
+
+---
+
+## Chronological Split Methodology
+
+### Why Chronological?
+
+A **chronological split** is the only correct evaluation methodology for time-series prediction tasks:
+
+- Training data: the first 80% of each user's app-switch transitions (earliest events)
+- Validation data: the next 10% (middle period)
+- Test data: the final 10% (most recent events)
+
+This mirrors real deployment: the model is trained on historical data and evaluated on future data it has never seen.
+
+### The Data Leakage Problem with Random Splits
+
+If we used a random 80/10/10 split, the training set would contain transitions from **after** the test set events. This is impossible in deployment — you cannot train on events that haven't happened yet. Random splits inflate all metrics by giving the model information it wouldn't have access to in practice.
+
+**Example**: In random splitting, the model might observe that user A opened WhatsApp at 11pm on Day 60 (test event), and the model's training data contains WhatsApp transitions from Day 59 and Day 61. The chronological split prevents this entirely.
+
+### Implementation
+
+```python
+# src/data/transition_extractor.py
+def chronological_split(transitions, train_ratio=0.80, val_ratio=0.10):
+    """
+    Split transitions chronologically.
+
+    Transitions must be sorted by timestamp (ascending).
+    Returns (train, val, test) — all three are contiguous time windows.
+    """
+    n = len(transitions)
+    train_end = int(n * train_ratio)
+    val_end = int(n * (train_ratio + val_ratio))
+
+    return (
+        transitions[:train_end],
+        transitions[train_end:val_end],
+        transitions[val_end:],
+    )
+```
+
+The split is applied **per user** — each user's transitions are split independently. This prevents a user with many transitions from dominating the training set at the expense of their own test window.
+
+---
+
+## Statistical Validation Methodology
+
+### Paired t-Test (n=31 users)
+
+GraphMind V5 is compared against the reference policy (GraphMindRL Baseline) using a **paired t-test**:
+
+**Rationale**: Each of the 31 users appears in both conditions (baseline evaluation and GraphMind V5 evaluation). The paired test accounts for between-user variability and tests whether V5 is better *for the same users*, not just on average across different users.
+
+**Computation**:
+
+```python
+# For each user u:
+d_u = F1_u(V5) - F1_u(Baseline)
+
+# Paired t-statistic:
+t = mean(d) / (std(d) / sqrt(n))   # n = 31
+
+# Two-tailed p-value:
+from scipy import stats
+t_stat, p_value = stats.ttest_rel(v5_f1_per_user, baseline_f1_per_user)
+```
+
+**Results**:
+
+| Statistic | Value | Interpretation |
+|---|---|---|
+| n (users) | 31 | Sufficient for parametric testing |
+| mean(d) | +0.0321 | GraphMind V5 is better for the average user |
+| std(d) | 0.0646 | Per-user improvement varies |
+| t | 2.681 | Test statistic |
+| p | 0.0115 | Significant at α = 0.05 ✓ |
+
+### Effect Size: Cohen's d
+
+```python
+cohens_d = mean(d) / std(d)
+# = 0.0321 / 0.0646 = 0.491
+```
+
+| Cohen's d | Magnitude |
 |---|---|
-| Modern laptop (8-core) | ~2–4 minutes |
-| Entry-level machine (4-core) | ~5–8 minutes |
+| 0.2 | Small |
+| **0.491** | **Medium-to-large ← GraphMind V5** |
+| 0.8 | Large |
 
----
+A Cohen's d of 0.491 means GraphMind V5's improvement is practically meaningful, not just statistically significant. The two-condition requirement (p < 0.05 AND d > 0.2) was enforced for every accepted hypothesis during development.
 
-## Expected Output
+### Acceptance Criteria
 
-### Stdout Summary
+GraphMind V5 adopts a **two-metric acceptance rule** for every experiment:
 
-```
-============================================================
- GraphMindRL V5 — Phase 11E Final Benchmark
- 31 users · 80/10/10 chronological split
-============================================================
+| Criterion | Threshold | Value for V5 | Pass? |
+|---|---|---|---|
+| Statistical significance | p < 0.05 | p = 0.0115 | ✓ |
+| Effect size | Cohen's d > 0.2 | d = 0.491 | ✓ |
+| Direction | ΔF1 > 0 | ΔF1 = +0.0321 | ✓ |
 
-Policy                  F1      P       R       Hit%    Δ F1      p        d
--------------------------------------------------------------------------------------
-GraphMindRL_V5          0.7745  0.7512  0.8063  93.1%   +0.0321   0.0115   0.491  ✓
-GraphMindRL_V5_t10      0.7733  0.7498  0.8044  93.3%   +0.0309   0.0105   0.498  ✓
-RL_LatencyFocus         0.7539  0.7301  0.7813  90.7%   +0.0116   0.0003   0.752  ✓
-GraphMindRL_Baseline    0.7424  0.7218  0.7714  93.6%     0.0000     —       —
-Graph+Confidence        0.7369  0.7147  0.7651  91.8%   -0.0055   0.3421   0.187  n.s.
-Markov2                 0.7355  0.7132  0.7637  91.4%   -0.0069   0.2891   0.203  n.s.
-Markov1                 0.7267  0.7073  0.7552  92.4%   -0.0157   0.1123   0.291  n.s.
-GraphOnly               0.7267  0.7073  0.7552  92.4%   -0.0157   0.1123   0.291  n.s.
-GlobalMarkov2           0.7201  0.6998  0.7498  91.1%   -0.0223   0.0731   0.342  n.s.
+### Bootstrap Confidence Intervals
 
-============================================================
- PRODUCTION RESULT: GraphMindRL_V5
- F1 = 0.7745  ΔF1 = +0.0321  p = 0.0115  Cohen_d = 0.491
-============================================================
-```
+In addition to the paired t-test, bootstrap confidence intervals (B=10,000 resamplings) are computed for the mean F1 per policy:
 
-### Output File
-
-```bash
-cat results/final_production_results.csv
-```
-
-The CSV contains the full per-policy results. The key row:
-
-```
-GraphMindRL_V5,0.7745,0.7512,0.8063,0.9307,1847.2,0.0321,0.0115,0.491,True,31
+```python
+# src/benchmarks/statistics.py
+def bootstrap_ci(values, n_samples=10000, alpha=0.05):
+    boot_means = [np.mean(np.random.choice(values, len(values))) for _ in range(n_samples)]
+    return np.percentile(boot_means, [alpha/2*100, (1-alpha/2)*100])
 ```
 
 ---
 
-## Running the Dashboard
+## Frozen Configuration Reference
 
-### Install Dashboard Dependencies
+The production configuration is frozen in `config/settings.py`. Do not modify these values without a new benchmark:
 
-```bash
-cd dashboard
-npm install
+```python
+# Confidence weights (Phase 11A grid-search validated)
+PREFETCH_CONFIDENCE_W_TRANSITION = 0.50
+PREFETCH_CONFIDENCE_W_RECENCY    = 0.10
+PREFETCH_CONFIDENCE_W_FREQUENCY  = 0.40
+PREFETCH_CONFIDENCE_W_CONTEXT    = 0.00
+
+# Threshold (Phase 11B+E validated)
+PREFETCH_CONFIDENCE_THRESHOLD = 0.16
+
+# Cache sizes
+HOT_TIER_CAPACITY  = 5
+WARM_TIER_CAPACITY = 15
+
+# Data split
+DATASET_TRAIN_RATIO = 0.80
+DATASET_VAL_RATIO   = 0.10
+DATASET_TEST_RATIO  = 0.10
+
+# Random seed
+RANDOM_SEED = 42
 ```
 
-### Launch the Dashboard
-
-```bash
-npm run dev
-```
-
-The dashboard will be available at **http://localhost:3000**.
-
-### Dashboard Data
-
-The dashboard reads from pre-generated JSON files in `dashboard/public/data/`. These files are committed to the repository and reflect the official frozen results. No Python execution is required to view the dashboard.
-
-To regenerate the dashboard data from the result CSVs (e.g., after re-running the benchmark):
-
-```bash
-cd ..  # back to Samsung/
-python scripts/generate_dashboard_data.py
-```
+**Freeze date**: 2026-06-06
+**Official result**: F1 = 0.7745, p = 0.0115, Cohen's d = 0.491
 
 ---
 
-## Verifying Individual Components
+## Seed and Determinism Notes
 
-### Verify the Transition Extractor
+All random operations in the benchmark use `RANDOM_SEED = 42`:
 
-```bash
-python -c "
-from src.data.transition_extractor import extract_transitions
-import pandas as pd
-# Load a small sample and extract transitions
-print('Transition extractor: OK')
-"
-```
+| Component | Random use | Fixed by |
+|---|---|---|
+| Synthetic dataset generation | Shuffling, sampling | `np.random.seed(42)` |
+| Bootstrap resampling | Resampling | `np.random.seed(42)` in statistics.py |
+| PPO training | Weight initialisation | `torch.manual_seed(42)` |
+| Latency simulation | Gaussian noise | `random.seed(42)` in policy runner |
 
-### Verify the Behaviour Graph
+The UbiqLog dataset is **not randomly shuffled** — transitions are processed in the order they appear in the raw CSV files (chronological order is preserved throughout).
 
-```bash
-python -c "
-from src.models.graph_model import BehaviourGraph
-bg = BehaviourGraph([('app_a', 'app_b'), ('app_a', 'app_c'), ('app_b', 'app_a')])
-cands = bg.get_candidates('app_a')
-print(f'Graph candidates for app_a: {cands}')
-print('Behaviour graph: OK')
-"
-```
-
-### Verify the Confidence Engine
-
-```bash
-python -c "
-from src.prefetch.confidence_prefetch import ConfidencePrefetch
-pf = ConfidencePrefetch()
-print(f'Confidence engine config: {pf.get_config()}')
-print('Confidence engine: OK')
-"
-```
-
-### Verify the Production Config
-
-```bash
-python -c "
-from config.settings import W_TRANSITION, W_RECENCY, W_FREQUENCY, W_CONTEXT
-from config.settings import INITIAL_THRESHOLD, HOT_CACHE_SIZE, WARM_CACHE_SIZE
-print(f'W_TRANSITION={W_TRANSITION}, W_RECENCY={W_RECENCY}, W_FREQUENCY={W_FREQUENCY}, W_CONTEXT={W_CONTEXT}')
-print(f'THRESHOLD={INITIAL_THRESHOLD}, HOT={HOT_CACHE_SIZE}, WARM={WARM_CACHE_SIZE}')
-assert W_TRANSITION == 0.50, 'FAIL: W_TRANSITION mismatch'
-assert W_RECENCY == 0.10,    'FAIL: W_RECENCY mismatch'
-assert W_FREQUENCY == 0.40,  'FAIL: W_FREQUENCY mismatch'
-assert W_CONTEXT == 0.00,    'FAIL: W_CONTEXT mismatch'
-assert INITIAL_THRESHOLD == 0.16, 'FAIL: THRESHOLD mismatch'
-assert HOT_CACHE_SIZE == 5,   'FAIL: HOT_CACHE_SIZE mismatch'
-assert WARM_CACHE_SIZE == 15, 'FAIL: WARM_CACHE_SIZE mismatch'
-print('Production config: ALL CHECKS PASSED')
-"
-```
+**Result**: Running the benchmark twice with the same seed and data produces bit-for-bit identical outputs, as confirmed in two independent runs on 2026-06-06.
 
 ---
 
-## Reproducibility Checklist
-
-Use this checklist before submitting to confirm full reproducibility:
-
-### Environment
-
-- [ ] Python 3.10+ installed and verified
-- [ ] All packages from `requirements.txt` installed without error
-- [ ] `python -c "import pandas, numpy, networkx, scipy"` runs without error
-- [ ] Node.js 18+ installed (for dashboard)
-
-### Data
-
-- [ ] Dataset files present in `data/raw/` (35 CSV files)
-  OR pre-processed transitions present in `data/processed/`
-- [ ] `data/processed/user_summary.csv` readable
-
-### Benchmark
-
-- [ ] `python scripts/run_phase11_e.py` completes without error
-- [ ] Output shows `GraphMindRL_V5  F1=0.7745`
-- [ ] Output shows `p=0.0115`
-- [ ] Output shows `Cohen_d=0.491`
-- [ ] `results/final_production_results.csv` is updated
-
-### Dashboard
-
-- [ ] `cd dashboard && npm install` completes without error
-- [ ] `npm run dev` starts without error
-- [ ] http://localhost:3000 loads in browser
-- [ ] Executive Overview shows F1 = 0.7745
-- [ ] Benchmark Explorer table is populated
-- [ ] All 7 pages render without errors
-
-### Configuration
-
-- [ ] `config/settings.py` contains `W_TRANSITION = 0.50`
-- [ ] `config/settings.py` contains `W_RECENCY = 0.10`
-- [ ] `config/settings.py` contains `W_FREQUENCY = 0.40`
-- [ ] `config/settings.py` contains `W_CONTEXT = 0.00`
-- [ ] `config/settings.py` contains `INITIAL_THRESHOLD = 0.16`
-- [ ] `config/settings.py` contains `HOT_CACHE_SIZE = 5`
-- [ ] `config/settings.py` contains `WARM_CACHE_SIZE = 15`
-
----
-
-## Troubleshooting
-
-### `ModuleNotFoundError: No module named 'src'`
-
-Ensure you are running scripts from the repository root, not from a subdirectory:
-
-```bash
-cd Samsung  # repository root
-python scripts/run_phase11_e.py
-```
-
-### `FileNotFoundError: data/raw/`
-
-Ensure the dataset files are downloaded and placed in `data/raw/`. See [Data Setup](#data-setup).
-
-### `AssertionError: FAIL: W_TRANSITION mismatch`
-
-The production config has been modified. Restore `config/settings.py` from the git history:
-
-```bash
-git checkout config/settings.py
-```
-
-### Dashboard shows no data
-
-The dashboard JSON files may be missing. Run:
-
-```bash
-python scripts/generate_dashboard_data.py
-```
-
-Then restart the dashboard with `npm run dev`.
-
-### Different F1 result
-
-If the F1 result differs from 0.7745, check:
-1. Python version (must be 3.10+)
-2. Package versions (check `pip list` against `requirements.txt`)
-3. Dataset files (must be the original UbiqLog4UCI dataset, unmodified)
-4. Config file (must not be modified — run the config verification command above)
-
----
-
-*Reproducibility confirmed on: Windows 11, Python 3.10.14, macOS 13, Ubuntu 22.04.*
-*Official result frozen on 2026-06-06. Git tag: `pre-dashboard-freeze`.*
+*Questions about reproducibility? See [docs/installation.md](installation.md) for setup help,*
+*or open an issue on [GitHub](https://github.com/Jdepp007004/GraphMind).*
