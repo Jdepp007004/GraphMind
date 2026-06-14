@@ -1,0 +1,18 @@
+{
+  "next_context_prediction_f1": 0.0,
+  "cache_hit_rate_pct": 32.73,
+  "thrash_reduction_pct": 100.0,
+  "load_time_improvement_pct": 24.12,
+  "launch_time_improvement_pct": 25.8,
+  "system_stability_issues": 0,
+  "memory_utilization_efficiency_improvement_pct": 100.0,
+  "kpi_pass_fail": {
+    "next_context_prediction_f1": "FAIL",
+    "cache_hit_rate_pct": "FAIL",
+    "thrash_reduction_pct": "PASS",
+    "load_time_improvement_pct": "PASS",
+    "launch_time_improvement_pct": "PASS",
+    "system_stability_issues": "PASS",
+    "memory_utilization_efficiency_improvement_pct": "PASS"
+  }
+}
