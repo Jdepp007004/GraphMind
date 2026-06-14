@@ -1,352 +1,327 @@
-# User Guide
+# GraphMind V5 — User Guide
 
-> **GraphMindRL V5 — Practical User Manual**
+> **Samsung EnnovateX AX Hackathon 2026 — PS03**
+> How to run the dashboard, interpret KPI output, and read Gemma explanations.
 
 ---
 
 ## Table of Contents
 
-1. [Introduction](#introduction)
-2. [Running Benchmarks](#running-benchmarks)
-3. [Launching the Dashboard](#launching-the-dashboard)
-4. [Viewing Users](#viewing-users)
-5. [Inspecting Graphs](#inspecting-graphs)
-6. [Viewing Metrics](#viewing-metrics)
-7. [Exporting Results](#exporting-results)
-8. [Common Tasks](#common-tasks)
-9. [Reference: Key Files](#reference-key-files)
+1. [Running the Dashboard](#running-the-dashboard)
+2. [Dashboard Pages Reference](#dashboard-pages-reference)
+3. [Interpreting KPI Output](#interpreting-kpi-output)
+4. [Reading Gemma Explanations in User Journey Tab](#reading-gemma-explanations-in-user-journey-tab)
+5. [Running the Benchmark](#running-the-benchmark)
+6. [Interpreting Benchmark Results](#interpreting-benchmark-results)
 
 ---
 
-## Introduction
+## Running the Dashboard
 
-This guide is for anyone who wants to interact with the GraphMindRL V5 system — whether running the benchmark, exploring results in the dashboard, or exporting data for further analysis.
+### Prerequisites
 
-**Prerequisites**: Python 3.10+ and all dependencies installed (`pip install -r requirements.txt`). See [docs/reproducibility.md](reproducibility.md) for full installation instructions.
+- Node.js 18+ installed
+- Project dependencies installed (see [docs/installation.md](installation.md))
 
----
-
-## Running Benchmarks
-
-### Run the Official Benchmark
-
-The official benchmark evaluates all 9 policies on all 31 users:
-
-```bash
-python scripts/run_phase11_e.py
-```
-
-Output is written to `results/final_production_results.csv`.
-
-### Run for a Single User
-
-To quickly test the prefetch engine on a single user:
-
-```bash
-python scripts/run_v5_rl_graph.py --user <user_id>
-```
-
-Replace `<user_id>` with the numeric user identifier (e.g., `1`, `3`, `12`).
-
-### Run with Custom Weights
-
-To experiment with alternative confidence weights (**note: this does not modify the production config**):
-
-```bash
-python scripts/run_v5_rl_graph.py \
-  --w_transition 0.5 \
-  --w_recency 0.1 \
-  --w_frequency 0.4 \
-  --w_context 0.0 \
-  --threshold 0.16
-```
-
-Results are written to a timestamped CSV in `results/` and do **not** overwrite `final_production_results.csv`.
-
-### Run the Benchmark for All Phase 11 Variants
-
-```bash
-# Weight grid search (Phase 11A)
-python scripts/run_phase11_a.py
-
-# Threshold sweep (Phase 11B)
-python scripts/run_phase11_b.py
-
-# Final combined benchmark (Phase 11E — official)
-python scripts/run_phase11_e.py
-```
-
----
-
-## Launching the Dashboard
-
-### First Time
-
-```bash
-cd dashboard
-npm install
-npm run dev
-```
-
-### Subsequent Times
+### Launch
 
 ```bash
 cd dashboard
 npm run dev
 ```
 
-The dashboard runs at **http://localhost:3000**. It does not require the Python benchmark to be running.
+Open **http://localhost:3000** in your browser.
 
-### Regenerate Dashboard Data
-
-If you have re-run the benchmark and want the dashboard to reflect the new results:
+The dashboard uses pre-generated JSON data from `dashboard/public/data/`. If you have just run a new benchmark and want the dashboard to reflect the new results:
 
 ```bash
 python scripts/generate_dashboard_data.py
 ```
 
-Then restart the dashboard (`Ctrl+C` and `npm run dev` again).
+Then refresh the browser.
 
 ---
 
-## Viewing Users
+## Dashboard Pages Reference
 
-### In the Dashboard
+### 🏠 Overview (`/`) — KPI Summary
 
-1. Navigate to **Cache Simulator** (`http://localhost:3000/simulator`) or **User Playback** (`http://localhost:3000/playback`).
-2. Use the **User** dropdown to select any of the 5 pre-loaded users.
-3. Click **Play** to watch that user's app sequence.
+The Overview page is the entry point. It displays:
 
-The 5 users in the dashboard are a representative sample; they were selected based on data quality and event count.
+1. **7-Row KPI Table**: All 7 PS03 KPIs with Target, Achieved, and Status columns (🟢 PASS / 🔴 FAIL).
+2. **System Pipeline Diagram**: Visual representation of the 7-step agentic pipeline.
+3. **Production Configuration**: The frozen confidence weights and threshold.
+4. **Statistical Proof**: Paired t-test results (p = 0.0115, Cohen's d = 0.491).
 
-### User Statistics (All 31 Users)
+**How to read the KPI table**:
 
-View per-user statistics in CSV form:
-
-```bash
-cat data/processed/user_summary.csv
-```
-
-Or view them in the dashboard's Research page under the user statistics section.
-
-### User Statistics Fields
-
-| Field | Description |
+| Column | Description |
 |---|---|
-| `user_id` | Numeric user identifier |
-| `n_transitions` | Total transitions in dataset |
-| `n_train` | Transitions in training set |
-| `n_test` | Transitions in test set |
-| `n_unique_apps` | Unique apps used |
-| `f1_v5` | F1 score for GraphMindRL_V5 |
-| `f1_baseline` | F1 score for GraphMindRL Baseline |
-| `delta_f1` | Improvement for this user |
+| KPI | The PS03 target KPI name |
+| Target | Minimum required value to pass |
+| Achieved | GraphMind V5's measured value |
+| Status | 🟢 PASS if Achieved ≥ Target, 🔴 FAIL otherwise |
+
+If a KPI shows 🔴 FAIL, the value may be a placeholder. Run the benchmark first:
+```bash
+python -m src.benchmarks.evaluator_v2
+```
 
 ---
 
-## Inspecting Graphs
+### 📊 Benchmark Explorer (`/benchmark`)
 
-### In the Dashboard
+Displays an interactive comparison table of all 10 policies evaluated:
 
-1. Navigate to **Graph Explorer** (`http://localhost:3000/graph`).
-2. The graph for the default user loads automatically.
-3. Drag nodes to rearrange. Scroll to zoom.
-4. Use the **Search** box to find a specific app (e.g., type "youtube" or "chrome").
-5. Click any node to open its detail panel (out-degree, top transitions).
-6. Adjust the **Min prob** slider to filter low-probability edges.
+- **Policy**: The algorithm name (GraphMind_RL, LRU, Markov-1, etc.)
+- **F1 Score**: Harmonic mean of precision and recall for prefetch correctness
+- **Hit Rate**: Fraction of app opens served from HOT or WARM cache
+- **Latency Saved**: Mean milliseconds saved per launch vs always-cold baseline
+- **ΔF1 vs Baseline**: Improvement over GraphMindRL Baseline (reference policy)
+- **p-value**: Paired t-test significance vs the reference policy
+- **Cohen's d**: Effect size magnitude
 
-### Programmatically
+**Sorting**: Click any column header to sort. GraphMind_RL will always top the F1 column.
 
-To inspect the graph for a specific user:
-
-```python
-from src.data.transition_extractor import load_processed_transitions
-from src.models.graph_model import BehaviourGraph
-
-user_id = 3
-transitions = load_processed_transitions(user_id, split='train')
-graph = BehaviourGraph(transitions)
-
-# Get top candidates from 'youtube'
-candidates = graph.get_candidates('com.google.android.youtube')
-for app, prob in candidates[:5]:
-    print(f"  {app}: {prob:.3f}")
-```
-
-### Export Graph as JSON
-
-The dashboard JSON for the graph is at `dashboard/public/data/graph.json`. This contains the top 20 nodes and all edges above a minimum weight threshold. It can be used directly with any graph analysis tool.
+**Chart panel**: Select any two policies to plot a per-user F1 scatter plot, showing exactly which of the 31 users benefit most from GraphMind.
 
 ---
 
-## Viewing Metrics
+### 🗺️ Optimization Journey (`/journey`)
 
-### In the Dashboard
+Shows the F1 trajectory across all 8 research phases:
 
-**Executive Overview** (`/`) — Key aggregate metrics for the production model.
-
-**Benchmark Explorer** (`/benchmark`) — Full comparison table of all 9 policies. Click column headers to sort. Click rows to expand.
-
-**Research Validation** (`/research`) — Ablation study, weight grid, threshold sweep, statistical significance table.
-
-### From the Command Line
-
-View the final benchmark result:
-
-```bash
-cat results/final_production_results.csv
+```
+F1
+0.78 │                                              ●  ← V5 (0.7745)
+0.76 │                                         ●
+0.74 │                        ●          ●
+0.72 │             ●     ●
+0.70 │        ●
+     └──────────────────────────────────────────────
+       Markov-1  Markov-2  G+C  Base  RL-Lat  V5(0.10) V5
 ```
 
-View per-user F1 scores:
+Each point on the journey shows:
+- The experiment name and hypothesis
+- The result (F1 value)
+- Whether the hypothesis was accepted or rejected
+- The decision rationale
 
-```bash
-cat results/user_level_results_v4.csv | head -40
-```
-
-View the weight grid results:
-
-```bash
-cat results/v5_weight_grid.csv | sort -t, -k5 -rn | head -10
-```
-
-View the threshold sweep results:
-
-```bash
-cat results/v5_threshold_sweep.csv
-```
-
-### Key Metric Definitions
-
-| Metric | Meaning |
-|---|---|
-| F1 | Harmonic mean of precision and recall (primary metric) |
-| Precision | Fraction of prefetches that the user actually opened |
-| Recall | Fraction of app opens that were correctly prefetched |
-| Hit Rate | Fraction of all opens served from HOT or WARM cache |
-| ΔF1 | Improvement vs. GraphMindRL Baseline (F1 = 0.7424) |
-| p-value | Probability of observing this ΔF1 if there were truly no difference |
-| Cohen's d | Standardised effect size (0.491 = medium-to-large) |
-| Latency Saved | Total ms saved by serving from cache instead of cold load |
+**Color coding**:
+- 🟢 Green = Accepted hypothesis (merged into production)
+- 🔴 Red = Rejected hypothesis (archived, not merged)
 
 ---
 
-## Exporting Results
+### 🕸️ Graph Explorer (`/graph`)
 
-### Export All Results to CSV
+Interactive visualisation of a user's Markov behaviour graph:
 
-All benchmark results are already in `results/`:
+- **Nodes**: Apps used by the selected user
+- **Edges**: Observed transitions (A→B), weighted by transition probability
+- **Edge thickness**: Proportional to transition probability
+- **Node size**: Proportional to overall usage frequency
+
+**Controls**:
+- Select a user from the dropdown to load their personal graph
+- Click any node to highlight its outgoing transitions
+- Zoom and pan with mouse/trackpad
+
+---
+
+### 🎮 Cache Simulator (`/simulator`)
+
+Live animation of the HOT/WARM/COLD cache system:
+
+- The left panel shows the app event stream being replayed
+- The right panel shows the cache state in real time
+- **HOT tier**: Top 5 apps (in RAM, instant launch)
+- **WARM tier**: Next 15 apps (pre-loaded, ~200ms launch)
+- **COLD tier**: All others (~1,800ms cold launch)
+
+**What to look for**: When an app event arrives, watch how the cache is updated. If the app was in HOT or WARM, it counts as a cache hit. If it was in COLD, it counts as a miss.
+
+---
+
+### 📼 User Journey (`/playback`)
+
+Step-through playback of a real user's event sequence. This is where **Gemma explanations** appear.
+
+See [Reading Gemma Explanations](#reading-gemma-explanations-in-user-journey-tab) for details.
+
+**Controls**:
+- Select a user from the dropdown
+- Use ← → to step through events one at a time
+- Or press ▶ to autoplay at 1 event/second
+
+---
+
+### 🔬 Research Validation (`/research`)
+
+Statistical evidence for the benchmark claims:
+
+- **Ablation study results**: What each component (RL, graph, confidence) contributes
+- **Bootstrap confidence intervals**: 95% CI for mean F1 of each policy
+- **Paired t-test results**: Per-policy comparison table with p-values and Cohen's d
+- **Reproducibility log**: Timestamps and checksums for the two official benchmark runs
+
+---
+
+## Interpreting KPI Output
+
+When you run the benchmark, the terminal prints a KPI summary table:
+
+```
+STABILITY: PASS — 0 issues
+
+══════════════════════════════════════════════════════════════════════════════════════
+  KPI                                            Target    Achieved    Status
+══════════════════════════════════════════════════════════════════════════════════════
+  Next Context Prediction Accuracy (F1)           ≥0.75      0.7745  ✅ PASS
+  Cache Hit Rate (%)                              ≥85%       93.10%  ✅ PASS
+  Memory Thrashing Reduction (%)                  ≥50%        [X]%  [STATUS]
+  App Load Time Improvement (%)                   ≥20%        [X]%  [STATUS]
+  App Launch Time Improvement (%)                 ≥10%        [X]%  [STATUS]
+  System Stability (issues)                       = 0            0  ✅ PASS
+  Memory Utilisation Efficiency Improvement (%)   ≥30%        [X]%  [STATUS]
+══════════════════════════════════════════════════════════════════════════════════════
+  Overall: X/7 KPIs PASS
+══════════════════════════════════════════════════════════════════════════════════════
+```
+
+This is also saved to `reports/kpi_summary.json`. To inspect the JSON:
+
+```bash
+python -c "import json; d = json.load(open('reports/kpi_summary.json')); print(json.dumps(d, indent=2))"
+```
+
+### Understanding Each KPI
+
+**Next Context Prediction Accuracy (F1)**: This is the core ML metric. It measures how often GraphMind correctly predicts the next app the user will open. F1 = 0.7745 means that, harmonically averaged, 77.45% of prefetch predictions are both precise (not wasting memory) and recall the user's actual next app.
+
+**Cache Hit Rate (%)**: The fraction of app launches served from the HOT or WARM cache (not cold storage). 93.1% means only 6.9% of launches experience the full 1,800ms cold-start delay.
+
+**Memory Thrashing Reduction (%)**: How much less cache thrashing GraphMind causes vs the LRU baseline. Thrashing = an app was evicted and then immediately re-accessed. Less thrashing = more stable cache = less memory bandwidth waste.
+
+**App Load Time Improvement (%)**: The reduction in time from tap to app-fully-interactive, weighted by the fraction of launches served from cache. Computed against the mean cold-start latency across all apps in the literature table.
+
+**App Launch Time Improvement (%)**: Similar to load time, but specifically measuring the first-frame latency reduction. HOT-tier apps (in-RAM) achieve larger launch time improvements than WARM-tier apps.
+
+**System Stability (issues)**: Counts crashes, OOM errors, and unhandled exceptions during the entire benchmark run. Any non-zero value indicates a system problem.
+
+**Memory Utilisation Efficiency Improvement (%)**: How much better GraphMind uses its allocated memory vs LRU. Measured as the reduction in false prefetch rate (FP / (TP + FP)): a lower false prefetch rate means less memory is wasted on apps the user won't open.
+
+---
+
+## Reading Gemma Explanations in User Journey Tab
+
+The **User Journey** page (`/playback`) shows Gemma's natural-language explanations alongside each prefetch event.
+
+### What You See
+
+For each step in the user's event stream:
+
+```
+Event 47/208
+─────────────────────────────────────────────────────────────
+App opened:   YouTube
+Time:         7:30 PM (bucket 39)
+Battery:      72% (bucket 3)
+
+Prefetch decision:
+  → Spotify (confidence: 0.72) ← loaded into WARM
+  → WhatsApp (confidence: 0.44) ← loaded into WARM
+
+💬 Gemma says:
+  "Preloading Spotify because you typically switch from
+   YouTube in the evening when your battery is charged."
+
+Cache result:  ✅ HIT (Spotify was in WARM when opened 2 events later)
+─────────────────────────────────────────────────────────────
+```
+
+### Understanding the Explanation
+
+The explanation tells you in plain language **why** the system made its prefetch decision. Key things to notice:
+
+1. **App names are human-readable**: The system converts package IDs to display names automatically.
+
+2. **Time context is natural**: "in the evening", "around midday", "late at night" — derived from the 30-minute bucket index.
+
+3. **Confidence drives the language**: High confidence (≥ 0.60) → "almost always switch from..."; medium confidence (0.35–0.60) → "frequently open it after..."; low confidence → "based on your most-used apps...".
+
+4. **Fallback explanations** (when `ENABLE_GEMMA=false` or model unavailable): These use the same template language but are generated deterministically from the edge weights, not by the Gemma model. The fallback is indicated in the dashboard with a small ℹ️ icon.
+
+### Important: Gemma Does Not Affect Metrics
+
+> The Gemma explanation is generated **after** the prefetch decision is already made and all metrics are recorded. It has zero effect on F1, cache hit rate, or any other KPI. The `gemma_explanation` column in the benchmark CSV is nullable and is not scored.
+
+To verify this: run the benchmark with `ENABLE_GEMMA=false` and `ENABLE_GEMMA=true` — you will see identical F1 and hit rate values in both runs.
+
+---
+
+## Running the Benchmark
+
+### Quick benchmark (synthetic data, ~2 minutes)
+
+```bash
+set ENABLE_GEMMA=false  # Windows
+python -m src.benchmarks.evaluator_v2 --dataset synthetic
+```
+
+### Full benchmark with UbiqLog data
+
+```bash
+set ENABLE_GEMMA=false
+python scripts/run_phase11_e.py
+```
+
+### With Gemma explanations (slower)
+
+```bash
+set ENABLE_GEMMA=true
+python -m src.benchmarks.evaluator_v2
+```
+
+---
+
+## Interpreting Benchmark Results
+
+The benchmark writes four CSV files to `results/`:
 
 | File | Contents |
 |---|---|
-| `results/final_production_results.csv` | Official frozen result (all 9 policies) |
-| `results/v5_all_experiments.csv` | All experiments run during the project |
-| `results/v5_weight_grid.csv` | Phase 11A grid search (all weight combinations) |
-| `results/v5_threshold_sweep.csv` | Phase 11B threshold sweep |
-| `results/v5_final_comparison.csv` | Phase 11E head-to-head comparison |
-| `results/statistical_results_v4.csv` | Per-user statistical results |
-| `results/user_level_results_v4.csv` | Per-user F1 for all policies |
-| `results/benchmark_results_v4.csv` | Full benchmark results V4 |
+| `benchmark_results_v2.csv` | Per-policy metrics (11 metrics + gemma_explanation) |
+| `ablation_results_v2.csv` | Ablation variant comparison |
+| `statistical_results_v2.csv` | t-test and Cohen's d vs GraphOnly baseline |
+| `advanced_metrics_v2.csv` | Additional derived metrics |
 
-### Export Dashboard JSON
+And one JSON file to `reports/`:
 
-```bash
-python scripts/generate_dashboard_data.py
-```
-
-This generates or updates all JSON files in `dashboard/public/data/`.
-
-### Export a Graph for External Analysis
-
-```python
-import json
-with open('dashboard/public/data/graph.json') as f:
-    graph_data = json.load(f)
-
-nodes = graph_data['nodes']   # list of {id, label, frequency, out_degree}
-edges = graph_data['edges']   # list of {source, target, probability, count}
-
-print(f"Nodes: {len(nodes)}, Edges: {len(edges)}")
-```
-
----
-
-## Common Tasks
-
-### "I want to see which user improved the most."
-
-```bash
-python -c "
-import pandas as pd
-df = pd.read_csv('results/user_level_results_v4.csv')
-df['delta'] = df['f1_v5'] - df['f1_baseline']
-top = df.nlargest(5, 'delta')[['user_id', 'f1_baseline', 'f1_v5', 'delta']]
-print(top.to_string(index=False))
-"
-```
-
-### "I want to verify the production config is correct."
-
-```bash
-python -c "
-from config import settings as s
-checks = [
-    ('W_TRANSITION', s.W_TRANSITION, 0.50),
-    ('W_RECENCY',    s.W_RECENCY,    0.10),
-    ('W_FREQUENCY',  s.W_FREQUENCY,  0.40),
-    ('W_CONTEXT',    s.W_CONTEXT,    0.00),
-    ('THRESHOLD',    s.INITIAL_THRESHOLD, 0.16),
-    ('HOT_SIZE',     s.HOT_CACHE_SIZE,    5),
-    ('WARM_SIZE',    s.WARM_CACHE_SIZE,   15),
-]
-all_ok = True
-for name, actual, expected in checks:
-    ok = abs(actual - expected) < 1e-9
-    print(f'  {name}: {actual} — {\"OK\" if ok else \"FAIL (expected \" + str(expected) + \")\"}')
-    if not ok: all_ok = False
-print('\\nResult:', 'ALL CHECKS PASSED' if all_ok else 'SOME CHECKS FAILED')
-"
-```
-
-### "I want to run the benchmark and immediately view it in the dashboard."
-
-```bash
-# Step 1: Run benchmark
-python scripts/run_phase11_e.py
-
-# Step 2: Regenerate dashboard data
-python scripts/generate_dashboard_data.py
-
-# Step 3: Launch dashboard
-cd dashboard && npm run dev
-# Open http://localhost:3000
-```
-
-### "I want to understand why the time context features were removed."
-
-Read the scientific note in the Research Validation dashboard page (`/research`), or the detailed report:
-
-```bash
-cat reports/time_context_analysis.md
-```
-
----
-
-## Reference: Key Files
-
-| File | Purpose |
+| File | Contents |
 |---|---|
-| `config/settings.py` | Production configuration (frozen) |
-| `scripts/run_phase11_e.py` | Official benchmark entry point |
-| `scripts/generate_dashboard_data.py` | Dashboard JSON generator |
-| `results/final_production_results.csv` | Official result (frozen) |
-| `results/v5_all_experiments.csv` | Complete experiment log |
-| `dashboard/public/data/` | Dashboard JSON files |
-| `docs/reproducibility.md` | Full reproduction instructions |
-| `docs/architecture.md` | System architecture |
-| `docs/benchmarking.md` | Evaluation methodology |
-| `reports/final_production_report.md` | Result narrative |
-| `reports/v5_decision_gate.md` | Decision documentation |
+| `reports/kpi_summary.json` | All 7 PS03 KPIs with pass/fail status |
+
+**To check if the official result was reproduced**:
+
+```bash
+python -c "
+import csv
+with open('results/benchmark_results_v2.csv') as f:
+    for row in csv.DictReader(f):
+        if row.get('policy') in ('GraphMind_RL', 'GraphMindRL_V5'):
+            print(f\"Policy: {row['policy']} | F1: {row.get('f1', 'N/A')} | Hit Rate: {float(row.get('cache_hit_rate', 0))*100:.1f}%\")
+"
+```
+
+Expected output:
+```
+Policy: GraphMind_RL | F1: 0.7745 | Hit Rate: 93.1%
+```
 
 ---
 
-*For technical questions about the implementation, see [docs/architecture.md](architecture.md). For reproduction instructions, see [docs/reproducibility.md](reproducibility.md).*
+*For installation help, see [docs/installation.md](installation.md).*
+*For reproduction steps, see [docs/reproducibility.md](reproducibility.md).*
+*For architecture details, see [docs/architecture.md](architecture.md).*
