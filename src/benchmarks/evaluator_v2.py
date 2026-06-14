@@ -4,12 +4,13 @@ src/benchmarks/evaluator_v2.py
 GraphMind v2 evaluation orchestrator.
 
 Runs all 10 baseline policies + ablation studies on the same event stream.
-Produces 4 output files:
-  results/benchmark_results_v2.csv    — per-policy 11-metric table
+Produces 5 output files:
+  results/benchmark_results_v2.csv    — per-policy 11-metric table (+Explanation column)
   results/advanced_metrics_v2.csv     — additional derived metrics
   results/statistical_results_v2.csv  — bootstrap CIs + t-tests vs GraphOnly
   results/ablation_results_v2.csv     — ablation variant comparison
   results/reports/YYYY-MM-DD_benchmark.md — human-readable markdown report
+  reports/kpi_summary.json            — PS03 KPI summary (auto-saved every run)
 
 Usage:
   python -m src.benchmarks.evaluator_v2
@@ -20,6 +21,10 @@ Usage:
 
   # With Gemma disabled (default — proves Gemma doesn't inflate results):
   ENABLE_GEMMA=false python -m src.benchmarks.evaluator_v2
+
+Note on Gemma explanation pipeline:
+  Gemma explanation pipeline runs async post-decision.
+  Benchmark metrics are measured before Gemma call. F1 is benchmark-neutral.
 """
 
 import argparse
@@ -43,10 +48,17 @@ from src.benchmarks.baselines_v2 import (
 from src.benchmarks.metrics_v2 import MetricsV2
 from src.benchmarks.statistics import StatisticalEvaluator
 from src.benchmarks.ablation import AblationRunner
+from src.benchmarks.kpi_extractor import KPIExtractor
 from src.data.event_dataset import SyntheticDataset, DeviceAnalyzerDataset
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+
+# Path for KPI summary JSON — saved automatically every benchmark run
+KPI_SUMMARY_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+    "reports", "kpi_summary.json"
+)
 
 
 # ---------------------------------------------------------------------------
@@ -103,6 +115,8 @@ class BenchmarkEvaluatorV2:
         self._train_events: List[dict] = []
         self._val_events: List[dict] = []
         self._test_events: List[dict] = []
+        # Stability tracking — counts crashes / OOM / unhandled exceptions
+        self._stability_issues: int = 0
 
         # Verify Gemma is disabled for benchmark runs
         if settings.ENABLE_GEMMA:
@@ -255,6 +269,7 @@ class BenchmarkEvaluatorV2:
             rl_metrics = rl_policy.run_full_evaluation(self._test_events)
         except Exception as exc:
             logger.error(f"GraphMindRL full evaluation failed: {exc}. Using fallback.")
+            self._stability_issues += 1
             rl_metrics = {
                 "cache_hit_rate": 0.0, "precision": 0.0, "recall": 0.0,
                 "f1": 0.0, "error": str(exc),
@@ -273,11 +288,23 @@ class BenchmarkEvaluatorV2:
         logger.info("Computing statistical comparisons...")
         statistical_results = self._compute_statistics(policy_results)
 
+        # ── KPI Extraction ────────────────────────────────────────────────
+        logger.info("Extracting PS03 KPIs...")
+        kpi_extractor = KPIExtractor(
+            policy_results=policy_results,
+            stability_issues=self._stability_issues,
+        )
+        kpi_summary = kpi_extractor.compute()
+        kpi_extractor.print_summary(kpi_summary)
+        kpi_extractor.save(kpi_summary, KPI_SUMMARY_PATH)
+        logger.info(f"KPI summary saved → {KPI_SUMMARY_PATH}")
+
         return {
             "policy_results": policy_results,
             "ablation_results": ablation_results,
             "statistical_results": statistical_results,
             "dataset_meta": self._dataset.metadata() if self._dataset else {},
+            "kpi_summary": kpi_summary,
         }
 
     def _compute_statistics(self, policy_results: List[dict]) -> List[dict]:
@@ -341,13 +368,20 @@ class BenchmarkEvaluatorV2:
         statistical_results = results.get("statistical_results", [])
 
         # ── benchmark_results_v2.csv ────────────────────────────────────────
+        # Note: "gemma_explanation" column is nullable and does NOT affect scoring.
+        # Gemma explanation pipeline runs async post-decision.
+        # Benchmark metrics are measured before Gemma call. F1 is benchmark-neutral.
         if policy_results:
             metric_keys = [
                 "policy", "cache_hit_rate", "precision", "recall", "f1",
                 "latency_saved_ms", "latency_saved_pct", "battery_overhead_pct",
                 "false_prefetch_rate", "thrash_rate",
-                "prediction_latency_ms", "memory_usage_mb", "eval_time_s"
+                "prediction_latency_ms", "memory_usage_mb", "eval_time_s",
+                "gemma_explanation",  # nullable — does not affect F1 or any benchmark metric
             ]
+            # Ensure all rows have the gemma_explanation key (empty string if absent)
+            for row in policy_results:
+                row.setdefault("gemma_explanation", "")
             self._write_csv(policy_results, settings.BENCHMARK_V2_RESULTS_CSV, metric_keys)
             logger.info(f"Written: {settings.BENCHMARK_V2_RESULTS_CSV}")
 
@@ -389,6 +423,15 @@ class BenchmarkEvaluatorV2:
         self._write_markdown_report(report_path, results)
         logger.info(f"Report written: {report_path}")
 
+        # ── KPI summary JSON (already saved in run_all, but re-save here for safety) ──
+        if results.get("kpi_summary"):
+            kpi_extractor = KPIExtractor(
+                policy_results=results.get("policy_results", []),
+                stability_issues=self._stability_issues,
+            )
+            kpi_extractor.save(results["kpi_summary"], KPI_SUMMARY_PATH)
+            logger.info(f"KPI summary confirmed saved → {KPI_SUMMARY_PATH}")
+
     def _write_csv(
         self,
         rows: List[dict],
@@ -408,9 +451,12 @@ class BenchmarkEvaluatorV2:
         self, path: str, results: Dict[str, object]
     ) -> None:
         """Generate a human-readable markdown benchmark report."""
+        from src.benchmarks.kpi_extractor import KPI_TARGETS
         policy_results = results.get("policy_results", [])
         ablation_results = results.get("ablation_results", {})
         dataset_meta = results.get("dataset_meta", {})
+        kpi_summary = results.get("kpi_summary", {})
+        kpi_pf = kpi_summary.get("kpi_pass_fail", {})
 
         sorted_policies = sorted(
             policy_results,
@@ -425,6 +471,51 @@ class BenchmarkEvaluatorV2:
             f"**Dataset**: {dataset_meta.get('source', 'unknown')} "
             f"({dataset_meta.get('total_events', 0):,} events)",
             f"**Gemma**: {'Enabled' if settings.ENABLE_GEMMA else 'Disabled (correct for benchmarks)'}",
+            f"",
+            f"---",
+            f"",
+            f"## PS03 KPI Summary",
+            f"",
+            f"| KPI | Target | Achieved | Status |",
+            f"|-----|--------|----------|--------|",
+        ]
+
+        if kpi_summary:
+            kpi_rows = [
+                ("Next Context Prediction Accuracy (F1)",
+                 f"≥{KPI_TARGETS['next_context_prediction_f1']:.2f}",
+                 f"{kpi_summary.get('next_context_prediction_f1', 0.0):.4f}",
+                 kpi_pf.get("next_context_prediction_f1", "?")),
+                ("Cache Hit Rate (%)",
+                 f"≥{KPI_TARGETS['cache_hit_rate_pct']:.0f}%",
+                 f"{kpi_summary.get('cache_hit_rate_pct', 0.0):.2f}%",
+                 kpi_pf.get("cache_hit_rate_pct", "?")),
+                ("Memory Thrashing Reduction (%)",
+                 f"≥{KPI_TARGETS['thrash_reduction_pct']:.0f}%",
+                 f"{kpi_summary.get('thrash_reduction_pct', 0.0):.2f}%",
+                 kpi_pf.get("thrash_reduction_pct", "?")),
+                ("App Load Time Improvement (%)",
+                 f"≥{KPI_TARGETS['load_time_improvement_pct']:.0f}%",
+                 f"{kpi_summary.get('load_time_improvement_pct', 0.0):.2f}%",
+                 kpi_pf.get("load_time_improvement_pct", "?")),
+                ("App Launch Time Improvement (%)",
+                 f"≥{KPI_TARGETS['launch_time_improvement_pct']:.0f}%",
+                 f"{kpi_summary.get('launch_time_improvement_pct', 0.0):.2f}%",
+                 kpi_pf.get("launch_time_improvement_pct", "?")),
+                ("System Stability (issues)",
+                 "= 0",
+                 str(kpi_summary.get("system_stability_issues", 0)),
+                 kpi_pf.get("system_stability_issues", "?")),
+                ("Memory Utilisation Efficiency Improvement (%)",
+                 f"≥{KPI_TARGETS['memory_utilization_efficiency_improvement_pct']:.0f}%",
+                 f"{kpi_summary.get('memory_utilization_efficiency_improvement_pct', 0.0):.2f}%",
+                 kpi_pf.get("memory_utilization_efficiency_improvement_pct", "?")),
+            ]
+            for kpi_name, target, achieved, status in kpi_rows:
+                status_md = "🟢 PASS" if status == "PASS" else "🔴 FAIL"
+                lines.append(f"| {kpi_name} | {target} | {achieved} | {status_md} |")
+
+        lines += [
             f"",
             f"---",
             f"",
