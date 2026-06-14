@@ -293,9 +293,11 @@ ABLATION_ORDERED_VARIANTS: list = [
 ]
 
 # ── Gemma Model ────────────────────────────────────────────────────────────
-# Set ENABLE_GEMMA = False to prove Gemma does NOT inflate benchmark results.
-# All benchmark runs execute identically regardless of this flag.
-ENABLE_GEMMA: bool = os.getenv("ENABLE_GEMMA", "false").lower() == "true"
+# ENABLE_GEMMA = True  in production: Gemma generates natural-language
+# prefetch explanations after each decision (Tool Use #2 in agentic pipeline).
+# Set ENABLE_GEMMA=false via env var to prove Gemma does NOT inflate benchmark
+# results (all benchmark metrics are measured BEFORE the Gemma call).
+ENABLE_GEMMA: bool = os.getenv("ENABLE_GEMMA", "true").lower() == "true"
 GEMMA_MODEL_ID = "google/gemma-2b"
 GEMMA_LOCAL_PATH = os.path.join(MODELS_DIR, "gemma-2b")
 GEMMA_MAX_NEW_TOKENS = 128
