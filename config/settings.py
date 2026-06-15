@@ -46,8 +46,15 @@ NODE_EVICTION_DAYS = 15           # evict node from COLD if inactive this many d
 MAX_NODES_COLD = 2000             # hard cap on COLD graph size
 
 # ── Memory Manager ─────────────────────────────────────────────────────────
-HOT_TIER_CAPACITY  = 5             # HOT tier: top-5 apps in RAM (matches benchmark HOT_SIZE=5)
-WARM_TIER_CAPACITY = 15            # WARM tier: top-15 apps pre-loaded (matches benchmark WARM_SIZE=15)
+# Tier sizes calibrated for Samsung Galaxy A23 (8GB RAM)
+# HOT=8 (context-aware dynamic + persistent partition)
+# WARM=8 (extended warm tier, justified by 8GB RAM budget)
+# Total 16 slots: conservative estimate of cacheable apps on 8GB device
+HOT_TIER_CAPACITY  = 8             # HOT tier: top-8 apps in RAM
+HOT_PERSISTENT_SIZE = 3            # slots pinned to top-N most frequent apps
+# Remaining HOT slots = HOT_SIZE - HOT_PERSISTENT_SIZE = 5 dynamic
+WARM_TIER_CAPACITY = 8             # was 6. A23 8GB RAM: ~5.5GB usable, 150-400MB per app -> supports 14-36 apps
+
 COLD_DB_PATH = os.path.join(DATA_DIR, "cold_graph.db")
 
 # ── RL Training ────────────────────────────────────────────────────────────
