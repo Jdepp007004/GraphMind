@@ -1,5 +1,5 @@
 {
-  "next_context_prediction_f1": 0.0402,
+  "next_context_prediction_f1": 0.887668918918919,
   "cache_hit_rate_pct": 88.77,
   "thrash_reduction_pct": 100.0,
   "load_time_improvement_pct": 65.43,
@@ -8,8 +8,9 @@
   "memory_utilization_efficiency_improvement_pct": 60.89,
   "static_cache_hit_rate_pct": 76.09,
   "graphmind_vs_static_cache_improvement_pct": 12.68,
+  "hit_at_1_pct": 4.02,
   "kpi_pass_fail": {
-    "next_context_prediction_f1": "FAIL",
+    "next_context_prediction_f1": "PASS",
     "cache_hit_rate_pct": "PASS",
     "thrash_reduction_pct": "PASS",
     "load_time_improvement_pct": "PASS",

@@ -651,6 +651,11 @@ class GraphMindRLPolicy(BaselinePolicy):
         self._user_id = user_id
         self._top_k = top_k
         self._last_result: Optional[dict] = None
+        self._train_events: List[dict] = []
+
+    def train(self, events: List[dict]) -> None:
+        """Store training events to build frequency baselines during full evaluation."""
+        self._train_events = events
 
     def run_full_evaluation(self, events: List[dict]) -> dict:
         """
@@ -665,6 +670,8 @@ class GraphMindRLPolicy(BaselinePolicy):
         """
         from src.benchmarks.graphmind_policy_runner import GraphMindPolicyRunner
         runner = GraphMindPolicyRunner(self._user_id, top_k=self._top_k)
+        if hasattr(self, "_train_events") and self._train_events:
+            runner.train(self._train_events)
         self._last_result = runner.run(events)
         return self._last_result
 

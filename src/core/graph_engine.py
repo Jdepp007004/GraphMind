@@ -172,6 +172,23 @@ class BehaviouralGraph:
         scored.sort(key=lambda x: x[0], reverse=True)
         return [nid for _, nid in scored[:k]]
 
+    def get_top_k_with_scores(self, current_node_id: str, k: int,
+                              battery_level: float = 100.0) -> list:
+        """
+        Return the top-k most likely next node_ids with their scores from current_node_id.
+        """
+        if current_node_id not in self._graph:
+            return []
+        if battery_level < settings.BATTERY_SUPPRESS_THRESHOLD:
+            k = max(1, k // 2)
+        edges = self.get_edges_from(current_node_id)
+        scored = []
+        for edge in edges:
+            score = edge.transition_prob - (edge.battery_cost * (1.0 - battery_level / 100.0))
+            scored.append((edge.target_id, score))
+        scored.sort(key=lambda x: x[1], reverse=True)
+        return scored[:k]
+
     def prune_weak_edges(self) -> int:
         """
         Delete all edges where transition_prob < EDGE_PRUNE_THRESHOLD (0.05).

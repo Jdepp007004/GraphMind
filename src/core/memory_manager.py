@@ -78,7 +78,15 @@ class MemoryManager:
 
         # Evict LRU from HOT if at capacity
         while len(self._hot) >= settings.HOT_TIER_CAPACITY:
+            prev_len = len(self._hot)
             self._evict_lru_from_hot()
+            if len(self._hot) == prev_len:
+                # Promotion failed. Put it back in WARM.
+                if len(self._warm) >= settings.WARM_TIER_CAPACITY:
+                    self._evict_oldest_from_warm()
+                self._warm[node_id] = node
+                self._warm.move_to_end(node_id)
+                return False
 
         # Add to HOT
         self._hot[node_id] = node

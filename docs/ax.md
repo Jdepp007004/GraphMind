@@ -543,8 +543,37 @@ GraphMind V5 was developed using a structured hypothesis-test-decision loop exec
 
 > All KPIs except stability are computed automatically by `src/benchmarks/kpi_extractor.py` on every benchmark run and saved to `reports/kpi_summary.json`.
 
+### Note on Ablation Methodology
+
+The ablation study (src/benchmarks/ablation.py) isolates individual 
+component contributions — graph, confidence scoring, RL allocation, 
+security — using a simplified single-event hit evaluation (exact next 
+app in HOT/WARM, no lookahead window) and does not include the five 
+A23-calibration improvements added afterward (5-event lookahead, 
+HOT-P persistent partition, conservative eviction floor, frequency × 
+recency decay, expanded WARM tier).
+
+This means absolute hit rates reported in the ablation study 
+(Full_System: 30.95%) are not directly comparable to the production 
+KPI cache hit rate (88.77%) — they answer a different question: 
+"how much does each component contribute, holding evaluation 
+methodology constant?" rather than "what is the final deployed 
+system's hit rate?"
+
+The relative ordering is still informative: removing the graph 
+component (No_Graph: 19.69%) causes the largest single drop, 
+confirming the behavioural graph is the dominant contributor. 
+No_Context shows the highest ablation hit rate (56.21%), consistent 
+with the production system's context-weight being set to 0.00 — 
+context scoring was found to add noise rather than signal on this 
+dataset, as documented above.
+
+Production KPI results (Section: KPI Achievement Summary) reflect 
+the fully calibrated, currently deployed configuration and are the 
+authoritative numbers for PS03 evaluation.
+
 ---
 
 *Full technical documentation: [docs/architecture.md](architecture.md) · [docs/reproducibility.md](reproducibility.md)*
 
-*Benchmark entry point: `python scripts/run_phase11_e.py` (or `python -m src.benchmarks.evaluator_v2`)*
+*Benchmark entry point: `python -m src.benchmarks.evaluator_v2`*

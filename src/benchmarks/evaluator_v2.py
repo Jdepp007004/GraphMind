@@ -265,10 +265,12 @@ class BenchmarkEvaluatorV2:
         logger.info("Evaluating: GraphMind_RL (full system via PolicyRunner)")
         t0 = time.perf_counter()
         rl_policy = GraphMindRLPolicy(user_id=f"{self._user_id}_rl", top_k=self._top_k)
+        rl_policy.train(self._train_events)
         try:
             rl_metrics = rl_policy.run_full_evaluation(self._test_events)
         except Exception as exc:
-            logger.error(f"GraphMindRL full evaluation failed: {exc}. Using fallback.")
+            import traceback
+            logger.error(f"GraphMindRL full evaluation failed: {exc}. Traceback:\n{traceback.format_exc()}")
             self._stability_issues += 1
             rl_metrics = {
                 "cache_hit_rate": 0.0, "precision": 0.0, "recall": 0.0,
@@ -293,6 +295,7 @@ class BenchmarkEvaluatorV2:
         kpi_extractor = KPIExtractor(
             policy_results=policy_results,
             stability_issues=self._stability_issues,
+            test_events=self._test_events,
         )
         kpi_summary = kpi_extractor.compute()
         kpi_extractor.print_summary(kpi_summary)
@@ -428,6 +431,7 @@ class BenchmarkEvaluatorV2:
             kpi_extractor = KPIExtractor(
                 policy_results=results.get("policy_results", []),
                 stability_issues=self._stability_issues,
+                test_events=self._test_events,
             )
             kpi_extractor.save(results["kpi_summary"], KPI_SUMMARY_PATH)
             logger.info(f"KPI summary confirmed saved → {KPI_SUMMARY_PATH}")
