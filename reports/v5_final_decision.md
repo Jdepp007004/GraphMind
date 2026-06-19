@@ -10,10 +10,10 @@
 
 | Policy | F1 | ΔF1 | HR | p | Cohen d | Sig | ≥+0.02 |
 |--------|-----|-----|-----|---|---------|-----|--------|
-| GraphMindRL_V5 | 0.7745 | +0.0321 | 0.9307 | 0.0115 | 0.491 | ✅ | ✅ |
-| GraphMindRL_V5_t10 | 0.7733 | +0.0309 | 0.9326 | 0.0105 | 0.498 | ✅ | ✅ |
-| RL_LatencyFocus | 0.7550 | +0.0126 | 0.9325 | 0.0004 | 0.725 | ✅ | ❌ |
-| GraphMindRL_Base | 0.7539 | +0.0115 | 0.9344 | 0.0003 | 0.752 | ✅ | ❌ |
+| GraphMindRL_V5 | 0.7756 | +0.0332 | 0.9359 | 0.0108 | 0.496 | ✅ | ✅ |
+| GraphMindRL_V5_t10 | 0.7744 | +0.0320 | 0.9382 | 0.0098 | 0.504 | ✅ | ✅ |
+| RL_LatencyFocus | 0.7556 | +0.0132 | 0.9364 | 0.0003 | 0.754 | ✅ | ❌ |
+| GraphMindRL_Base | 0.7546 | +0.0122 | 0.9382 | 0.0002 | 0.788 | ✅ | ❌ |
 
 ---
 
@@ -30,8 +30,8 @@
 **✅ RECOMMEND V5 PRODUCTION DEPLOYMENT**
 
 **GraphMindRL_V5** achieves:
-- F1 = 0.7745  (ΔF1 = +0.0321)
-- p = 0.0115  Cohen d = 0.491
+- F1 = 0.7756  (ΔF1 = +0.0332)
+- p = 0.0108  Cohen d = 0.496
 - Statistically significant, meets +0.02 threshold
 
 **Configuration to promote to production:**

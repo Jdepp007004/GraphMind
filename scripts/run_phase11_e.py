@@ -64,23 +64,123 @@ class MeasuredLatencyModel:
 
 
 class Cache:
-    def __init__(self): self._hot=[];self._warm=[]
-    def lookup(self,app):
+    def __init__(self, policy=None):
+        self._hot = []
+        self._warm = []
+        self.policy = policy
+        self.use_smart = policy is not None and hasattr(policy, "_g")
+        if self.use_smart:
+            # Seed persistent apps from the top 3 most frequent training apps
+            self.policy._persistent_apps = [app for app, _ in sorted(self.policy._freq.items(), key=lambda x: -x[1])[:3]]
+
+    def lookup(self, app):
         if app in self._hot:  return "hot"
         if app in self._warm: return "warm"
         return "miss"
-    def access(self,app):
-        if app in self._hot:    self._hot.remove(app)
-        elif app in self._warm: self._warm.remove(app)
-        self._hot.insert(0,app)
-        while len(self._hot)>HOT_SIZE: self._warm.insert(0,self._hot.pop())
-        while len(self._warm)>WARM_SIZE: self._warm.pop()
-    def prefetch(self,apps):
+
+    def eviction_score(self, app, cur_app):
+        if not self.use_smart or not self.policy:
+            return 0.0
+        trans_prob = 0.0
+        if cur_app and cur_app in self.policy._g:
+            trans_prob = self.policy._g[cur_app].get(app, 0.0)
+        tot = self.policy._total or 1.0
+        freq_score = self.policy._freq.get(app, 0.0) / tot
+        recency_score = self.policy._rec.get(app, 0.0)
+        return trans_prob * 0.50 + freq_score * 0.30 + recency_score * 0.20
+
+    def access(self, app, cur_app=None):
+        evicted = []
+        if app in self._hot:
+            self._hot.remove(app)
+            self._hot.insert(0, app)
+            return []
+            
+        if app in self._warm:
+            self._warm.remove(app)
+            
+        self._hot.insert(0, app)
+        
+        # Determine how to evict from HOT to WARM
+        if self.use_smart:
+            while len(self._hot) > HOT_SIZE:
+                EVICTION_PROBABILITY_FLOOR = 0.05
+                tot = self.policy._total or 1.0
+                
+                evictable = []
+                for a in self._hot:
+                    if a in getattr(self.policy, "_persistent_apps", []):
+                        continue
+                    trans_prob = 0.0
+                    if cur_app and cur_app in self.policy._g:
+                        trans_prob = self.policy._g[cur_app].get(a, 0.0)
+                    freq_score = self.policy._freq.get(a, 0.0) / tot
+                    relevance = trans_prob * 0.60 + freq_score * 0.40
+                    if relevance < EVICTION_PROBABILITY_FLOOR:
+                        evictable.append(a)
+                        
+                if not evictable:
+                    # Do not evict existing HOT apps; demote newly accessed app to WARM instead
+                    self._hot.remove(app)
+                    self._warm.insert(0, app)
+                    evicted.append(app)
+                else:
+                    scored = []
+                    for a in evictable:
+                        score = self.eviction_score(a, cur_app)
+                        scored.append((score, a))
+                    scored.sort(key=lambda x: x[0])
+                    lowest_app = scored[0][1]
+                    self._hot.remove(lowest_app)
+                    self._warm.insert(0, lowest_app)
+                    evicted.append(lowest_app)
+        else:
+            # Standard LRU eviction/demotion
+            while len(self._hot) > HOT_SIZE:
+                demoted = self._hot.pop()
+                self._warm.insert(0, demoted)
+                evicted.append(demoted) # Count HOT demotion as eviction
+
+        # Evict from WARM to out
+        if self.use_smart:
+            while len(self._warm) > WARM_SIZE:
+                scored = []
+                for a in self._warm:
+                    score = self.eviction_score(a, cur_app)
+                    scored.append((score, a))
+                scored.sort(key=lambda x: x[0])
+                lowest_app = scored[0][1]
+                self._warm.remove(lowest_app)
+                evicted.append(lowest_app)
+        else:
+            while len(self._warm) > WARM_SIZE:
+                evicted.append(self._warm.pop())
+                
+        return evicted
+
+    def prefetch(self, apps, cur_app=None):
+        evicted = []
         for a in apps:
             if a not in self._hot and a not in self._warm:
-                self._warm.insert(0,a)
-                while len(self._warm)>WARM_SIZE: self._warm.pop()
-    def reset(self): self._hot=[];self._warm=[]
+                self._warm.insert(0, a)
+                if self.use_smart:
+                    while len(self._warm) > WARM_SIZE:
+                        scored = []
+                        for wa in self._warm:
+                            score = self.eviction_score(wa, cur_app)
+                            scored.append((score, wa))
+                        scored.sort(key=lambda x: x[0])
+                        lowest_app = scored[0][1]
+                        self._warm.remove(lowest_app)
+                        evicted.append(lowest_app)
+                else:
+                    while len(self._warm) > WARM_SIZE:
+                        evicted.append(self._warm.pop())
+        return evicted
+
+    def reset(self):
+        self._hot = []
+        self._warm = []
 
 
 def _is_system(p):
@@ -153,16 +253,47 @@ class ConfidencePolicy:
         self._hist.clear();self._last_preds=[];self.threshold=self._init_thresh
 
 
+class LRUPolicy:
+    def __init__(self, budget=HOT_SIZE):
+        self.budget = budget
+        self._lru = []
+        self._warmup_apps = []
+    def train(self, apps, **kwargs):
+        self._warmup_apps = apps[-20:] if len(apps) >= 20 else apps
+    def update(self, app, hit=False):
+        if app in self._lru:
+            self._lru.remove(app)
+        self._lru.insert(0, app)
+    def predict(self, cur, prev=None, tb=0, wd=0):
+        return self._lru[:self.budget]
+    def reset(self):
+        self._lru = list(self._warmup_apps)
+
+
 def evaluate_policy(policy,tr_a,va_a,ts_a,tr_t,va_t,ts_t,tr_w,va_w,ts_w,lat,uid="x"):
     policy.train(tr_a,tbs=tr_t,wds=tr_w,val_apps=va_a,val_tbs=va_t,val_wds=va_w)
     policy.reset()
-    cache=Cache()
+    cache=Cache(policy=policy)
     for app in tr_a[-20:]: cache.access(app)
     hits=misses=tp=fp=fn=0; lat_saved=0.0; prev=None
+    
+    thrash_events = 0
+    evictions = {}  # app -> step_index of eviction
+    
     for i,cur in enumerate(ts_a):
         tb=ts_t[i] if ts_t else 0; wd=ts_w[i] if ts_w else 0
+        
+        # Check if cur was evicted within the last 3 events
+        if cur in evictions and (i - evictions[cur] <= 3):
+            thrash_events += 1
+            del evictions[cur]
+            
         preds=policy.predict(cur,prev=prev,tb=tb,wd=wd)
-        if preds: cache.prefetch(preds)
+        
+        evicted_prefetch = []
+        if preds:
+            evicted_prefetch = cache.prefetch(preds, cur_app=cur)
+            
         tier=cache.lookup(cur); is_hit=tier in ("hot","warm")
         if is_hit: hits+=1;tp+=1;lat_saved+=lat.saved(cur,tier)
         else: misses+=1
@@ -172,13 +303,21 @@ def evaluate_policy(policy,tr_a,va_a,ts_a,tr_t,va_t,ts_t,tr_w,va_w,ts_w,lat,uid=
                 if nxt in preds: tp+=1
                 else: fn+=1;fp+=len(preds)
             else: fn+=1
-        cache.access(cur); policy.update(cur,hit=is_hit); prev=cur
+            
+        evicted_access = cache.access(cur, cur_app=cur)
+        policy.update(cur,hit=is_hit); prev=cur
+        
+        # Record all evictions at step index i
+        for app in evicted_prefetch + evicted_access:
+            evictions[app] = i
+            
     total=hits+misses or 1
     hr=hits/total; pr=tp/(tp+fp) if (tp+fp)>0 else 0.0
     re=tp/(tp+fn) if (tp+fn)>0 else 0.0
     f1=2*pr*re/(pr+re) if (pr+re)>0 else 0.0
     return {"hit_rate":round(hr,4),"precision":round(pr,4),"recall":round(re,4),
-            "f1":round(f1,4),"latency_saved_ms":round(lat_saved/total,2)}
+            "f1":round(f1,4),"latency_saved_ms":round(lat_saved/total,2),
+            "thrash_events": thrash_events}
 
 
 def paired_t(exp_by_user,baseline_by_user):
@@ -247,6 +386,26 @@ def main():
         te,ve=int(n*TRAIN_RATIO),int(n*(TRAIN_RATIO+VAL_RATIO))
         return (apps[:te],apps[te:ve],apps[ve:],tbs[:te],tbs[te:ve],tbs[ve:],wds[:te],wds[te:ve],wds[ve:])
 
+    # Compute total unique apps in the dataset dynamically
+    unique_apps_all = set()
+    for uid in usable_users:
+        if uid not in user_cache: continue
+        apps, _, _ = user_cache[uid]
+        unique_apps_all.update(apps)
+    num_unique_apps_in_dataset = len(unique_apps_all) if len(unique_apps_all) > 0 else 30
+    logger.info(f"Unique apps in dataset: {num_unique_apps_in_dataset}")
+
+    # Evaluate LRU baseline for thrashing counts
+    logger.info("Evaluating LRU baseline for thrashing...")
+    lru_thrash_by_user = {}
+    for uid in usable_users:
+        if uid not in user_cache: continue
+        tr_a,va_a,ts_a,tr_t,va_t,ts_t,tr_w,va_w,ts_w=split(uid)
+        if len(ts_a)<10: continue
+        lru_pol = LRUPolicy(budget=HOT_SIZE)
+        m = evaluate_policy(lru_pol, tr_a, va_a, ts_a, tr_t, va_t, ts_t, tr_w, va_w, ts_w, lat, uid)
+        lru_thrash_by_user[uid] = m["thrash_events"]
+
     logger.info(f"\n{'='*60}")
     logger.info(f"Phase E — GraphMindRL_V5")
     logger.info(f"  Best weights: trans={best_wt} rec={best_wr} freq={best_wf}")
@@ -262,26 +421,46 @@ def main():
         ("GraphMindRL_Base",      ConfidencePolicy(0.5, 0.3, 0.2, 0.05,                    name="GraphMindRL_Base")),
     ]
 
+    stability_issues = 0
+    v5_f1 = 0.0
+    v5_hit_rate = 0.0
+    v5_latency_saved = 0.0
+    v5_thrash_events = 0
+
     phase_e_rows = []
     for pol_name, policy in policies_e:
         f1_list=[]; hr_list=[]; pr_list=[]; re_list=[]; la_list=[]; by_user={}
+        thrash_list=[]
         for uid in usable_users:
             if uid not in user_cache: continue
             tr_a,va_a,ts_a,tr_t,va_t,ts_t,tr_w,va_w,ts_w=split(uid)
             if len(ts_a)<10: continue
-            # Re-instantiate to get fresh policy for each user
-            if pol_name=="GraphMindRL_V5":
-                pol=ConfidencePolicy(best_wt,best_wr,best_wf,best_thresh,name=pol_name)
-            elif pol_name=="GraphMindRL_V5_t10":
-                pol=ConfidencePolicy(best_wt,best_wr,best_wf,0.10,name=pol_name)
-            elif pol_name=="RL_LatencyFocus":
-                pol=ConfidencePolicy(0.5,0.3,0.2,0.10,name=pol_name)
-            else:
-                pol=ConfidencePolicy(0.5,0.3,0.2,0.05,name=pol_name)
-            m=evaluate_policy(pol,tr_a,va_a,ts_a,tr_t,va_t,ts_t,tr_w,va_w,ts_w,lat,uid)
-            f1_list.append(m["f1"]); hr_list.append(m["hit_rate"])
-            pr_list.append(m["precision"]); re_list.append(m["recall"])
-            la_list.append(m["latency_saved_ms"]); by_user[uid]=m["f1"]
+            
+            try:
+                # Re-instantiate to get fresh policy for each user
+                if pol_name=="GraphMindRL_V5":
+                    pol=ConfidencePolicy(best_wt,best_wr,best_wf,best_thresh,name=pol_name)
+                elif pol_name=="GraphMindRL_V5_t10":
+                    pol=ConfidencePolicy(best_wt,best_wr,best_wf,0.10,name=pol_name)
+                elif pol_name=="RL_LatencyFocus":
+                    pol=ConfidencePolicy(0.5,0.3,0.2,0.10,name=pol_name)
+                else:
+                    pol=ConfidencePolicy(0.5,0.3,0.2,0.05,name=pol_name)
+                m=evaluate_policy(pol,tr_a,va_a,ts_a,tr_t,va_t,ts_t,tr_w,va_w,ts_w,lat,uid)
+                f1_list.append(m["f1"]); hr_list.append(m["hit_rate"])
+                pr_list.append(m["precision"]); re_list.append(m["recall"])
+                la_list.append(m["latency_saved_ms"])
+                thrash_list.append(m["thrash_events"])
+                by_user[uid]=m["f1"]
+            except Exception as e:
+                logger.error(f"Error evaluating user {uid} for policy {pol_name}: {e}")
+                stability_issues += 1
+
+        if pol_name == "GraphMindRL_V5":
+            v5_f1 = float(np.mean(f1_list))
+            v5_hit_rate = float(np.mean(hr_list))
+            v5_latency_saved = float(np.mean(la_list))
+            v5_thrash_events = int(sum(thrash_list))
 
         t_s,p_v,d_v=paired_t(by_user,baseline_by_user)
         row={
@@ -402,6 +581,101 @@ def main():
         p_s=f"{v5_row['p_value']:.4f}" if isinstance(v5_row['p_value'],float) else str(v5_row['p_value'])
         logger.info(f"GraphMindRL_V5 (combined):  F1={v5_row['f1']:.4f}  ΔF1={v5_row['delta_f1_vs_baseline']:+.4f}  p={p_s}  d={v5_row['cohen_d']}")
     logger.info("=" * 70)
+
+    # Compute PS03 target KPIs on the real 31-user UbiqLog dataset
+    lru_thrash_total = sum(lru_thrash_by_user.values())
+    if lru_thrash_total > 0:
+        thrash_reduction_pct = ((lru_thrash_total - v5_thrash_events) / lru_thrash_total) * 100.0
+    else:
+        thrash_reduction_pct = 100.0 if v5_thrash_events == 0 else 0.0
+    thrash_reduction_pct = max(0.0, round(thrash_reduction_pct, 2))
+
+    # Note: As only one cold-start constant (_DC = 2763.0) exists in MeasuredLatencyModel, it is used for both load and launch cold-start baselines.
+    cold_start_load_ms = 2763.0
+    cold_start_launch_ms = 2763.0
+    load_time_improvement_pct = round((v5_latency_saved / cold_start_load_ms) * 100.0, 2)
+    launch_time_improvement_pct = round((v5_latency_saved / cold_start_launch_ms) * 100.0, 2)
+
+    random_baseline = (HOT_SIZE + WARM_SIZE) / num_unique_apps_in_dataset
+    if random_baseline > 0:
+        memory_util_improvement_pct = ((v5_hit_rate - random_baseline) / random_baseline) * 100.0
+    else:
+        memory_util_improvement_pct = 0.0
+    memory_util_improvement_pct = round(memory_util_improvement_pct, 2)
+
+    kpi_pass_fail = {
+        "next_context_prediction_f1": "PASS" if v5_f1 >= 0.75 else "FAIL",
+        "cache_hit_rate_pct": "PASS" if (v5_hit_rate * 100.0) >= 85.0 else "FAIL",
+        "thrash_reduction_pct": "PASS" if thrash_reduction_pct >= 50.0 else "FAIL",
+        "load_time_improvement_pct": "PASS" if load_time_improvement_pct >= 20.0 else "FAIL",
+        "launch_time_improvement_pct": "PASS" if launch_time_improvement_pct >= 10.0 else "FAIL",
+        "system_stability_issues": "PASS" if stability_issues == 0 else "FAIL",
+        "memory_utilization_efficiency_improvement_pct": "PASS" if memory_util_improvement_pct >= 30.0 else "FAIL"
+    }
+
+    kpi_summary_real = {
+        "dataset": "UbiqLog_real_31_users",
+        "next_context_prediction_f1": round(v5_f1, 4),
+        "cache_hit_rate_pct": round(v5_hit_rate * 100.0, 2),
+        "thrash_reduction_pct": round(thrash_reduction_pct, 2),
+        "load_time_improvement_pct": round(load_time_improvement_pct, 2),
+        "launch_time_improvement_pct": round(launch_time_improvement_pct, 2),
+        "system_stability_issues": int(stability_issues),
+        "memory_utilization_efficiency_improvement_pct": round(memory_util_improvement_pct, 2),
+        "kpi_pass_fail": kpi_pass_fail
+    }
+
+    real_summary_path = os.path.join(REPORTS_DIR, "kpi_summary_real.json")
+    with open(real_summary_path, "w", encoding="utf-8") as fh:
+        json.dump(kpi_summary_real, fh, indent=2)
+    logger.info(f"Written KPI summary of real dataset evaluation to: {real_summary_path}")
+
+    # Print the 7-row KPI table format used by evaluator_v2.py to stdout
+    print()
+    print("=" * 82)
+    print(f"  {'KPI':<45} {'Target':>10} {'Achieved':>12} {'Status':>8}")
+    print("=" * 82)
+
+    rows = [
+        ("Next Context Prediction Accuracy (F1)",
+         ">=0.75",
+         f"{v5_f1:.4f}",
+         kpi_pass_fail["next_context_prediction_f1"]),
+        ("Cache Hit Rate (%)",
+         ">=85%",
+         f"{v5_hit_rate * 100.0:.2f}%",
+         kpi_pass_fail["cache_hit_rate_pct"]),
+        ("Memory Thrashing Reduction (%)",
+         ">=50%",
+         f"{thrash_reduction_pct:.2f}%",
+         kpi_pass_fail["thrash_reduction_pct"]),
+        ("App Load Time Improvement (%)",
+         ">=20%",
+         f"{load_time_improvement_pct:.2f}%",
+         kpi_pass_fail["load_time_improvement_pct"]),
+        ("App Launch Time Improvement (%)",
+         ">=10%",
+         f"{launch_time_improvement_pct:.2f}%",
+         kpi_pass_fail["launch_time_improvement_pct"]),
+        ("System Stability (issues)",
+         "= 0",
+         str(stability_issues),
+         kpi_pass_fail["system_stability_issues"]),
+        ("Memory Utilisation Efficiency Improvement (%)",
+         ">=30%",
+         f"{memory_util_improvement_pct:.2f}%",
+         kpi_pass_fail["memory_utilization_efficiency_improvement_pct"]),
+    ]
+
+    for name, target, achieved, status in rows:
+        status_str = f"[PASS]" if status == "PASS" else f"[FAIL]"
+        print(f"  {name:<45} {target:>10} {achieved:>12}  {status_str}")
+
+    print("=" * 82)
+    n_pass = sum(1 for v in kpi_pass_fail.values() if v == "PASS")
+    n_total = len(kpi_pass_fail)
+    print(f"  Overall: {n_pass}/{n_total} KPIs PASS")
+    print("=" * 82)
 
 
 if __name__=="__main__":
