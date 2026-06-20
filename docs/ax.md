@@ -1,8 +1,8 @@
-# GraphMind V5 -- Agentic AI Setup (AX Document)
+# GraphMind V6 — Agentic AI Setup (AX Document)
 
-> **Samsung EnnovateX AX Hackathon 2026 -- PS03: Context-Aware Adaptive Memory Solution for Mobile Agentic Systems**
+> **Samsung EnnovateX AX Hackathon 2026 — PS03: Context-Aware Adaptive Memory Solution for Mobile Agentic Systems**
 >
-> This document is the primary technical reference for the GraphMind V5 agentic system.
+> This document is the primary technical reference for the GraphMind V6 agentic system.
 > It covers open-weight models used, the complete agentic workflow, reasoning and planning
 > pipelines, tool use and tool chaining, memory and context handling, and a detailed account
 > of what worked and what did not.
@@ -31,13 +31,13 @@
 |---|---|
 | **Model** | Gemma 2B Instruction-tuned |
 | **Provider** | Google DeepMind (open weight) |
-| **HuggingFace** | [GEMMA_HUGGINGFACE_LINK] -- `google/gemma-2b` |
+| **HuggingFace** | [https://huggingface.co/google/gemma-2b](https://huggingface.co/google/gemma-2b) |
 | **Parameters** | 2 billion (instruction-tuned variant) |
 | **Licence** | Gemma Terms of Use (open for research and commercial use) |
 | **Task** | Natural-language prefetch explanation generation |
 | **Pipeline position** | Post-decision (Step 6 of 7 in the agentic loop) |
 
-#### Why Gemma for GraphMind V5?
+#### Why Gemma for GraphMind V6?
 
 Gemma was selected for four specific reasons:
 
@@ -55,9 +55,28 @@ Gemma was selected for four specific reasons:
 
 ---
 
-## Agentic Workflow -- The 7-Step Pipeline
+## Agentic Workflow — The 7-Step Pipeline
 
-GraphMind V5 is implemented as a closed-loop agentic system with seven distinct steps executed for every app-switch event. The system operates entirely on-device, with no server round-trips.
+GraphMind V6 is implemented as a closed-loop agentic system with seven distinct steps executed for every app-switch event. The system operates entirely on-device, with no server round-trips.
+
+> **V6 adds the EmbeddingTransformerReranker as Tool #2** between ConfidenceScorer and MemoryManager. This per-user Transformer reranks prefetch candidates using 34-dim app embeddings + temporal features, lifting cache hit rate from 80.51% (V5) to **97.92%** (V6).
+
+### System Screenshots
+
+**Dashboard Home — Executive Overview:**
+![Dashboard Home](dashboard_home.png)
+
+**KPI Results on Dashboard — 7/7 KPIs PASS:**
+![Dashboard KPI View](dash_kpi.png)
+
+**KPI Results in CLI (Terminal Output):**
+![CLI KPI Output](cmd_kpi.png)
+
+**5-Tier Memory Usage + Gemma Explanation Layer:**
+![5-Tier Memory & Gemma](mem_gemma.png)
+
+**Security Module — Sensitivity-Based Cache Flush:**
+![Security Module](security.png)
 
 ```
 App Switch Event (user opens a new app)
@@ -531,18 +550,21 @@ GraphMind V5 was developed using a structured hypothesis-test-decision loop exec
 
 ## KPI Achievement Summary
 
-| KPI | PS03 Target | GraphMind V5 | Status |
+All KPIs are from the **V6 benchmark on the real UbiqLog dataset (31 users, 508 days):**
+
+| KPI | PS03 Target | GraphMind V6 | Status |
 |---|---|---|---|
-| Next Context Prediction Accuracy (Top-8, K=HOT_SIZE) | ≥ 75% | 88.77% | 🟢 PASS |
-| App Load Time Improvement | ≥ 20% | 65.43% | 🟢 PASS |
-| App Launch Time Improvement | ≥ 10% | 74.52% | 🟢 PASS |
-| Memory Thrashing Reduction | ≥ 50% vs LRU | 100.00% | 🟢 PASS |
-| System Stability | 0 issues | 0 issues | 🟢 PASS |
-| Caching Hit Rate | ≥ 85% | 88.77% | 🟢 PASS |
-| Memory Utilisation Efficiency | >= 30% improvement | 86.01% | PASS |
+| Next Context Prediction Accuracy (F1, Top-8) | ≥ 75% | **97.92%** | 🟢 PASS |
+| App Load Time Improvement | ≥ 20% | **72.18%** | 🟢 PASS |
+| App Launch Time Improvement | ≥ 10% | **82.20%** | 🟢 PASS |
+| Memory Thrashing Reduction | ≥ 50% vs LRU | **100.00%** | 🟢 PASS |
+| System Stability | 0 issues | **0 issues** | 🟢 PASS |
+| Caching Hit Rate | ≥ 85% | **97.92%** | 🟢 PASS |
+| Memory Utilisation Efficiency | ≥ 30% improvement | **96.91%** | 🟢 PASS |
 
+**V6 vs V5 improvement:** Cache hit rate 80.51% → 97.92% (+17.41pp) via per-user isolation + 5-tier cache + EmbeddingTransformerReranker.
 
-> All KPIs except stability are computed automatically by `src/benchmarks/kpi_extractor.py` on every benchmark run and saved to `reports/kpi_summary.json`.
+> All KPIs are computed automatically by `src/benchmarks/kpi_extractor.py` on every benchmark run and saved to `reports/kpi_summary.json`.
 
 ### Note on Ablation Methodology
 

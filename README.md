@@ -29,17 +29,17 @@
 
 **Problem Statement Title** — Context-Aware, Adaptive Memory Solution for Mobile Agentic Systems
 
-**Team name** — <!-- [PLACEHOLDER: TEAM_NAME] Your Phase 1 team name exactly as registered -->
+**Team name** — GraphMind
 
-**Team members** — <!-- [PLACEHOLDER: MEMBER_1_NAME] Full name of member 1 -->, <!-- [PLACEHOLDER: MEMBER_2_NAME] Full name of member 2 (delete if solo) -->
+**Team members** — T Dheeraj Sai Skand, Sunishka Sarkar
 
-**Institute/College Name** — <!-- [PLACEHOLDER: COLLEGE_NAME] Institute name, Campus Name & Full Address -->
+**Institute/College Name** — PES University, Electronic City Campus, 100 Feet Ring Road, Bangalore — 560100, Karnataka, India
 
-**Final Presentation Google Drive Link** — <!-- [PLACEHOLDER: PRESENTATION_LINK] Publicly accessible Google Drive PDF link — no login required -->
+**Final Presentation Google Drive Link** — _(add Google Drive PDF link here before submission)_
 
-**Full Submission Demo Video Link** — <!-- [PLACEHOLDER: DEMO_VIDEO_LINK] YouTube public/unlisted link -->
+**Full Submission Demo Video Link** — _(add YouTube link here before submission)_
 
-**Setup & Result Reproducibility Video Link** — <!-- [PLACEHOLDER: REPRO_VIDEO_LINK] YouTube public/unlisted link -->
+**Setup & Result Reproducibility Video Link** — _(add YouTube link here before submission)_
 
 ---
 
@@ -110,14 +110,14 @@ Expected output: `7/7 KPIs PASS` with the values above.
 
 | Model | Purpose | Link |
 |---|---|---|
-| Gemma 2B (`google/gemma-2b`) | Natural language prefetch explanation generation | <!-- [PLACEHOLDER: GEMMA_HF_LINK] https://huggingface.co/google/gemma-2b --> |
+| Gemma 2B (`google/gemma-2b`) | Natural language prefetch explanation generation | [https://huggingface.co/google/gemma-2b](https://huggingface.co/google/gemma-2b) |
 | EmbeddingTransformerReranker (custom, PyTorch) | Per-user app candidate reranking | Built in-house — see `src/models/transformer_reranker.py` |
 
 **Models Published**
 
-| Model | Description | Link |
-|---|---|---|
-| PPO Memory Allocation Agent | Adaptive threshold controller (Stable-Baselines3 PPO) | <!-- [PLACEHOLDER: PPO_HF_LINK] Upload to HuggingFace and add link --> |
+| Model | Description | Link | License |
+|---|---|---|---|
+| PPO Memory Allocation Agent | Adaptive threshold controller (Stable-Baselines3 PPO) | [https://huggingface.co/dheerajsait/GraphMind_PPO](https://huggingface.co/dheerajsait/GraphMind_PPO) | Apache 2.0 |
 
 ---
 
@@ -125,13 +125,13 @@ Expected output: `7/7 KPIs PASS` with the values above.
 
 | Dataset | Description | Link | License |
 |---|---|---|---|
-| UbiqLog Android Usage Patterns | 9.7M events, 35 users, real Android app-switch logs, 508 days | <!-- [PLACEHOLDER: UBIQLOG_UCI_LINK] https://archive.ics.uci.edu/dataset/369 --> | CC BY 4.0 |
+| UbiqLog Android Usage Patterns | 9.7M events, 35 users, real Android app-switch logs, 508 days | [https://archive.ics.uci.edu/dataset/369](https://archive.ics.uci.edu/dataset/369) | CC BY 4.0 |
 
 **Datasets Published**
 
 | Dataset | Description | Link | License |
 |---|---|---|---|
-| GraphMind Synthetic Benchmark Dataset | 10-user synthetic dataset for reproducible CI benchmarking | <!-- [PLACEHOLDER: DATASET_HF_LINK] Upload synthetic dataset to HuggingFace --> | CC BY 4.0 |
+| GraphMind Synthetic Benchmark Dataset | 10-user synthetic dataset for reproducible CI benchmarking | [https://huggingface.co/datasets/dheerajsait/GraphMind_Synth](https://huggingface.co/datasets/dheerajsait/GraphMind_Synth) | Apache 2.0 |
 
 ---
 
