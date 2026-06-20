@@ -1,6 +1,6 @@
-# GraphMind V5 — Agentic AI Setup (AX Document)
+# GraphMind V5 -- Agentic AI Setup (AX Document)
 
-> **Samsung EnnovateX AX Hackathon 2026 — PS03: Context-Aware Adaptive Memory Solution for Mobile Agentic Systems**
+> **Samsung EnnovateX AX Hackathon 2026 -- PS03: Context-Aware Adaptive Memory Solution for Mobile Agentic Systems**
 >
 > This document is the primary technical reference for the GraphMind V5 agentic system.
 > It covers open-weight models used, the complete agentic workflow, reasoning and planning
@@ -12,7 +12,7 @@
 ## Table of Contents
 
 1. [Open Weight Models Used](#open-weight-models-used)
-2. [Agentic Workflow — The 7-Step Pipeline](#agentic-workflow--the-7-step-pipeline)
+2. [Agentic Workflow -- The 7-Step Pipeline](#agentic-workflow--the-7-step-pipeline)
 3. [Reasoning and Planning Pipelines](#reasoning-and-planning-pipelines)
 4. [Tool Use and Tool Chaining](#tool-use-and-tool-chaining)
 5. [Memory and Context Handling](#memory-and-context-handling)
@@ -31,7 +31,7 @@
 |---|---|
 | **Model** | Gemma 2B Instruction-tuned |
 | **Provider** | Google DeepMind (open weight) |
-| **HuggingFace** | [GEMMA_HUGGINGFACE_LINK] — `google/gemma-2b` |
+| **HuggingFace** | [GEMMA_HUGGINGFACE_LINK] -- `google/gemma-2b` |
 | **Parameters** | 2 billion (instruction-tuned variant) |
 | **Licence** | Gemma Terms of Use (open for research and commercial use) |
 | **Task** | Natural-language prefetch explanation generation |
@@ -55,7 +55,7 @@ Gemma was selected for four specific reasons:
 
 ---
 
-## Agentic Workflow — The 7-Step Pipeline
+## Agentic Workflow -- The 7-Step Pipeline
 
 GraphMind V5 is implemented as a closed-loop agentic system with seven distinct steps executed for every app-switch event. The system operates entirely on-device, with no server round-trips.
 
@@ -64,14 +64,14 @@ App Switch Event (user opens a new app)
          │
          ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│  Step 1: PERCEPTION — EventBus                                   │
+│  Step 1: PERCEPTION -- EventBus                                   │
 │  EventBus captures the app launch event, extracts the node       │
 │  identity tuple: (app_id, time_bucket, battery_bucket)           │
 └──────────────────────────┬──────────────────────────────────────┘
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│  Step 2: MEMORY QUERY — BehaviouralGraph  [Tool Use #1]          │
+│  Step 2: MEMORY QUERY -- BehaviouralGraph  [Tool Use #1]          │
 │  BehaviouralGraph.query(current_node) returns the full           │
 │  transition probability distribution for the current app:        │
 │  P(next_app | current_app) for all observed successors           │
@@ -79,7 +79,7 @@ App Switch Event (user opens a new app)
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│  Step 3: REASONING — ConfidenceScorer                            │
+│  Step 3: REASONING -- ConfidenceScorer                            │
 │  Fuses 4 signals into a ranked candidate list:                   │
 │    score = 0.50×transition_prob + 0.40×frequency                 │
 │           + 0.10×recency + 0.00×context                          │
@@ -88,7 +88,7 @@ App Switch Event (user opens a new app)
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│  Step 4: PLANNING — PPO Agent (AdaptiveThresholdController)      │
+│  Step 4: PLANNING -- PPO Agent (AdaptiveThresholdController)      │
 │  The RL planning agent observes the 20-step rolling hit rate     │
 │  and adjusts the confidence threshold:                           │
 │    HR > 80% → threshold += 0.005  (more selective)              │
@@ -99,7 +99,7 @@ App Switch Event (user opens a new app)
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│  Step 5: ACTUATION — MemoryManager                               │
+│  Step 5: ACTUATION -- MemoryManager                               │
 │  Executes HOT/WARM/COLD tier allocation based on PPO decision.   │
 │  Pre-loads the top candidates into WARM cache.                   │
 │  Most recently used 5 apps remain in HOT (in-RAM).              │
@@ -107,7 +107,7 @@ App Switch Event (user opens a new app)
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│  Step 6: EXPLANATION — Gemma  [Tool Use #2]                      │
+│  Step 6: EXPLANATION -- Gemma  [Tool Use #2]                      │
 │  Gemma generates a one-sentence NL rationale for the top         │
 │  prefetch decision. Fires async post-actuation.                  │
 │  Example: "Preloading Spotify because you typically switch       │
@@ -117,7 +117,7 @@ App Switch Event (user opens a new app)
                            │
                            ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│  Step 7: REWARD — RewardV2                                       │
+│  Step 7: REWARD -- RewardV2                                       │
 │  Computes multi-component reward signal for the PPO policy:      │
 │    R = 2.0×hit_rate + 1.0×(latency_saved/800ms)                 │
 │      - 0.5×battery_overhead - 0.8×false_prefetch_rate           │
@@ -128,7 +128,7 @@ App Switch Event (user opens a new app)
 
 ### Step-by-Step Technical Details
 
-#### Step 1 — Perception: EventBus
+#### Step 1 -- Perception: EventBus
 
 **Implementation**: `src/core/event_bus.py`
 
@@ -144,7 +144,7 @@ node_identity = (
 
 The `(app, time_bucket, battery_bucket)` triple encodes *what* the user is doing, *when*, and *under what resource constraints*. It is the unit of identity for graph nodes.
 
-#### Step 2 — Memory Query: BehaviouralGraph (Tool Use #1)
+#### Step 2 -- Memory Query: BehaviouralGraph (Tool Use #1)
 
 **Implementation**: `src/core/graph_engine.py`
 
@@ -159,9 +159,9 @@ Tool Use #1 is the graph query. `BehaviouralGraph.query(current_node)` returns:
 }
 ```
 
-This is the learned **transition probability distribution** — a first-order Markov estimate computed from the user's historical app-switch sequences. The graph is per-user, stored as a NetworkX `DiGraph` with edge weights equal to observed transition counts.
+This is the learned **transition probability distribution** -- a first-order Markov estimate computed from the user's historical app-switch sequences. The graph is per-user, stored as a NetworkX `DiGraph` with edge weights equal to observed transition counts.
 
-#### Step 3 — Reasoning: ConfidenceScorer
+#### Step 3 -- Reasoning: ConfidenceScorer
 
 **Implementation**: `src/prefetch/confidence_prefetch.py`
 
@@ -171,18 +171,18 @@ The ConfidenceScorer is the multi-signal fusion reasoning layer. It takes the tr
 score(app) = 0.50 × P(app | current_app)        # Markov transition probability
            + 0.40 × freq_score(app)              # normalised historical frequency
            + 0.10 × recency_score(app)           # exponential decay from last use
-           + 0.00 × context_score(app)           # zeroed — noisy on short datasets
+           + 0.00 × context_score(app)           # zeroed -- noisy on short datasets
 ```
 
 **Signal derivation (Phase 11A grid search validated):**
-- `transition_prob × 0.50`: Primary signal — captures sequential dependency
-- `frequency × 0.40`: Dominant secondary signal — captures habitual app use
-- `recency × 0.10`: Minor signal — captures temporal locality
+- `transition_prob × 0.50`: Primary signal -- captures sequential dependency
+- `frequency × 0.40`: Dominant secondary signal -- captures habitual app use
+- `recency × 0.10`: Minor signal -- captures temporal locality
 - `context × 0.00`: Zeroed because UbiqLog 2011–2016 lacks reliable sensor data
 
 The ConfidenceScorer outputs a ranked list of `(app_id, score)` pairs. All candidates above the adaptive threshold are passed to Step 4.
 
-#### Step 4 — Planning: PPO Agent (Adaptive Threshold Controller)
+#### Step 4 -- Planning: PPO Agent (Adaptive Threshold Controller)
 
 **Implementation**: `src/rl/environment_v2.py`, `src/rl/reward_v2.py`
 
@@ -216,7 +216,7 @@ elif rolling_hit_rate_20 < 0.50: threshold -= 0.005   # be more permissive
 # else: unchanged
 ```
 
-#### Step 5 — Actuation: MemoryManager
+#### Step 5 -- Actuation: MemoryManager
 
 **Implementation**: `src/core/memory_manager.py`
 
@@ -230,7 +230,7 @@ The MemoryManager executes the PPO decision by allocating apps to cache tiers:
 
 Sensitivity-based flush: when the user transitions from a **sensitive** app (financial, health) to a **consumer** app (social, entertainment), the HOT cache is flushed to prevent sensitive app data from leaking into prefetch predictions visible to potentially lower-privilege consumer apps.
 
-#### Step 6 — Explanation: Gemma (Tool Use #2)
+#### Step 6 -- Explanation: Gemma (Tool Use #2)
 
 **Implementation**: `src/gemma_explainer.py`
 
@@ -252,7 +252,7 @@ The explanation is:
 
 **Fallback chain**: If Gemma is unavailable (model not downloaded, OOM, or `ENABLE_GEMMA=false`), the `_build_template_explanation()` function generates a deterministic string from the edge weights. The fallback always returns a valid explanation and never raises.
 
-#### Step 7 — Reward: RewardV2
+#### Step 7 -- Reward: RewardV2
 
 **Implementation**: `src/rl/reward_v2.py`
 
@@ -324,7 +324,7 @@ Output: Dict[app_id → transition_probability]
 **Tool contract**:
 - Always returns a valid probability distribution (values sum to ≤ 1.0)
 - Returns an empty dict for unknown nodes (graceful degradation)
-- Runtime: O(degree(current_node)) — typically O(5–20)
+- Runtime: O(degree(current_node)) -- typically O(5–20)
 
 **How it is used**: The output feeds directly into the ConfidenceScorer (Step 3). The transition probabilities are combined with frequency and recency scores to produce the final ranked candidate list.
 
@@ -334,7 +334,7 @@ Output: Dict[app_id → transition_probability]
 Input:  top3_candidates = ["com.spotify.music", "com.whatsapp", ...]
         current_node    = ("com.google.youtube", 38, 3)
         edge_weights    = {"com.spotify.music": 0.72, ...}
-Output: str — one sentence in user-facing natural language
+Output: str -- one sentence in user-facing natural language
         e.g. "Preloading Spotify because you typically switch from YouTube in the evening."
 ```
 
@@ -422,17 +422,17 @@ This is implemented in `src/security/sensitivity_model.py` and `src/core/memory_
 
 ### 1. Frequency Weight 0.40 as Dominant Secondary Signal
 
-The most impactful discovery was that **frequency** (not recency) is the dominant secondary signal for app prefetching on UbiqLog data. The initial architecture used `recency × 0.20`, but a grid search (Phase 11A) showed that swapping to `frequency × 0.40, recency × 0.10` increased F1 from 0.7424 to 0.7733 — a +0.0309 improvement (p=0.0105).
+The most impactful discovery was that **frequency** (not recency) is the dominant secondary signal for app prefetching on UbiqLog data. The initial architecture used `recency × 0.20`, but a grid search (Phase 11A) showed that swapping to `frequency × 0.40, recency × 0.10` increased F1 from 0.7424 to 0.7733 -- a +0.0309 improvement (p=0.0105).
 
 **Why**: Smartphone app usage is highly habitual. People open the same 5–7 apps in similar sequences every day. Frequency captures this better than recency, which is more informative in browsing contexts where users rarely return to the same page.
 
 ### 2. PPO Resource Allocator Framing (Avoids Combinatorial Explosion)
 
-Framing the RL agent as a **resource allocator** rather than an **app selector** was the key architectural decision that made RL tractable. The action space is `MultiDiscrete([5, 5, 5])` = 125 discrete actions. The alternative (selecting which specific apps to prefetch) would have required an action space of size N^k where N=50 apps and k=5 → 312,500,000 actions — completely intractable for on-device RL.
+Framing the RL agent as a **resource allocator** rather than an **app selector** was the key architectural decision that made RL tractable. The action space is `MultiDiscrete([5, 5, 5])` = 125 discrete actions. The alternative (selecting which specific apps to prefetch) would have required an action space of size N^k where N=50 apps and k=5 → 312,500,000 actions -- completely intractable for on-device RL.
 
 ### 3. Chronological Train/Test Split (Prevents Data Leakage)
 
-Insisting on **chronological** splits from the beginning prevented all data leakage. With random splits, training data would include future app sequences that have not yet occurred at the simulated deployment time — inflating all metrics. Our chronological split (80/10/10) matches the real deployment scenario exactly.
+Insisting on **chronological** splits from the beginning prevented all data leakage. With random splits, training data would include future app sequences that have not yet occurred at the simulated deployment time -- inflating all metrics. Our chronological split (80/10/10) matches the real deployment scenario exactly.
 
 ### 4. Bang-Bang Adaptive Threshold (Dynamic Precision-Recall Tradeoff)
 
@@ -539,15 +539,16 @@ GraphMind V5 was developed using a structured hypothesis-test-decision loop exec
 | Memory Thrashing Reduction | ≥ 50% vs LRU | 100.00% | 🟢 PASS |
 | System Stability | 0 issues | 0 issues | 🟢 PASS |
 | Caching Hit Rate | ≥ 85% | 88.77% | 🟢 PASS |
-| Memory Utilisation Efficiency | ≥ 30% improvement | 60.89% | 🟢 PASS |
+| Memory Utilisation Efficiency | >= 30% improvement | 86.01% | PASS |
+
 
 > All KPIs except stability are computed automatically by `src/benchmarks/kpi_extractor.py` on every benchmark run and saved to `reports/kpi_summary.json`.
 
 ### Note on Ablation Methodology
 
 The ablation study (src/benchmarks/ablation.py) isolates individual 
-component contributions — graph, confidence scoring, RL allocation, 
-security — using a simplified single-event hit evaluation (exact next 
+component contributions -- graph, confidence scoring, RL allocation, 
+security -- using a simplified single-event hit evaluation (exact next 
 app in HOT/WARM, no lookahead window) and does not include the five 
 A23-calibration improvements added afterward (5-event lookahead, 
 HOT-P persistent partition, conservative eviction floor, frequency × 
@@ -555,7 +556,7 @@ recency decay, expanded WARM tier).
 
 This means absolute hit rates reported in the ablation study 
 (Full_System: 30.95%) are not directly comparable to the production 
-KPI cache hit rate (88.77%) — they answer a different question: 
+KPI cache hit rate (88.77%) -- they answer a different question: 
 "how much does each component contribute, holding evaluation 
 methodology constant?" rather than "what is the final deployed 
 system's hit rate?"
@@ -564,7 +565,7 @@ The relative ordering is still informative: removing the graph
 component (No_Graph: 19.69%) causes the largest single drop, 
 confirming the behavioural graph is the dominant contributor. 
 No_Context shows the highest ablation hit rate (56.21%), consistent 
-with the production system's context-weight being set to 0.00 — 
+with the production system's context-weight being set to 0.00 -- 
 context scoring was found to add noise rather than signal on this 
 dataset, as documented above.
 

@@ -1,7 +1,7 @@
 # System Architecture
 
-> **GraphMindRL V5 — Technical Architecture Reference**
-> Samsung EnnovateX AX Hackathon 2026 — PS03
+> **GraphMindRL V5 -- Technical Architecture Reference**
+> Samsung EnnovateX AX Hackathon 2026 -- PS03
 
 ---
 
@@ -46,7 +46,7 @@ GraphMindRL V5 is a **per-user, graph-based app prefetch engine** with a reinfor
 
 GraphMind V5 is organised into **six architectural layers**, each with a distinct responsibility:
 
-### Layer 1 — EventBus (Perception / Event Stream)
+### Layer 1 -- EventBus (Perception / Event Stream)
 
 **Files**: `src/core/event_bus.py`, `src/core/event_schema.py`
 
@@ -59,7 +59,7 @@ Output: Structured AppLaunchEvent(app_id, time_bucket, battery_bucket, weekend)
 
 All other layers communicate through the EventBus using a publish/subscribe pattern. This decouples the perception layer from all downstream processing.
 
-### Layer 2 — BehaviouralGraph (Memory / Knowledge Store)
+### Layer 2 -- BehaviouralGraph (Memory / Knowledge Store)
 
 **Files**: `src/core/graph_engine.py`, `src/models/graph_model.py`
 
@@ -71,7 +71,7 @@ The BehaviouralGraph is the system's long-term memory. It maintains a per-user *
 
 The graph is updated on every event and persisted to SQLite for on-device longevity.
 
-### Layer 3 — MemoryManager (Cache / Resource Manager)
+### Layer 3 -- MemoryManager (Cache / Resource Manager)
 
 **Files**: `src/core/memory_manager.py`
 
@@ -85,7 +85,7 @@ COLD (∞ apps)   → SQLite, evicted after 15 days of inactivity
 
 It executes the PPO agent's resource allocation decisions and exposes APIs for the benchmark runner to query cache state.
 
-### Layer 4 — ConfidencePrefetch (Reasoning / Decision Engine)
+### Layer 4 -- ConfidencePrefetch (Reasoning / Decision Engine)
 
 **Files**: `src/prefetch/confidence_prefetch.py`
 
@@ -98,17 +98,17 @@ score(app) = 0.50 × P(app | current)   [transition probability]
            + 0.00 × context_score(app)  [zeroed on short datasets]
 ```
 
-### Layer 5 — RL Environment (Planning / Adaptive Control)
+### Layer 5 -- RL Environment (Planning / Adaptive Control)
 
 **Files**: `src/rl/environment_v2.py`, `src/rl/trainer.py`, `src/rl/reward_v2.py`
 
 The RL environment implements the adaptive threshold controller as a PPO-compatible Gymnasium environment:
 
 - **State**: 109-dimensional vector (app one-hot, time, battery, hit history)
-- **Action**: `MultiDiscrete([5, 5, 5])` — hot budget × warm budget × threshold
+- **Action**: `MultiDiscrete([5, 5, 5])` -- hot budget × warm budget × threshold
 - **Reward**: Multi-component signal weighting hits, latency savings, battery, thrash
 
-### Layer 6 — RewardV2 (Feedback / Policy Update)
+### Layer 6 -- RewardV2 (Feedback / Policy Update)
 
 **Files**: `src/rl/reward_v2.py`
 
@@ -152,7 +152,7 @@ Layer 3: MemoryManager
   - Reports tier stats to Layer 5
      │
      ▼
-[Gemma: generates NL explanation — async, post-actuation]
+[Gemma: generates NL explanation -- async, post-actuation]
      │
      ▼
 Layer 6: RewardV2
@@ -284,7 +284,7 @@ class BehaviourGraph:
 
 The confidence engine is the decision core of the system. Given the current app A, it computes a score for each candidate app B and returns all candidates above the threshold.
 
-### Score Formula (Production — Frozen)
+### Score Formula (Production -- Frozen)
 
 ```
 score(B | A) = W_TRANSITION × P(B | A)
@@ -300,7 +300,7 @@ With production weights:
 | `W_TRANSITION` | 0.50 | Markov transition probability |
 | `W_RECENCY` | 0.10 | Exponential decay from last use (↓ from 0.30) |
 | `W_FREQUENCY` | 0.40 | Normalised historical frequency (↑ from 0.20) |
-| `W_CONTEXT` | 0.00 | Time-of-day (zeroed — noisy on short datasets) |
+| `W_CONTEXT` | 0.00 | Time-of-day (zeroed -- noisy on short datasets) |
 
 ### Prefetch Decision
 
@@ -353,7 +353,7 @@ class AdaptiveThresholdController:
 
 ### State Space
 
-The RL state is the 20-step rolling hit rate. This is a deliberately minimal state representation — sufficient to capture whether the model is over- or under-predicting without requiring complex feature engineering.
+The RL state is the 20-step rolling hit rate. This is a deliberately minimal state representation -- sufficient to capture whether the model is over- or under-predicting without requiring complex feature engineering.
 
 ### Why This Works
 
@@ -375,14 +375,14 @@ flowchart LR
     C --> E[App opens\nfrom HOT]
     D --> F[App opens\nfrom WARM]
     G[Actual app open] --> H{Cache check}
-    H -->|Found in HOT| I[HIT — 0ms]
-    H -->|Found in WARM| J[HIT — ~200ms]
-    H -->|Not found| K[MISS — ~1800ms]
+    H -->|Found in HOT| I[HIT -- 0ms]
+    H -->|Found in WARM| J[HIT -- ~200ms]
+    H -->|Not found| K[MISS -- ~1800ms]
     I --> L[Latency saved:\n~1800ms]
     J --> M[Latency saved:\n~1600ms]
 ```
 
-### Cache Parameters (Production — Frozen)
+### Cache Parameters (Production -- Frozen)
 
 | Parameter | Value | Description |
 |---|---|---|
@@ -462,7 +462,7 @@ flowchart LR
 
 ### Data Flow
 
-The dashboard is **fully static** at runtime — it reads pre-generated JSON files from `dashboard/public/data/`. The JSON files are generated once by `scripts/generate_dashboard_data.py` from the result CSVs and raw data.
+The dashboard is **fully static** at runtime -- it reads pre-generated JSON files from `dashboard/public/data/`. The JSON files are generated once by `scripts/generate_dashboard_data.py` from the result CSVs and raw data.
 
 This means:
 - The dashboard has zero dependency on the Python backend at runtime.
@@ -506,7 +506,7 @@ graph TD
 All production configuration is in `config/settings.py`. This file is **frozen** and must not be modified without a new benchmark that justifies the change.
 
 ```python
-# config/settings.py (excerpt — frozen)
+# config/settings.py (excerpt -- frozen)
 
 # Confidence weights (Phase 11A optimised)
 W_TRANSITION = 0.50

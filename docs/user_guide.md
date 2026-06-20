@@ -1,6 +1,6 @@
-# GraphMind V5 — User Guide
+# GraphMind V5 -- User Guide
 
-> **Samsung EnnovateX AX Hackathon 2026 — PS03**
+> **Samsung EnnovateX AX Hackathon 2026 -- PS03**
 > How to run the dashboard, interpret KPI output, and read Gemma explanations.
 
 ---
@@ -44,7 +44,7 @@ Then refresh the browser.
 
 ## Dashboard Pages Reference
 
-### 🏠 Overview (`/`) — KPI Summary
+### 🏠 Overview (`/`) -- KPI Summary
 
 The Overview page is the entry point. It displays:
 
@@ -173,7 +173,7 @@ Statistical evidence for the benchmark claims:
 When you run the benchmark, the terminal prints a KPI summary table:
 
 ```
-STABILITY: PASS — 0 issues
+STABILITY: PASS -- 0 issues
 
 ══════════════════════════════════════════════════════════════════════════════════════
   KPI                                            Target    Achieved    Status
@@ -210,7 +210,7 @@ python -c "import json; d = json.load(open('reports/kpi_summary.json')); print(j
 
 **System Stability (issues)**: Counts crashes, OOM errors, and unhandled exceptions during the entire benchmark run. Any non-zero value indicates a system problem.
 
-**Memory Utilisation Efficiency Improvement (%)**: How much better GraphMind uses its allocated memory vs LRU. Measured as the reduction in false prefetch rate (FP / (TP + FP)): a lower false prefetch rate means less memory is wasted on apps the user won't open.
+**Memory Utilisation Efficiency Improvement (%)**: How many of LRU's cold-start failures (cache misses) GraphMind eliminates. Formula: `(LRU_miss_rate - GM_miss_rate) / LRU_miss_rate * 100`. A value of 86% means GraphMind eliminates 86% of the cold-start delays that a basic LRU cache would still cause. Computed on the synthetic benchmark where the LRU baseline has a 80.31% miss rate vs GraphMind's 11.23% miss rate.
 
 ---
 
@@ -247,7 +247,7 @@ The explanation tells you in plain language **why** the system made its prefetch
 
 1. **App names are human-readable**: The system converts package IDs to display names automatically.
 
-2. **Time context is natural**: "in the evening", "around midday", "late at night" — derived from the 30-minute bucket index.
+2. **Time context is natural**: "in the evening", "around midday", "late at night" -- derived from the 30-minute bucket index.
 
 3. **Confidence drives the language**: High confidence (≥ 0.60) → "almost always switch from..."; medium confidence (0.35–0.60) → "frequently open it after..."; low confidence → "based on your most-used apps...".
 
@@ -257,7 +257,7 @@ The explanation tells you in plain language **why** the system made its prefetch
 
 > The Gemma explanation is generated **after** the prefetch decision is already made and all metrics are recorded. It has zero effect on F1, cache hit rate, or any other KPI. The `gemma_explanation` column in the benchmark CSV is nullable and is not scored.
 
-To verify this: run the benchmark with `ENABLE_GEMMA=false` and `ENABLE_GEMMA=true` — you will see identical F1 and hit rate values in both runs.
+To verify this: run the benchmark with `ENABLE_GEMMA=false` and `ENABLE_GEMMA=true` -- you will see identical F1 and hit rate values in both runs.
 
 ---
 

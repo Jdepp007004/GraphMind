@@ -1,6 +1,6 @@
 # Benchmarking Methodology
 
-> **GraphMindRL V5 — Evaluation Reference**
+> **GraphMindRL V5 -- Evaluation Reference**
 
 ---
 
@@ -36,11 +36,11 @@ UbiqLog is a longitudinal smartphone usage dataset capturing every foreground ap
 
 ## Preprocessing
 
-### Step 1 — Deduplication
+### Step 1 -- Deduplication
 
 Consecutive duplicate events for the same app within 1 second are removed. This handles spurious re-registrations that occur when the OS briefly backgrounds and re-foregrounds an app.
 
-### Step 2 — Transition Extraction
+### Step 2 -- Transition Extraction
 
 For each consecutive pair of app events (A, B):
 - If `timestamp(B) - timestamp(A) ≤ 3600s`: record transition A → B
@@ -48,7 +48,7 @@ For each consecutive pair of app events (A, B):
 
 The 1-hour threshold was chosen empirically: gaps larger than 1 hour represent genuine session breaks where the predictive signal of the previous app weakens significantly.
 
-### Step 3 — User Filtering
+### Step 3 -- User Filtering
 
 Users with fewer than 100 transitions in the training window are excluded. 4 users were excluded, leaving 31.
 
@@ -78,7 +78,7 @@ Timeline ───────────────────────�
 
 ### Why Chronological?
 
-Random splitting would leak future transitions into the training set. For example, if the user opened YouTube at 11:00am on day 60 and the model saw this in training, it would trivially predict YouTube for any morning event — not because it learned a general pattern, but because it memorised a specific event. Chronological splitting ensures the evaluation matches real deployment conditions.
+Random splitting would leak future transitions into the training set. For example, if the user opened YouTube at 11:00am on day 60 and the model saw this in training, it would trivially predict YouTube for any morning event -- not because it learned a general pattern, but because it memorised a specific event. Chronological splitting ensures the evaluation matches real deployment conditions.
 
 ### Split Sizes (Approximate)
 
@@ -217,7 +217,7 @@ A hypothesis is accepted (and its change merged into production) if and only if:
 
 ## Optimization Journey
 
-### Phase 1 — Architecture Audit
+### Phase 1 -- Architecture Audit
 
 **Action**: Verify that `GraphOnly` is equivalent to Markov-1.
 
@@ -227,7 +227,7 @@ A hypothesis is accepted (and its change merged into production) if and only if:
 
 ---
 
-### Phase 2 — Markov-2 Order Analysis
+### Phase 2 -- Markov-2 Order Analysis
 
 **Hypothesis**: Second-order Markov chains capture more context and improve prediction.
 
@@ -241,7 +241,7 @@ A hypothesis is accepted (and its change merged into production) if and only if:
 
 ---
 
-### Phase 3 — Time Context Evaluation
+### Phase 3 -- Time Context Evaluation
 
 **Hypothesis**: Conditioning on time-of-day captures daily behavioural rhythms.
 
@@ -258,7 +258,7 @@ A hypothesis is accepted (and its change merged into production) if and only if:
 
 ---
 
-### Phase 4 — RL Threshold Controller
+### Phase 4 -- RL Threshold Controller
 
 **Hypothesis**: Adaptive threshold self-calibrates per user and improves precision/recall balance.
 
@@ -272,7 +272,7 @@ A hypothesis is accepted (and its change merged into production) if and only if:
 
 ---
 
-### Phase 5 — Modified Kneser-Ney Smoothing
+### Phase 5 -- Modified Kneser-Ney Smoothing
 
 **Hypothesis**: KN smoothing improves transition probability estimates for rarely-seen transitions.
 
@@ -284,7 +284,7 @@ A hypothesis is accepted (and its change merged into production) if and only if:
 
 ---
 
-### Phase 6 — Phase 11A: Confidence Weight Grid Search
+### Phase 6 -- Phase 11A: Confidence Weight Grid Search
 
 **Hypothesis**: The default weights (0.5/0.2/0.2/0.1) are not optimal. A systematic search will find better weights.
 
@@ -304,7 +304,7 @@ A hypothesis is accepted (and its change merged into production) if and only if:
 
 ---
 
-### Phase 7 — Phase 11B: Threshold Sweep
+### Phase 7 -- Phase 11B: Threshold Sweep
 
 **Hypothesis**: The optimal threshold under the new weights may differ from the original 0.16.
 
@@ -325,15 +325,15 @@ A hypothesis is accepted (and its change merged into production) if and only if:
 
 ---
 
-### Phase 8 — Phase 11E: Final Combined Benchmark
+### Phase 8 -- Phase 11E: Final Combined Benchmark
 
 **Hypothesis**: Combining the optimal weights with the optimal threshold in a clean, reproducible run will confirm the result.
 
 | Policy | F1 | Hit Rate | Latency | ΔF1 | p | d | Decision |
 |---|---|---|---|---|---|---|---|
-| **GraphMindRL_V5** | **0.7745** | **93.1%** | **1,847ms** | **+0.0321** | **0.0115** | **0.491** | **ACCEPTED — PRODUCTION** |
+| **GraphMindRL_V5** | **0.7745** | **93.1%** | **1,847ms** | **+0.0321** | **0.0115** | **0.491** | **ACCEPTED -- PRODUCTION** |
 | GraphMindRL_V5 (t=0.10) | 0.7733 | 93.3% | 1,849ms | +0.0309 | 0.0105 | 0.498 | Candidate |
-| GraphMindRL Baseline | 0.7424 | 93.6% | 2,002ms | 0.0000 | — | — | Reference |
+| GraphMindRL Baseline | 0.7424 | 93.6% | 2,002ms | 0.0000 | -- | -- | Reference |
 
 **Decision**: GraphMindRL_V5 is the production model. **Configuration frozen. No further model experimentation.**
 
@@ -341,7 +341,7 @@ A hypothesis is accepted (and its change merged into production) if and only if:
 
 ## Final Result
 
-### Official Result (Frozen — Do Not Modify)
+### Official Result (Frozen -- Do Not Modify)
 
 | Metric | Value |
 |---|---|

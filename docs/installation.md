@@ -1,6 +1,6 @@
-# GraphMind V5 — Installation Guide
+# GraphMind V5 -- Installation Guide
 
-> **Samsung EnnovateX AX Hackathon 2026 — PS03**
+> **Samsung EnnovateX AX Hackathon 2026 -- PS03**
 > Step-by-step installation from scratch.
 
 ---
@@ -18,7 +18,7 @@
 
 ---
 
-## Step 1 — Clone the Repository
+## Step 1 -- Clone the Repository
 
 ```bash
 git clone https://github.com/Jdepp007004/GraphMind.git
@@ -32,7 +32,7 @@ ls config/ src/ docs/ dashboard/ scripts/ data/ results/
 
 ---
 
-## Step 2 — Set Up the Python Environment
+## Step 2 -- Set Up the Python Environment
 
 ```bash
 # Create virtual environment
@@ -60,7 +60,7 @@ All core deps OK
 
 ---
 
-## Step 3 — Configure Environment Variables
+## Step 3 -- Configure Environment Variables
 
 ```bash
 cp .env.example .env
@@ -84,7 +84,7 @@ LOG_LEVEL=INFO
 
 ---
 
-## Step 4 — Download the UbiqLog Dataset
+## Step 4 -- Download the UbiqLog Dataset
 
 The UbiqLog4UCI dataset is publicly available from the UCI Machine Learning Repository.
 
@@ -120,7 +120,7 @@ Done.
 
 ---
 
-## Step 5 — (Optional) Download the Gemma Model
+## Step 5 -- (Optional) Download the Gemma Model
 
 Gemma is only required if `ENABLE_GEMMA=true`. The benchmark runs without it.
 
@@ -148,7 +148,7 @@ print('Gemma tokenizer loaded OK')
 
 ---
 
-## Step 6 — Set Up the Dashboard
+## Step 6 -- Set Up the Dashboard
 
 ```bash
 cd dashboard
@@ -167,7 +167,7 @@ python scripts/generate_dashboard_data.py
 
 ---
 
-## Step 7 — Run the Verification Check
+## Step 7 -- Run the Verification Check
 
 Run the full system audit to confirm everything is installed correctly:
 
@@ -178,7 +178,7 @@ python GRAPHMIND_HARDCHECK.py
 Expected final output:
 ```
 ============================================================
-GraphMind V5 — HARDCHECK COMPLETE
+GraphMind V5 -- HARDCHECK COMPLETE
 ============================================================
 ✅ Config loaded
 ✅ Data pipeline OK

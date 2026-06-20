@@ -1,6 +1,6 @@
-# GraphMind V5 — Technical Stack
+# GraphMind V5 -- Technical Stack
 
-> **Samsung EnnovateX AX Hackathon 2026 — PS03**
+> **Samsung EnnovateX AX Hackathon 2026 -- PS03**
 > Complete list of all open-source libraries, frameworks, and models used in GraphMind V5.
 
 ---
@@ -98,7 +98,7 @@ huggingface-cli download google/gemma-2b --local-dir models/gemma-2b
 | Property | Value |
 |---|---|
 | **Framework** | Stable-Baselines3 PPO |
-| **Action space** | `MultiDiscrete([5, 5, 5])` — 125 discrete actions |
+| **Action space** | `MultiDiscrete([5, 5, 5])` -- 125 discrete actions |
 | **Observation space** | 109-dimensional continuous vector |
 | **Training timesteps** | 200,000 (configurable via `settings.PPO_TOTAL_TIMESTEPS`) |
 | **Published on HuggingFace** | [PPO_HUGGINGFACE_LINK] (if published) |
@@ -125,8 +125,8 @@ huggingface-cli download google/gemma-2b --local-dir models/gemma-2b
 | Tool | Version | Purpose |
 |---|---|---|
 | Git | ≥ 2.40 | Version control |
-| GitHub Actions | — | CI pipeline (`.github/workflows/`) |
-| pyproject.toml | — | Project metadata and build config |
+| GitHub Actions | -- | CI pipeline (`.github/workflows/`) |
+| pyproject.toml | -- | Project metadata and build config |
 | Node.js | ≥ 18 | Dashboard dev server |
 | npm | ≥ 9 | Dashboard package manager |
 

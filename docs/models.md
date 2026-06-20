@@ -1,6 +1,6 @@
 # Model Catalogue
 
-> **GraphMindRL V5 — All Models Tested and Evaluated**
+> **GraphMindRL V5 -- All Models Tested and Evaluated**
 
 ---
 
@@ -19,7 +19,7 @@ This document catalogues every model variant evaluated during the development of
 | **GraphMindRL_V5** | **0.7745** | **+0.0321** | **0.0115** | **0.491** | **🟢 PRODUCTION** |
 | GraphMindRL_V5 (t=0.10) | 0.7733 | +0.0309 | 0.0105 | 0.498 | 🔵 Candidate |
 | RL_LatencyFocus | 0.7539 | +0.0116 | 0.0003 | 0.752 | 🔵 Candidate |
-| GraphMindRL Baseline | 0.7424 | 0.0000 | — | — | ⚪ Reference |
+| GraphMindRL Baseline | 0.7424 | 0.0000 | -- | -- | ⚪ Reference |
 | Graph+Confidence | 0.7369 | −0.0055 | 0.3421 | 0.187 | 🔴 Rejected |
 | Markov-2 | 0.7355 | −0.0069 | 0.2891 | 0.203 | 🔴 Rejected |
 | Markov-1 / GraphOnly | 0.7267 | −0.0157 | 0.1123 | 0.291 | ⚪ Baseline |
@@ -118,7 +118,7 @@ P(next | current) = Σ_u count_u(current → next) / Σ_u Σ_x count_u(current �
 
 ### Decision
 
-**Rejected.** Global pooling hurts F1. App usage patterns are highly personalised — pooling across users introduces noise that outweighs the benefit of more data. This confirms that per-user models are essential.
+**Rejected.** Global pooling hurts F1. App usage patterns are highly personalised -- pooling across users introduces noise that outweighs the benefit of more data. This confirms that per-user models are essential.
 
 ---
 
@@ -186,7 +186,7 @@ threshold_t = adaptive via RL:
 
 | F1 | Hit Rate | ΔF1 vs Markov-1 | p-value | Status |
 |---|---|---|---|---|
-| 0.7424 | 93.6% | +0.0157 | 0.023 | **ACCEPTED — REFERENCE** |
+| 0.7424 | 93.6% | +0.0157 | 0.023 | **ACCEPTED -- REFERENCE** |
 
 ### Decision
 
@@ -225,7 +225,7 @@ where:
 
 ### Decision
 
-**Rejected.** KN smoothing provides virtually zero improvement (ΔF1 = −0.0003). The training data is sufficient to estimate the common transitions reliably; there is no meaningful data sparsity problem for this dataset. KN smoothing is most useful when many transitions are unseen — here, nearly all common transitions appear in training.
+**Rejected.** KN smoothing provides virtually zero improvement (ΔF1 = −0.0003). The training data is sufficient to estimate the common transitions reliably; there is no meaningful data sparsity problem for this dataset. KN smoothing is most useful when many transitions are unseen -- here, nearly all common transitions appear in training.
 
 ---
 
@@ -313,7 +313,7 @@ Four variants tested:
 
 Combine the RL adaptive threshold controller with optimised confidence weights found by Phase 11A grid search and Phase 11B threshold sweep.
 
-### Formula (Production — Frozen)
+### Formula (Production -- Frozen)
 
 ```
 score(app) = W_TRANSITION × P(app | current)
@@ -322,9 +322,9 @@ score(app) = W_TRANSITION × P(app | current)
            + W_CONTEXT    × context_score(app)
 
 W_TRANSITION = 0.50
-W_RECENCY    = 0.10   (↓ from 0.20 — recency is noisy relative to frequency)
-W_FREQUENCY  = 0.40   (↑ from 0.20 — frequency is the strongest non-sequential signal)
-W_CONTEXT    = 0.00   (zeroed — noisy on short datasets)
+W_RECENCY    = 0.10   (↓ from 0.20 -- recency is noisy relative to frequency)
+W_FREQUENCY  = 0.40   (↑ from 0.20 -- frequency is the strongest non-sequential signal)
+W_CONTEXT    = 0.00   (zeroed -- noisy on short datasets)
 
 Initial threshold = 0.16 (Phase 11B optimal)
 Adaptive: threshold ± 0.005 per 20-step window
@@ -364,7 +364,7 @@ freq_score(app)    = count(app) / max_count    normalised by most frequent app
 
 The most important finding from the weight grid search was that **frequency substantially outperforms recency** as a secondary signal for app prefetching.
 
-**Intuition**: People's app usage habits are highly repetitive and stable. The apps a user opens most often are the apps they are most likely to open next — regardless of when they last opened them. Recency adds noise because it changes every step, while frequency is a stable signal.
+**Intuition**: People's app usage habits are highly repetitive and stable. The apps a user opens most often are the apps they are most likely to open next -- regardless of when they last opened them. Recency adds noise because it changes every step, while frequency is a stable signal.
 
 **Evidence**: Setting W_RECENCY = 0.10 and W_FREQUENCY = 0.40 improved F1 by +0.0309 over the default configuration (0.2/0.2). This was the largest single improvement found in the entire project.
 
@@ -376,7 +376,7 @@ To confirm that each component contributes positively, we performed an ablation 
 
 | Configuration | F1 | ΔF1 vs V5 | Note |
 |---|---|---|---|
-| **Full V5 (0.5/0.1/0.4/0.0 + RL)** | **0.7745** | — | Production |
+| **Full V5 (0.5/0.1/0.4/0.0 + RL)** | **0.7745** | -- | Production |
 | No RL (static threshold) | 0.7661 | −0.0084 | RL controller needed |
 | No frequency (0.5/0.5/0.0/0.0) | 0.7589 | −0.0156 | Frequency critical |
 | No recency (0.5/0.0/0.5/0.0) | 0.7703 | −0.0042 | Recency helpful |

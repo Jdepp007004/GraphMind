@@ -1,6 +1,6 @@
 # Dataset Documentation
 
-> **GraphMindRL V5 — UbiqLog4UCI Dataset Reference**
+> **GraphMindRL V5 -- UbiqLog4UCI Dataset Reference**
 
 ---
 
@@ -19,7 +19,7 @@
 
 ## Dataset Overview
 
-GraphMindRL V5 is trained and evaluated exclusively on the **UbiqLog4UCI** dataset — a longitudinal smartphone usage log collected from real users over approximately two months.
+GraphMindRL V5 is trained and evaluated exclusively on the **UbiqLog4UCI** dataset -- a longitudinal smartphone usage log collected from real users over approximately two months.
 
 | Property | Value |
 |---|---|
@@ -35,7 +35,7 @@ GraphMindRL V5 is trained and evaluated exclusively on the **UbiqLog4UCI** datas
 | **Sampling device** | Android smartphones (varies by user) |
 | **Latency profile** | Samsung Galaxy A23 |
 
-The dataset captures the full foreground app switching behaviour of 35 Android smartphone users. Each row in the raw data represents a single app event — one moment when an app came to the foreground.
+The dataset captures the full foreground app switching behaviour of 35 Android smartphone users. Each row in the raw data represents a single app event -- one moment when an app came to the foreground.
 
 ---
 
@@ -96,7 +96,7 @@ The preprocessing pipeline transforms raw events into valid transitions through 
 
 ![Dataset Pipeline](../assets/screenshots/dataset-pipeline.png)
 
-### Step 1 — Load Raw Files
+### Step 1 -- Load Raw Files
 
 Load all 35 per-user CSV files from `data/raw/`. Parse the timestamp column as Unix seconds (integer).
 
@@ -110,7 +110,7 @@ def load_user(user_id: int) -> pd.DataFrame:
     return df
 ```
 
-### Step 2 — Remove System Apps
+### Step 2 -- Remove System Apps
 
 Certain system-level package names are excluded as they do not represent meaningful user intent:
 
@@ -127,7 +127,7 @@ EXCLUDED_PACKAGES = {
 }
 ```
 
-### Step 3 — Deduplicate Consecutive Events
+### Step 3 -- Deduplicate Consecutive Events
 
 Consecutive events with the same `package_name` within 1 second are merged (only the first is kept). This handles cases where the OS briefly backgrounds and re-foregrounds an app during a screen rotation or notification.
 
@@ -139,7 +139,7 @@ df = df[~((df['package_name'] == df['prev_pkg']) &
           (df['timestamp'] - df['prev_ts'] <= 1))]
 ```
 
-### Step 4 — Filter Short Users
+### Step 4 -- Filter Short Users
 
 Users with fewer than `MIN_TRANSITIONS_PER_USER` (= 100) transitions in the training window are excluded. This removes users whose history is too short to build a reliable Markov graph.
 
@@ -318,7 +318,7 @@ Mean per user: 6,732
 
 2. **Pre-processed transitions are included** in `data/processed/` as CSV files. If only the benchmark and dashboard are needed (not re-preprocessing), the raw download is not required.
 
-3. **The dataset is used as-is** — no data augmentation, oversampling, or synthetic data generation was performed.
+3. **The dataset is used as-is** -- no data augmentation, oversampling, or synthetic data generation was performed.
 
 4. **Only the app switching sequence** is used. Other UbiqLog modalities (battery, accelerometer, etc.) are not used in this project.
 
