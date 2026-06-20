@@ -125,7 +125,7 @@ Expected output: `7/7 KPIs PASS` with the values above.
 
 | Dataset | Description | Link | License |
 |---|---|---|---|
-| UbiqLog Android Usage Patterns | 9.7M events, 35 users, real Android app-switch logs, 508 days | <!-- [PLACEHOLDER: UBIQLOG_UCI_LINK] https://archive.ics.uci.edu/dataset/508 --> | CC BY 4.0 |
+| UbiqLog Android Usage Patterns | 9.7M events, 35 users, real Android app-switch logs, 508 days | <!-- [PLACEHOLDER: UBIQLOG_UCI_LINK] https://archive.ics.uci.edu/dataset/369 --> | CC BY 4.0 |
 
 **Datasets Published**
 
@@ -137,7 +137,7 @@ Expected output: `7/7 KPIs PASS` with the values above.
 
 ## Architecture
 
-<!-- [PLACEHOLDER: ARCH_DIAGRAM] Insert architecture diagram image here — PNG or SVG showing all 7 layers. See docs/architecture.md for the Mermaid source. -->
+![GraphMind V6 Architecture](architecture_diagram.png)
 
 GraphMind V6 is organised into **seven architectural layers**:
 

@@ -201,7 +201,7 @@ def main():
 def _download_and_extract(zip_path: str, ubiqlog_path: str) -> None:
     """Download and extract the UbiqLog dataset. Raises on failure (no fallback)."""
     os.makedirs(os.path.join(PROJECT_ROOT, "datasets"), exist_ok=True)
-    url = "https://archive.ics.uci.edu/static/public/508/ubiqlog+smartphone+lifelogging.zip"
+    url = "https://archive.ics.uci.edu/static/public/369/ubiqlog+smartphone+lifelogging.zip"
     print(f"\nDownloading dataset from:\n  {url}\n")
 
     try:

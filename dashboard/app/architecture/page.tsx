@@ -2,8 +2,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import {
-  Layers, Cpu, Shield, Zap, Sparkles, Database,
-  Key, Info, CheckCircle2, Server
+  Cpu, Shield, Zap, Sparkles, Database,
+  Key, Info, CheckCircle2
 } from "lucide-react";
 
 interface TierInfo {
@@ -131,56 +131,12 @@ export default function Architecture() {
         className="card p-6 mb-8"
       >
         <h2 className="section-title mb-4">Pipeline Execution Flow</h2>
-        <div className="flex flex-col items-center max-w-xl mx-auto">
-          
-          <div className="w-full flex items-center gap-4 p-3.5 rounded-lg border border-gray-200 bg-gray-50">
-            <div className="p-2.5 rounded-lg bg-white border border-gray-200 flex-shrink-0 flex items-center justify-center"><Server size={18} className="text-gray-500" /></div>
-            <div>
-              <div className="text-xs font-semibold text-gray-900">1. Android EventBus</div>
-              <p className="text-[10px] text-gray-500 mt-0.5">Intercepts app launches, battery updates, and weekend states.</p>
-            </div>
-          </div>
-
-          <div className="h-4 w-px bg-gray-200" />
-
-          <div className="w-full flex items-center gap-4 p-3.5 rounded-lg border border-gray-200 bg-gray-50">
-            <div className="p-2.5 rounded-lg bg-white border border-gray-200 flex-shrink-0 flex items-center justify-center"><Database size={18} className="text-blue-500" /></div>
-            <div>
-              <div className="text-xs font-semibold text-gray-900">2. Markov Graph Engine</div>
-              <p className="text-[10px] text-gray-500 mt-0.5">Updates individual user app transition weights and state counts.</p>
-            </div>
-          </div>
-
-          <div className="h-4 w-px bg-gray-200" />
-
-          <div className="w-full flex items-center gap-4 p-3.5 rounded-lg border border-blue-200 bg-blue-50">
-            <div className="p-2.5 rounded-lg bg-white border border-blue-200 flex-shrink-0 flex items-center justify-center"><Sparkles size={18} className="text-blue-600" /></div>
-            <div>
-              <div className="text-xs font-semibold text-blue-900">3. V6 Embedding Transformer</div>
-              <p className="text-[10px] text-blue-600/70 mt-0.5">Reranks transition candidates using per-user embedding sequence models.</p>
-            </div>
-          </div>
-
-          <div className="h-4 w-px bg-gray-200" />
-
-          <div className="w-full flex items-center gap-4 p-3.5 rounded-lg border border-gray-200 bg-gray-50">
-            <div className="p-2.5 rounded-lg bg-white border border-gray-200 flex-shrink-0 flex items-center justify-center"><Cpu size={18} className="text-amber-500" /></div>
-            <div>
-              <div className="text-xs font-semibold text-gray-900">4. RL (PPO) Adjuster</div>
-              <p className="text-[10px] text-gray-500 mt-0.5">Sets prefetch threshold dynamically on 20-step rolling success.</p>
-            </div>
-          </div>
-
-          <div className="h-4 w-px bg-gray-200" />
-
-          <div className="w-full flex items-center gap-4 p-3.5 rounded-lg border border-green-200 bg-green-50">
-            <div className="p-2.5 rounded-lg bg-white border border-green-200 flex-shrink-0 flex items-center justify-center"><Layers size={18} className="text-green-600" /></div>
-            <div>
-              <div className="text-xs font-semibold text-green-900">5. 5-Tier Cache</div>
-              <p className="text-[10px] text-green-600/70 mt-0.5">Loads predicted apps to WARM tier. Compresses evicted ones to COOL standby.</p>
-            </div>
-          </div>
-
+        <div className="flex justify-center max-w-3xl mx-auto">
+          <img
+            src="/architecture_diagram.png"
+            alt="GraphMind V6 Technical Architecture"
+            className="w-full h-auto rounded-lg border border-gray-100 shadow-sm"
+          />
         </div>
       </motion.div>
 
