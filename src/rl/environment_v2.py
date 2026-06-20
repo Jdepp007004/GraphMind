@@ -435,9 +435,9 @@ class GraphMindEnvV2(gym.Env):
         self, app_id: str, time_bucket: int, day_of_week: int = 0
     ) -> Optional[str]:
         """Find the graph node matching the given app/context."""
-        for nid in self.graph._graph.nodes():
-            n = self.graph._graph.nodes[nid]["data"]
-            if n.app_id == app_id and n.time_bucket == time_bucket:
+        for b_bucket in range(5):
+            nid = self.graph._node_lookup.get((app_id, time_bucket, b_bucket))
+            if nid is not None:
                 return nid
         return None
 

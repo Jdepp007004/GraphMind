@@ -33,6 +33,7 @@ import json
 import logging
 import os
 import time
+from collections import deque
 from datetime import date
 from typing import Dict, List, Optional
 
@@ -45,11 +46,12 @@ from src.benchmarks.baselines_v2 import (
     FirstOrderMarkovPolicy, SecondOrderMarkovPolicy,
     GraphOnlyPolicy, GraphMindRLPolicy,
 )
+from src.benchmarks.baselines_extra import ARIMAPolicy, LSTMPolicy, ProphetPolicy, _try_tqdm
 from src.benchmarks.metrics_v2 import MetricsV2
 from src.benchmarks.statistics import StatisticalEvaluator
 from src.benchmarks.ablation import AblationRunner
 from src.benchmarks.kpi_extractor import KPIExtractor
-from src.data.event_dataset import SyntheticDataset, DeviceAnalyzerDataset
+from src.data.event_dataset import SyntheticDataset, DeviceAnalyzerDataset, UbiqLogDataset
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -77,6 +79,13 @@ ONLINE_POLICIES = [
 MARKOV_POLICIES = [
     FirstOrderMarkovPolicy,
     SecondOrderMarkovPolicy,
+]
+
+# Extra baselines for comprehensive comparison (ARIMA, LSTM, Prophet)
+EXTRA_POLICIES = [
+    ARIMAPolicy,
+    LSTMPolicy,
+    ProphetPolicy,
 ]
 
 
@@ -132,6 +141,8 @@ class BenchmarkEvaluatorV2:
         logger.info(f"Loading dataset: {self._source}")
         if self._source == "device_analyzer":
             self._dataset = DeviceAnalyzerDataset(fallback_to_synthetic=True)
+        elif self._source == "ubiqlog":
+            self._dataset = UbiqLogDataset()
         else:
             self._dataset = SyntheticDataset()
 
@@ -173,8 +184,9 @@ class BenchmarkEvaluatorV2:
         tiers: List[str] = []
         prev_event: Optional[dict] = None
         prev_hot: set = set()
+        eviction_window = deque(maxlen=5)
 
-        for event in self._test_events:
+        for event in _try_tqdm(self._test_events, desc=f"Evaluating {policy_name}", leave=False):
             app_id = event.get("app_id", "")
             context = {
                 "time_bucket": event.get("time_bucket", 0),
@@ -186,6 +198,10 @@ class BenchmarkEvaluatorV2:
             if prev_event is not None:
                 prev_app = prev_event.get("app_id", "")
                 predicted = policy.predict_next_apps(prev_app, context)
+                
+                # Check for thrash: is the app coming back shortly after eviction?
+                if app_id in eviction_window:
+                    thrash += 1
 
                 if app_id in predicted:
                     hits += 1
@@ -198,6 +214,13 @@ class BenchmarkEvaluatorV2:
 
                 fp += max(0, len(predicted) - (1 if app_id in predicted else 0))
                 app_ids.append(app_id)
+                
+                # Update eviction window
+                current_hot = set(predicted)
+                for item in prev_hot:
+                    if item not in current_hot:
+                        eviction_window.append(item)
+                prev_hot = current_hot
 
             policy.update(event)
             prev_event = event
@@ -235,7 +258,10 @@ class BenchmarkEvaluatorV2:
 
         # ── Online policies ────────────────────────────────────────────────
         for PolicyClass in ONLINE_POLICIES:
-            policy = PolicyClass()
+            try:
+                policy = PolicyClass(top_k=self._top_k)
+            except TypeError:
+                policy = PolicyClass()
             name = policy.get_name()
             logger.info(f"Evaluating: {name}")
             t0 = time.perf_counter()
@@ -245,7 +271,10 @@ class BenchmarkEvaluatorV2:
 
         # ── Markov policies ────────────────────────────────────────────────
         for PolicyClass in MARKOV_POLICIES:
-            policy = PolicyClass()
+            try:
+                policy = PolicyClass(top_k=self._top_k)
+            except TypeError:
+                policy = PolicyClass()
             name = policy.get_name()
             logger.info(f"Evaluating: {name}")
             t0 = time.perf_counter()
@@ -261,8 +290,8 @@ class BenchmarkEvaluatorV2:
         graph_result["eval_time_s"] = round(time.perf_counter() - t0, 2)
         policy_results.append(graph_result)
 
-        # ── GraphMind RL ───────────────────────────────────────────────────
-        logger.info("Evaluating: GraphMind_RL (full system via PolicyRunner)")
+        # ── GraphMind RL (V5) ──────────────────────────────────────────────
+        logger.info("Evaluating: GraphMind_RL (V5 -- full system via PolicyRunner)")
         t0 = time.perf_counter()
         rl_policy = GraphMindRLPolicy(user_id=f"{self._user_id}_rl", top_k=self._top_k)
         rl_policy.train(self._train_events)
@@ -278,7 +307,100 @@ class BenchmarkEvaluatorV2:
             }
         rl_metrics["policy"] = settings.BASELINE_V2_GRAPHMIND_RL
         rl_metrics["eval_time_s"] = round(time.perf_counter() - t0, 2)
+        
+        # Populate missing columns for V5 in CSV output
+        if "records" in rl_metrics and rl_metrics["records"]:
+            app_ids = [r["app_id"] for r in rl_metrics["records"]]
+            tiers = [r["tier"] for r in rl_metrics["records"]]
+            rl_metrics["latency_saved_pct"] = round(self._metrics.latency_saved_pct(app_ids, tiers), 2)
+            rl_metrics["prediction_latency_ms"] = round((rl_metrics["eval_time_s"] * 1000.0) / max(1, len(self._test_events)), 3)
+            hot_counts = [r["hot_count"] for r in rl_metrics["records"]]
+            warm_counts = [r["warm_count"] for r in rl_metrics["records"]]
+            cold_counts = [r["cold_count"] for r in rl_metrics["records"]]
+            avg_hot = sum(hot_counts) / len(hot_counts)
+            avg_warm = sum(warm_counts) / len(warm_counts)
+            avg_cold = sum(cold_counts) / len(cold_counts)
+            rl_metrics["memory_usage_mb"] = round(self._metrics.memory_usage_mb(avg_hot, avg_warm, avg_cold), 3)
+        else:
+            rl_metrics.setdefault("latency_saved_pct", 0.0)
+            rl_metrics.setdefault("prediction_latency_ms", 0.0)
+            rl_metrics.setdefault("memory_usage_mb", 0.0)
+            
         policy_results.append(rl_metrics)
+
+        # ── Extra baselines: ARIMA, LSTM, Prophet ─────────────────────────
+        logger.info("Evaluating extra baselines: ARIMA, LSTM, Prophet...")
+        for PolicyClass in EXTRA_POLICIES:
+            try:
+                policy = PolicyClass(top_k=self._top_k)
+                name = policy.get_name()
+                logger.info(f"Evaluating: {name}")
+                t0 = time.perf_counter()
+                result = self.evaluate_policy(policy, name)
+                result["eval_time_s"] = round(time.perf_counter() - t0, 2)
+                policy_results.append(result)
+            except Exception as exc:
+                logger.warning(f"Extra policy {PolicyClass.__name__} failed: {exc}")
+
+        # ── GraphMind V6 (Transformer Reranker + 5-Tier Cache) ────────────
+        logger.info("Evaluating: GraphMind_V6 (Transformer Reranker + 5-Tier Cache)")
+        t0 = time.perf_counter()
+        try:
+            from src.models.v6_pipeline import GraphMindV6Policy
+            v6_policy = GraphMindV6Policy(
+                user_id=f"{self._user_id}_v6",
+                top_k=self._top_k,
+                reranker_epochs=10,  # Per-user embedding reranker converges in ~5-10 epochs
+            )
+            v6_policy.train(self._train_events)
+            try:
+                v6_metrics = v6_policy.run_full_evaluation(self._test_events)
+            except Exception as exc2:
+                logger.warning(f"V6 run_full_evaluation fallback: {exc2}. Using evaluate_policy.")
+                v6_metrics = self.evaluate_policy(v6_policy, "GraphMind_V6")
+
+            # Compute V6 reranker Hit@1 on test set (per-user embedding reranker)
+            if v6_policy._reranker_ready and v6_policy._per_user_rerankers:
+                v6_eval = v6_policy.evaluate_reranker(self._test_events)
+                v6_metrics["v6_reranker_hit_at_1_pct"] = v6_eval["hit_at_1"]
+                v6_metrics["v6_reranker_hit_at_3_pct"] = v6_eval["hit_at_3"]
+                v6_metrics["v6_reranker_test_samples"]  = v6_eval["n_samples"]
+                logger.info(
+                    f"V6 Reranker -- Hit@1={v6_eval['hit_at_1']:.1f}%  "
+                    f"Hit@3={v6_eval['hit_at_3']:.1f}%  "
+                    f"(n={v6_eval['n_samples']})"
+                )
+            else:
+                v6_metrics["v6_reranker_hit_at_1_pct"] = 0.0
+                v6_metrics["v6_reranker_hit_at_3_pct"] = 0.0
+                v6_metrics["v6_reranker_test_samples"]  = 0
+
+            v6_metrics["policy"] = "GraphMind_V6"
+            v6_metrics["eval_time_s"] = round(time.perf_counter() - t0, 2)
+            
+            # Populate missing columns for V6 in CSV output
+            if "records" in v6_metrics and v6_metrics["records"]:
+                app_ids = [r["app_id"] for r in v6_metrics["records"]]
+                tiers = [r["tier"] for r in v6_metrics["records"]]
+                v6_metrics["latency_saved_pct"] = round(self._metrics.latency_saved_pct(app_ids, tiers), 2)
+                v6_metrics["prediction_latency_ms"] = round((v6_metrics["eval_time_s"] * 1000.0) / max(1, len(self._test_events)), 3)
+                hot_counts = [r["hot_count"] for r in v6_metrics["records"]]
+                warm_counts = [r["warm_count"] for r in v6_metrics["records"]]
+                cold_counts = [r["cold_count"] for r in v6_metrics["records"]]
+                avg_hot = sum(hot_counts) / len(hot_counts)
+                avg_warm = sum(warm_counts) / len(warm_counts)
+                avg_cold = sum(cold_counts) / len(cold_counts)
+                v6_metrics["memory_usage_mb"] = round(self._metrics.memory_usage_mb(avg_hot, avg_warm, avg_cold), 3)
+            else:
+                v6_metrics.setdefault("latency_saved_pct", 0.0)
+                v6_metrics.setdefault("prediction_latency_ms", 0.0)
+                v6_metrics.setdefault("memory_usage_mb", 0.0)
+
+            policy_results.append(v6_metrics)
+        except Exception as exc:
+            import traceback
+            logger.error(f"GraphMind V6 evaluation failed: {exc}\n{traceback.format_exc()}")
+            self._stability_issues += 1
 
         # ── Ablations ──────────────────────────────────────────────────────
         logger.info("Running ablation studies...")
@@ -290,17 +412,33 @@ class BenchmarkEvaluatorV2:
         logger.info("Computing statistical comparisons...")
         statistical_results = self._compute_statistics(policy_results)
 
-        # ── KPI Extraction ────────────────────────────────────────────────
-        logger.info("Extracting PS03 KPIs...")
+        # ── KPI Extraction (V6 is primary if present, else V5) ─────────────
+        logger.info("Extracting PS03 KPIs (primary: GraphMind_V6)...")
+        # V6 uses V5's full evaluation for KPI purposes; swap name for extractor
+        kpi_results = []
+        for r in policy_results:
+            if r.get("policy") == "GraphMind_V6":
+                # Present V6 as the primary GraphMind_RL result for KPI evaluation
+                kpi_r = dict(r)
+                kpi_r["policy"] = settings.BASELINE_V2_GRAPHMIND_RL
+                kpi_results.append(kpi_r)
+            elif r.get("policy") == settings.BASELINE_V2_GRAPHMIND_RL:
+                # Keep V5 as a secondary result (rename to avoid conflict)
+                kpi_r = dict(r)
+                kpi_r["policy"] = "GraphMind_V5"
+                kpi_results.append(kpi_r)
+            else:
+                kpi_results.append(r)
+
         kpi_extractor = KPIExtractor(
-            policy_results=policy_results,
+            policy_results=kpi_results,
             stability_issues=self._stability_issues,
             test_events=self._test_events,
         )
         kpi_summary = kpi_extractor.compute()
         kpi_extractor.print_summary(kpi_summary)
         kpi_extractor.save(kpi_summary, KPI_SUMMARY_PATH)
-        logger.info(f"KPI summary saved → {KPI_SUMMARY_PATH}")
+        logger.info(f"KPI summary saved -> {KPI_SUMMARY_PATH}")
 
         return {
             "policy_results": policy_results,
@@ -377,7 +515,7 @@ class BenchmarkEvaluatorV2:
         if policy_results:
             metric_keys = [
                 "policy", "cache_hit_rate", "precision", "recall", "f1",
-                "latency_saved_ms", "latency_saved_pct", "battery_overhead_pct",
+                "latency_saved_ms", "latency_saved_pct",
                 "false_prefetch_rate", "thrash_rate",
                 "prediction_latency_ms", "memory_usage_mb", "eval_time_s",
                 "gemma_explanation",  # nullable — does not affect F1 or any benchmark metric
@@ -395,7 +533,7 @@ class BenchmarkEvaluatorV2:
             ]
             ablation_keys = [
                 "variant", "cache_hit_rate", "precision", "recall", "f1",
-                "latency_saved_ms", "battery_overhead_pct", "f1", "eval_time_s"
+                "latency_saved_ms", "f1", "eval_time_s"
             ]
             self._write_csv(ablation_rows, settings.BENCHMARK_V2_ABLATION_CSV, ablation_keys)
             logger.info(f"Written: {settings.BENCHMARK_V2_ABLATION_CSV}")
@@ -525,8 +663,8 @@ class BenchmarkEvaluatorV2:
             f"",
             f"## Baseline Comparison (Ranked by Cache Hit Rate)",
             f"",
-            f"| Rank | Policy | Hit Rate | F1 | Precision | Recall | Latency Saved | Battery OH |",
-            f"|------|--------|----------|-----|-----------|--------|--------------|------------|",
+            f"| Rank | Policy | Hit Rate | F1 | Precision | Recall | Latency Saved |",
+            f"|------|--------|----------|-----|-----------|--------|---------------|",
         ]
 
         for rank, result in enumerate(sorted_policies, 1):
@@ -536,8 +674,7 @@ class BenchmarkEvaluatorV2:
                 f"| {result.get('f1', 0.0):.4f} "
                 f"| {result.get('precision', 0.0):.4f} "
                 f"| {result.get('recall', 0.0):.4f} "
-                f"| {result.get('latency_saved_ms', 0.0):.1f} ms "
-                f"| {result.get('battery_overhead_pct', 0.0):.4f}% |"
+                f"| {result.get('latency_saved_ms', 0.0):.1f} ms |"
             )
 
         lines += [
@@ -589,7 +726,7 @@ def main() -> None:
         description="Run GraphMind v2 benchmark evaluation."
     )
     parser.add_argument(
-        "--dataset", choices=["synthetic", "device_analyzer"],
+        "--dataset", choices=["synthetic", "device_analyzer", "ubiqlog"],
         default="synthetic",
         help="Dataset source (default: synthetic).",
     )

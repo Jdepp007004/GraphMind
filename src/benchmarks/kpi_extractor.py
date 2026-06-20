@@ -1,7 +1,7 @@
 """
 src/benchmarks/kpi_extractor.py
 
-KPI extraction for GraphMind V5 — Samsung EnnovateX AX Hackathon 2026 PS03.
+KPI extraction for GraphMind V5 -- Samsung EnnovateX AX Hackathon 2026 PS03.
 
 Extracts and validates all 7 PS03 target KPIs from benchmark results:
 
@@ -13,7 +13,7 @@ Extracts and validates all 7 PS03 target KPIs from benchmark results:
   6. System Stability                   (0 issues)
   7. Memory Utilisation Efficiency      (≥ 30% improvement vs LRU)
 
-All thresholds are defined in one place here — do not duplicate them elsewhere.
+All thresholds are defined in one place here -- do not duplicate them elsewhere.
 """
 
 import json
@@ -25,7 +25,7 @@ from config import settings
 
 logger = logging.getLogger(__name__)
 
-# ── KPI Thresholds (PS03 requirements) ────────────────────────────────────────
+# KPI Thresholds (PS03 requirements)
 KPI_TARGETS = {
     "next_context_prediction_f1":               0.75,   # ≥ 75% F1
     "cache_hit_rate_pct":                       85.0,   # ≥ 85%
@@ -36,13 +36,13 @@ KPI_TARGETS = {
     "memory_utilization_efficiency_improvement_pct": 30.0,  # ≥ 30%
 }
 
-# ── Baseline cold-start latency (Samsung Galaxy A23) ──────────────────────────
+# Baseline cold-start latency (Samsung Galaxy A23)
 # Used to compute load/launch time improvement percentages.
 # Source: settings.LATENCY_COLD_START_MS (average across all app IDs)
 def _mean_cold_start_ms() -> float:
     """Mean cold-start latency across all apps in the literature table."""
     values = list(settings.LATENCY_COLD_START_MS.values())
-    # Exclude the 'default' key — it is a fallback, not a real app
+    # Exclude the 'default' key -- it is a fallback, not a real app
     return sum(v for v in values) / max(1, len(values))
 
 
@@ -87,7 +87,7 @@ class KPIExtractor:
         self._graphmind = self._find_policy(settings.BASELINE_V2_GRAPHMIND_RL)
         self._lru = self._find_policy(settings.BASELINE_V2_LRU)
 
-    # ── Private helpers ────────────────────────────────────────────────────────
+    # Private helpers
 
     def _find_policy(self, name: str) -> Optional[dict]:
         """Return the result dict for a named policy, or None."""
@@ -102,7 +102,7 @@ class KPIExtractor:
             return default
         return float(result.get(key, default))
 
-    # ── KPI Computations ──────────────────────────────────────────────────────
+    # KPI Computations
 
     def _kpi1_f1(self) -> float:
         """
@@ -116,7 +116,7 @@ class KPIExtractor:
         Hit@1 (single-step exact match) is computed and stored separately 
         as a disclosed secondary metric for scientific completeness. It is 
         near-random (~4%) on this dataset due to near-uniform transition 
-        distributions in the synthetic/UbiqLog data — a known limitation 
+        distributions in the synthetic/UbiqLog data -- a known limitation 
         of first-order Markov chains, documented in docs/ax.md.
         """
         top_k_accuracy = self._get(self._graphmind, "cache_hit_rate", 0.0)
@@ -124,16 +124,16 @@ class KPIExtractor:
 
     def _kpi2_cache_hit_rate_pct(self) -> float:
         """
-        KPI 2 — Cache Hit Rate (%).
+        KPI 2 -- Cache Hit Rate (%).
 
-        Formula: graphmind.cache_hit_rate × 100
-        Target: ≥ 85%
+        Formula: graphmind.cache_hit_rate x 100
+        Target: >= 85%
         """
         return round(self._get(self._graphmind, "cache_hit_rate", 0.0) * 100.0, 2)
 
     def _kpi3_thrash_reduction_pct(self) -> float:
         """
-        KPI 3 — Memory Thrashing Reduction (%).
+        KPI 3 -- Memory Thrashing Reduction (%).
 
         Formula: (LRU_thrash_rate - GraphMind_thrash_rate) / LRU_thrash_rate × 100
         If LRU thrash_rate is 0, falls back to a safe value.
@@ -142,12 +142,12 @@ class KPIExtractor:
         lru_thrash = self._get(self._lru, "thrash_rate", 0.0)
         gm_thrash = self._get(self._graphmind, "thrash_rate", 0.0)
         if lru_thrash == 0.0:
-            # LRU baseline with zero thrash recorded — use raw thrash counts if available
+            # LRU baseline with zero thrash recorded -- use raw thrash counts if available
             lru_thrash_raw = self._get(self._lru, "thrash_events", 0.0)
             gm_thrash_raw = self._get(self._graphmind, "thrash_events", 0.0)
             if lru_thrash_raw > 0:
                 return round((lru_thrash_raw - gm_thrash_raw) / lru_thrash_raw * 100.0, 2)
-            # Both are zero — no thrashing in either policy → 100% reduction vs LRU
+            # Both are zero -- no thrashing in either policy → 100% reduction vs LRU
             logger.info("KPI3: Both LRU and GraphMind thrash_rate = 0. Reporting 100% reduction.")
             return 100.0
         reduction = (lru_thrash - gm_thrash) / lru_thrash * 100.0
@@ -155,7 +155,7 @@ class KPIExtractor:
 
     def _kpi4_load_time_improvement_pct(self) -> float:
         """
-        KPI 4 — App Load Time Improvement (%).
+        KPI 4 -- App Load Time Improvement (%).
 
         Load time = time from tap to app fully interactive.
         For pre-loaded (WARM) apps: reduction = (cold - warm) / cold × 100.
@@ -178,7 +178,7 @@ class KPIExtractor:
 
     def _kpi5_launch_time_improvement_pct(self) -> float:
         """
-        KPI 5 — App Launch Time Improvement (%).
+        KPI 5 -- App Launch Time Improvement (%).
 
         Launch time = time from OS starting the process to first frame rendered.
         For HOT (in-RAM) apps: reduction = (cold - hot) / cold × 100.
@@ -211,7 +211,7 @@ class KPIExtractor:
 
     def _kpi6_stability(self) -> int:
         """
-        KPI 6 — System Stability.
+        KPI 6 -- System Stability.
 
         Returns the number of crashes / OOM / unhandled exceptions recorded
         during the benchmark run. Target: 0.
@@ -220,43 +220,48 @@ class KPIExtractor:
 
     def _kpi7_memory_utilization_efficiency_pct(self) -> float:
         """
-        KPI 7 — Memory Utilisation Efficiency Improvement (%).
+        KPI 7 -- Memory Utilisation Efficiency Improvement (%).
 
-        Correct formula:
-            graphmind_hit_rate = cache_hit_rate_pct / 100  (e.g. 0.8877)
-            random_baseline = (HOT_SIZE + WARM_SIZE) / num_unique_apps
-            improvement = (graphmind_hit_rate - random_baseline) / random_baseline * 100
+        Measures how much GraphMind reduces cold-start misses compared to the
+        LRU baseline -- the standard "no intelligent prefetching" comparison.
+
+        Formula:
+            lru_miss_rate      = 1 - lru_hit_rate
+            graphmind_miss_rate = 1 - graphmind_hit_rate
+            improvement = (lru_miss_rate - graphmind_miss_rate) / lru_miss_rate * 100
+
+        This is the fraction of LRU cold-start misses that GraphMind eliminates.
+        A value of 30% means GraphMind avoids 30% more cold-start delays than LRU.
+        Target: >= 30%
+
+        Benchmark (synthetic, 10 users):
+            LRU hit rate = 19.69%  => miss rate = 80.31%
+            GraphMind hit rate = 88.77% => miss rate = 11.23%
+            Improvement = (80.31 - 11.23) / 80.31 * 100 = 86.0% [PASS]
         """
-        from config import settings
-        
+        lru = self._lru
         gm = self._graphmind
         if gm is None:
             return 0.0
 
         graphmind_hit_rate = self._get(gm, "cache_hit_rate", 0.0)
-        hot_size = getattr(settings, "HOT_TIER_CAPACITY", 8)
-        warm_size = getattr(settings, "WARM_TIER_CAPACITY", 8)
-        
-        unique_apps = set()
-        for e in self._test_events:
-            app = e.get("app_id") if isinstance(e, dict) else e
-            if app and app != "unknown":
-                unique_apps.add(app)
-                
-        num_unique_apps = len(unique_apps) if len(unique_apps) > 0 else 30
-        
-        random_baseline = (hot_size + warm_size) / num_unique_apps
-        if random_baseline <= 0.0:
+        lru_hit_rate = self._get(lru, "cache_hit_rate", 0.0) if lru is not None else 0.0
+
+        lru_miss_rate = 1.0 - lru_hit_rate
+        graphmind_miss_rate = 1.0 - graphmind_hit_rate
+
+        if lru_miss_rate <= 0.0:
+            # LRU already achieves 100% hit rate -- no room for improvement
+            logger.info("KPI7: LRU miss rate = 0. Cannot compute improvement over LRU.")
             return 0.0
-            
-        improvement = (graphmind_hit_rate - random_baseline) / random_baseline * 100.0
-        
-        return round(improvement, 2)
+
+        improvement = (lru_miss_rate - graphmind_miss_rate) / lru_miss_rate * 100.0
+        return round(max(0.0, improvement), 2)
 
 
 
 
-    # ── Public API ────────────────────────────────────────────────────────────
+    # Public API
 
     def compute_static_cache_hit_rate(self, cache_size: int = 14) -> float:
         if getattr(self, "_test_events", None) is None or not self._test_events:

@@ -152,7 +152,8 @@ class GraphMindPolicyRunner:
         _debug_actual_next: List[str] = []
         _debug_hits: List[int] = []
 
-        for current_event_index, event in enumerate(events):
+        from src.benchmarks.baselines_extra import _try_tqdm
+        for current_event_index, event in enumerate(_try_tqdm(events, desc="Evaluating GraphMind_RL (V5)", leave=False)):
             payload = self._build_payload(event)
 
             before_hot = set(self.memory_manager.get_hot_node_ids())
@@ -510,14 +511,10 @@ class GraphMindPolicyRunner:
         # Transition probability component: P(app | current_app) from graph edges
         trans_prob = 0.0
         if current_app_id is not None:
-            # Find the current node in the graph to look up edge weights
-            for nid in self.graph._graph.nodes():
-                n = self.graph._graph.nodes[nid]["data"]
-                if n.app_id == current_app_id:
-                    if self.graph._graph.has_edge(nid, node_id):
-                        edge_data = self.graph._graph[nid][node_id]
-                        trans_prob = edge_data.get("transition_prob", 0.0)
-                    break
+            nid = self.prefetch.current_node_id
+            if nid is not None and self.graph._graph.has_edge(nid, node_id):
+                edge_data = self.graph._graph[nid][node_id]
+                trans_prob = edge_data.get("transition_prob", 0.0)
 
         # Frequency component: per-user normalised count (personalised)
         # Falls back to global _app_counts if per-user table not yet built.
@@ -527,11 +524,7 @@ class GraphMindPolicyRunner:
 
         # Recency component: node access count as a proxy for recency
         # (higher access_count = more recently active in a realistic workload)
-        max_access = max(
-            (self.graph._graph.nodes[nid]["data"].access_count
-             for nid in self.graph._graph.nodes()),
-            default=1
-        )
+        max_access = getattr(self.graph, "max_node_access", 1)
         recency_score = node.access_count / max(max_access, 1)
 
         return trans_prob * 0.50 + freq_score * 0.30 + recency_score * 0.20
