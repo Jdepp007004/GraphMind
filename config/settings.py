@@ -50,10 +50,36 @@ MAX_NODES_COLD = 2000             # hard cap on COLD graph size
 # HOT=8 (context-aware dynamic + persistent partition)
 # WARM=8 (extended warm tier, justified by 8GB RAM budget)
 # Total 16 slots: conservative estimate of cacheable apps on 8GB device
-HOT_TIER_CAPACITY  = 8             # HOT tier: top-8 apps in RAM
-HOT_PERSISTENT_SIZE = 3            # slots pinned to top-N most frequent apps
+HOT_TIER_CAPACITY  = 1             # HOT tier: top-8 apps in RAM
+HOT_PERSISTENT_SIZE = 0            # slots pinned to top-N most frequent apps
 # Remaining HOT slots = HOT_SIZE - HOT_PERSISTENT_SIZE = 5 dynamic
-WARM_TIER_CAPACITY = 8             # was 6. A23 8GB RAM: ~5.5GB usable, 150-400MB per app -> supports 14-36 apps
+WARM_TIER_CAPACITY = 1             # was 6. A23 8GB RAM: ~5.5GB usable, 150-400MB per app -> supports 14-36 apps
+
+# ── 5-Tier Cache (GraphMind V6) ─────────────────────────────────────────────
+# PIN  (3 slots)  -- permanently pinned, always in RAM, never evicted. ~10ms access.
+# HOT  (5 slots)  -- LRU dynamic resident apps. ~42ms access.
+# WARM (8 slots)  -- Prefetched by confidence scorer. ~190ms access.
+# COOL (20 slots) -- Recently evicted from WARM, compressed state. ~400ms access.
+# COLD (unlimited)-- SQLite on-disk. ~720ms access.
+PIN_TIER_CAPACITY  = 1             # top-N most-frequent apps, always resident
+COOL_TIER_CAPACITY = 1             # compressed standby buffer between WARM and COLD
+
+LATENCY_COOL_START_MS: dict = {
+    "com.instagram.android":        410.0,
+    "com.whatsapp":                 330.0,
+    "com.google.youtube":           490.0,
+    "com.spotify.music":            375.0,
+    "com.google.android.gm":        295.0,
+    "com.google.android.maps":      430.0,
+    "com.android.chrome":           265.0,
+    "com.netflix.mediaclient":      455.0,
+    "com.amazon.mShop.android":     385.0,
+    "com.slack.android":            345.0,
+    "com.phonepe.app":              295.0,
+    "net.one97.paytm":              315.0,
+    "com.samsung.health":           270.0,
+    "default":                      420.0,   # fallback for unmapped apps
+}
 
 COLD_DB_PATH = os.path.join(DATA_DIR, "cold_graph.db")
 
@@ -91,7 +117,7 @@ REWARD_V2_MAX_THRASH_PER_STEP = 10       # 10 thrash events = max thrash penalty
 
 # ── Pre-fetch Daemon ───────────────────────────────────────────────────────
 PREFETCH_INTERVAL_MINUTES = 15
-PREFETCH_TOP_K = 5                # number of nodes to pre-warm each cycle
+PREFETCH_TOP_K = 4                # number of nodes to pre-warm each cycle
 BATTERY_SUPPRESS_THRESHOLD = 20  # percent — suppress aggressive pre-fetch below this
 
 # ── Confidence-Based Prefetch (src/prefetch/confidence_prefetch.py) ─────────
