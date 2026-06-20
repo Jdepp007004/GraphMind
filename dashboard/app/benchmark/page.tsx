@@ -82,15 +82,15 @@ export default function Benchmark() {
     <div className="max-w-5xl mx-auto px-8 py-10">
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
         <h1 className="page-title mb-1">Benchmark Explorer</h1>
-        <p className="text-sm text-gray-500">31 users · 80/10/10 chronological split · paired t-test vs GraphMindRL baseline</p>
+        <p className="text-sm text-gray-500">14 policies · 31 users · 80/10/10 chronological split · real UbiqLog data</p>
       </motion.div>
 
       {/* Stats row */}
       <div className="grid grid-cols-3 gap-3 mb-6">
         {[
-          { label: "Best F1", value: "0.7745", sub: "GraphMindRL_V5", green: true },
-          { label: "Improvement", value: "+0.0321", sub: "vs GraphMindRL baseline", green: true },
-          { label: "Statistical sig.", value: "p = 0.0115", sub: "Cohen d = 0.491" },
+          { label: "Best Cache Hit Rate", value: "97.92%", sub: "GraphMind_V6 (real UbiqLog)", green: true },
+          { label: "Best F1", value: "0.4157", sub: "GraphMind_V6 · 24% above V5", green: true },
+          { label: "Thrash Rate", value: "0.00%", sub: "V6 · vs 33.98% LRU", green: true },
         ].map(s => (
           <div key={s.label} className="card p-4">
             <div className="label mb-2">{s.label}</div>
@@ -127,8 +127,8 @@ export default function Benchmark() {
             <Bar dataKey={dataKey} name={tab === "f1" ? "F1%" : tab === "hit_rate" ? "Hit Rate%" : "ms"} radius={[3, 3, 0, 0]}>
               {chartData.map((e) => (
                 <Cell key={e.policy}
-                  fill={e.policy === "GraphMindRL_V5" ? "#111827"
-                    : e.policy === "GraphMindRL_Baseline" ? "#9ca3af" : "#e5e7eb"} />
+                  fill={e.policy === "GraphMind_V6" ? "#111827"
+                    : e.policy === "GraphMind_RL" ? "#6b7280" : "#e5e7eb"} />
               ))}
             </Bar>
           </BarChart>

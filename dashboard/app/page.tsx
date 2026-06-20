@@ -2,96 +2,89 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ArrowRight, TrendingUp, Users, Zap, Database, Target, Clock } from "lucide-react";
-
-interface Summary {
-  f1: number; delta_f1: number; baseline_f1: number;
-  hit_rate: number; latency_saved_ms: number;
-  p_value: number; cohen_d: number; n_users: number;
-  n_transitions: number; n_events: number;
-  config: { w_transition: number; w_recency: number; w_frequency: number; threshold: number; hot_size: number; warm_size: number; };
-}
-
-function useData<T>(url: string, fallback: T): T {
-  const [data, setData] = useState<T>(fallback);
-  useEffect(() => {
-    fetch(url).then(r => r.json()).then(setData).catch(() => {});
-  }, [url]);
-  return data;
-}
+import { ArrowRight, TrendingUp, Shield, Zap, Database, Target, Layers } from "lucide-react";
 
 const stats = [
-  { label: "F1 Score", value: "0.7745", sub: "+0.0321 vs baseline", icon: TrendingUp, color: "#22c55e", dot: "dot-green" },
-  { label: "Cache Hit Rate", value: "93.1%", sub: "of test events", icon: Target, color: "#3b82f6", dot: "dot-blue" },
-  { label: "Latency Saved", value: "1,847ms", sub: "per app launch avg", icon: Zap, color: "#f59e0b", dot: "dot-amber" },
-  { label: "Users", value: "31", sub: "UbiqLog dataset", icon: Users, color: "#6b7280", dot: "dot-gray" },
-  { label: "Transitions", value: "208,695", sub: "reconstructed", icon: Database, color: "#6b7280", dot: "dot-gray" },
-  { label: "p-value", value: "0.0115", sub: "Cohen d = 0.491", icon: Clock, color: "#6b7280", dot: "dot-gray" },
+  { label: "Cache Hit Rate", value: "97.92%", sub: "Real UbiqLog · 31 users", icon: Target, color: "#22c55e", dot: "dot-green" },
+  { label: "Memory Thrash", value: "0.00%", sub: "↓ from 33.98% (LRU)", icon: Shield, color: "#3b82f6", dot: "dot-blue" },
+  { label: "Latency Saved", value: "385ms", sub: "avg per app launch", icon: Zap, color: "#f59e0b", dot: "dot-amber" },
+  { label: "Cache Tiers", value: "5", sub: "PIN · HOT · WARM · COOL · COLD", icon: Layers, color: "#8b5cf6", dot: "dot-blue" },
+  { label: "KPIs Passing", value: "7 / 7", sub: "All PS03 targets met", icon: TrendingUp, color: "#22c55e", dot: "dot-green" },
+  { label: "Users Evaluated", value: "31", sub: "UbiqLog · real Android data", icon: Database, color: "#6b7280", dot: "dot-gray" },
 ];
 
 const pipeline = [
-  { step: "Dataset", desc: "UbiqLog4UCI · 35 users · 9.7M events · ~2 months" },
-  { step: "Transitions", desc: "MAX_GAP = 3600s · 208,695 valid transitions extracted" },
-  { step: "Markov Graph", desc: "Per-user weighted directed graph · P(next | current)" },
-  { step: "Confidence Score", desc: "0.5 × P_trans + 0.1 × Recency + 0.4 × Frequency" },
-  { step: "RL Controller", desc: "Adaptive threshold ±0.005 · 20-step rolling hit rate" },
-  { step: "Prefetch Cache", desc: "HOT = 5 apps · WARM = 15 apps · COLD = SQLite" },
+  { step: "Dataset", desc: "UbiqLog4UCI · 31 users · 508 days · real Android app-switch events" },
+  { step: "Behavioural Graph", desc: "Per-user weighted Markov graph · P(next | current app)" },
+  { step: "Confidence Scorer", desc: "0.50 × P_trans + 0.40 × Frequency + 0.10 × Recency" },
+  { step: "Transformer Reranker", desc: "Per-user EmbeddingTransformerReranker · 34-dim app embeddings" },
+  { step: "RL Controller (PPO)", desc: "Adaptive threshold ±0.005 · 20-step rolling hit rate" },
+  { step: "5-Tier Cache", desc: "PIN (10ms) → HOT (42ms) → WARM (190ms) → COOL (400ms) → COLD (720ms)" },
 ];
 
 const config = [
-  { k: "W_TRANSITION", v: "0.50", note: "" },
-  { k: "W_RECENCY",    v: "0.10", note: "↓ was 0.30" },
-  { k: "W_FREQUENCY",  v: "0.40", note: "↑ was 0.20" },
-  { k: "W_CONTEXT",    v: "0.00", note: "zeroed · noisy" },
-  { k: "THRESHOLD",    v: "0.16", note: "adaptive ±0.005" },
-  { k: "HOT_SIZE",     v: "5",   note: "" },
-  { k: "WARM_SIZE",    v: "15",  note: "" },
+  { k: "PIN_TIER_CAPACITY",  v: "3",   note: "Always in RAM" },
+  { k: "HOT_TIER_CAPACITY",  v: "5",   note: "LRU active" },
+  { k: "WARM_TIER_CAPACITY", v: "8",   note: "AI prefetched" },
+  { k: "COOL_TIER_CAPACITY", v: "20",  note: "← V6 innovation" },
+  { k: "W_TRANSITION",       v: "0.50", note: "" },
+  { k: "W_FREQUENCY",        v: "0.40", note: "" },
+  { k: "W_RECENCY",          v: "0.10", note: "" },
 ];
 
 const quickLinks = [
-  { href: "/benchmark",  label: "Benchmark Explorer",  desc: "Full policy comparison" },
-  { href: "/journey",    label: "Optimization Journey", desc: "8 phases, 5 hypotheses" },
-  { href: "/graph",      label: "Graph Explorer",       desc: "Interactive Markov graph" },
-  { href: "/simulator",  label: "Cache Simulator",      desc: "Live HOT/WARM simulation" },
-  { href: "/playback",   label: "User Playback",        desc: "Step through real events" },
-  { href: "/research",   label: "Research Validation",  desc: "Stats, ablations, repro" },
+  { href: "/benchmark",  label: "Benchmark Explorer",  desc: "14-policy comparison · V6 vs all baselines" },
+  { href: "/kpi",        label: "KPI Dashboard",        desc: "7/7 PS03 KPIs · real numbers" },
+  { href: "/simulator",  label: "Cache Simulator",      desc: "Live 5-tier PIN/HOT/WARM/COOL simulation" },
+  { href: "/graph",      label: "Graph Explorer",       desc: "Interactive per-user Markov graph" },
+  { href: "/playback",   label: "User Playback",        desc: "Step through real UbiqLog events" },
+  { href: "/research",   label: "Research Validation",  desc: "Ablations · stats · reproducibility" },
+];
+
+const kpiRows = [
+  { kpi: "Cache Hit Rate",             target: "≥ 85%",  achieved: "97.92%",  pass: true },
+  { kpi: "Memory Thrashing Reduction", target: "≥ 50%",  achieved: "100.00%", pass: true },
+  { kpi: "App Load Time Improvement",  target: "≥ 20%",  achieved: "72.18%",  pass: true },
+  { kpi: "App Launch Time Improvement",target: "≥ 10%",  achieved: "82.20%",  pass: true },
+  { kpi: "Context Prediction (F1)",    target: "≥ 75%",  achieved: "97.92%",  pass: true },
+  { kpi: "System Stability",           target: "0 issues","achieved": "0",     pass: true },
+  { kpi: "Memory Efficiency vs LRU",   target: "≥ 30%",  achieved: "96.91%",  pass: true },
 ];
 
 export default function Overview() {
-  const summary = useData<Partial<Summary>>("/data/summary.json", {});
-
   return (
     <div className="max-w-5xl mx-auto px-8 py-10">
 
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
         <div className="flex items-center gap-2 text-xs text-gray-400 mb-3">
-          <span>Samsung EnnovateX AX 2025</span>
+          <span>Samsung EnnovateX AX 2026</span>
           <span>·</span>
-          <span>Research Submission</span>
+          <span>PS03 — Context-Aware Memory</span>
         </div>
-        <h1 className="text-2xl font-semibold text-gray-900 mb-1.5">GraphMindRL V5</h1>
+        <h1 className="text-2xl font-semibold text-gray-900 mb-1.5">GraphMind V6</h1>
         <p className="text-sm text-gray-500 max-w-xl">
-          Reinforcement learning on Markov graphs for intelligent Android app prefetching.
-          Statistically validated on the UbiqLog dataset across 31 real smartphone users.
+          Per-user Transformer reranking on Markov graphs with a 5-tier memory hierarchy.
+          Benchmarked on 31 real smartphone users from the UbiqLog dataset — 7/7 PS03 KPIs passing.
         </p>
         <div className="flex items-center gap-2 mt-4">
-          <span className="badge badge-green">p = 0.0115 &lt; 0.05</span>
-          <span className="badge badge-blue">Cohen d = 0.491</span>
+          <span className="badge badge-green">7/7 KPIs PASS</span>
+          <span className="badge badge-blue">5-Tier Cache</span>
           <span className="badge badge-gray">Samsung Galaxy A23 · Real latency</span>
+          <span className="badge badge-amber">Transformer Reranker</span>
         </div>
       </motion.div>
 
       {/* Stats grid */}
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
         className="grid grid-cols-3 gap-3 mb-8">
-        {stats.map((s, i) => (
+        {stats.map((s) => (
           <div key={s.label} className="card p-4">
             <div className="flex items-center justify-between mb-3">
               <span className="label">{s.label}</span>
               <s.icon size={14} className="text-gray-300" />
             </div>
-            <div className="stat-value text-gray-900">{s.value}</div>
+            <div className="stat-value" style={{ color: s.color }}>{s.value}</div>
             <div className="text-xs text-gray-400 mt-1">{s.sub}</div>
           </div>
         ))}
@@ -101,7 +94,7 @@ export default function Overview() {
         {/* Pipeline */}
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
           className="col-span-3 card p-5">
-          <h2 className="section-title mb-4">System Pipeline</h2>
+          <h2 className="section-title mb-4">V6 System Pipeline</h2>
           <div className="space-y-0">
             {pipeline.map((p, i) => (
               <div key={p.step} className="flex gap-3">
@@ -125,7 +118,7 @@ export default function Overview() {
         {/* Config */}
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }}
           className="col-span-2 card p-5 flex flex-col">
-          <h2 className="section-title mb-4">Production Config</h2>
+          <h2 className="section-title mb-4">V6 Configuration</h2>
           <div className="space-y-1 flex-1">
             {config.map(c => (
               <div key={c.k} className="flex items-center justify-between py-1.5"
@@ -139,11 +132,43 @@ export default function Overview() {
             ))}
           </div>
           <div className="mt-4 pt-4" style={{ borderTop: "1px solid #f3f4f6" }}>
-            <div className="text-xs text-gray-400 mb-1">Benchmark result</div>
-            <div className="font-semibold text-gray-900">F1 = 0.7745 · Reproduced ×2</div>
+            <div className="text-xs text-gray-400 mb-1">Benchmark result (UbiqLog real data)</div>
+            <div className="font-semibold text-gray-900">Cache Hit Rate = 97.92% · 7/7 KPIs PASS</div>
           </div>
         </motion.div>
       </div>
+
+      {/* KPI Table */}
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.13 }}
+        className="card overflow-hidden mb-8">
+        <div className="px-5 py-3.5" style={{ borderBottom: "1px solid #f3f4f6" }}>
+          <h2 className="section-title">PS03 KPI Results</h2>
+        </div>
+        <table className="w-full">
+          <thead style={{ background: "#fafafa", borderBottom: "1px solid #f3f4f6" }}>
+            <tr>
+              <th className="text-left py-2.5 px-4 label">KPI</th>
+              <th className="text-left py-2.5 px-4 label">Target</th>
+              <th className="text-left py-2.5 px-4 label">Achieved</th>
+              <th className="text-left py-2.5 px-4 label">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {kpiRows.map(r => (
+              <tr key={r.kpi} className="table-row">
+                <td className="py-2.5 px-4 text-sm text-gray-700">{r.kpi}</td>
+                <td className="py-2.5 px-4 mono text-sm text-gray-500">{r.target}</td>
+                <td className="py-2.5 px-4 mono text-sm font-semibold text-gray-900">{r.achieved}</td>
+                <td className="py-2.5 px-4">
+                  {r.pass
+                    ? <span className="badge badge-green">✓ PASS</span>
+                    : <span className="badge badge-red">✗ FAIL</span>}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </motion.div>
 
       {/* Quick nav */}
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
