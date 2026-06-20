@@ -1,0 +1,232 @@
+----------------------------------------------------------------------
+Step  1/15
+----------------------------------------------------------------------
+  App opened   : LinkedIn (com.linkedin.android)
+  Time         : late night (bucket 47)
+  Battery      : 14% (critical)
+  Day          : Weekend
+
+  Prefetch decision (top-0):
+
+  Gemma says:
+    "Optimising memory allocation based on your usage history."
+
+  Cache result : [MISS]  -- cold start (LinkedIn)
+
+----------------------------------------------------------------------
+Step  2/15
+----------------------------------------------------------------------
+  App opened   : LinkedIn (com.linkedin.android)
+  Time         : late night (bucket 47)
+  Battery      : 15% (critical)
+  Day          : Weekend
+
+  Prefetch decision (top-0):
+
+  Gemma says:
+    "Optimising memory allocation based on your usage history."
+
+  Cache result : [MISS]  -- cold start (LinkedIn)
+
+----------------------------------------------------------------------
+Step  3/15
+----------------------------------------------------------------------
+  App opened   : Unknown (unknown)
+  Time         : late night (bucket 47)
+  Battery      : 15% (critical)
+  Day          : Weekend
+
+  Prefetch decision (top-0):
+
+  Gemma says:
+    "Optimising memory allocation based on your usage history."
+
+  Cache result : [MISS]  -- cold start (Unknown)
+
+----------------------------------------------------------------------
+Step  4/15
+----------------------------------------------------------------------
+  App opened   : Makemytrip (com.makemytrip)
+  Time         : late night (bucket 47)
+  Battery      : 21% (low)
+  Day          : Weekend
+
+  Prefetch decision (top-0):
+
+  Gemma says:
+    "Optimising memory allocation based on your usage history."
+
+  Cache result : [MISS]  -- cold start (Makemytrip)
+
+----------------------------------------------------------------------
+Step  5/15
+----------------------------------------------------------------------
+  App opened   : Slack (com.slack.android)
+  Time         : late night (bucket 47)
+  Battery      : 10% (critical)
+  Day          : Weekend
+
+  Prefetch decision (top-0):
+
+  Gemma says:
+    "Optimising memory allocation based on your usage history."
+
+  Cache result : [MISS]  -- cold start (Slack)
+
+----------------------------------------------------------------------
+Step  6/15
+----------------------------------------------------------------------
+  App opened   : YouTube (com.google.youtube)
+  Time         : late night (bucket 47)
+  Battery      : 19% (critical)
+  Day          : Weekend
+
+  Prefetch decision (top-0):
+
+  Gemma says:
+    "Optimising memory allocation based on your usage history."
+
+  Cache result : [MISS]  -- cold start (YouTube)
+
+----------------------------------------------------------------------
+Step  7/15
+----------------------------------------------------------------------
+  App opened   : Instagram (com.instagram.android)
+  Time         : late night (bucket 47)
+  Battery      : 10% (critical)
+  Day          : Weekend
+
+  Prefetch decision (top-0):
+
+  Gemma says:
+    "Optimising memory allocation based on your usage history."
+
+  Cache result : [MISS]  -- cold start (Instagram)
+
+----------------------------------------------------------------------
+Step  8/15
+----------------------------------------------------------------------
+  App opened   : Docs (com.google.android.apps.docs)
+  Time         : late night (bucket 47)
+  Battery      : 16% (critical)
+  Day          : Weekend
+
+  Prefetch decision (top-0):
+
+  Gemma says:
+    "Optimising memory allocation based on your usage history."
+
+  Cache result : [MISS]  -- cold start (Docs)
+
+----------------------------------------------------------------------
+Step  9/15
+----------------------------------------------------------------------
+  App opened   : YouTube (com.google.youtube)
+  Time         : late night (bucket 47)
+  Battery      : 11% (critical)
+  Day          : Weekend
+
+  Prefetch decision (top-0):
+
+  Gemma says:
+    "Optimising memory allocation based on your usage history."
+
+  Cache result : [MISS]  -- cold start (YouTube)
+
+----------------------------------------------------------------------
+Step 10/15
+----------------------------------------------------------------------
+  App opened   : YouTube (com.google.youtube)
+  Time         : late night (bucket 47)
+  Battery      : 13% (critical)
+  Day          : Weekend
+
+  Prefetch decision (top-0):
+
+  Gemma says:
+    "Optimising memory allocation based on your usage history."
+
+  Cache result : [MISS]  -- cold start (YouTube)
+
+----------------------------------------------------------------------
+Step 11/15
+----------------------------------------------------------------------
+  App opened   : Gmail (com.google.android.gm)
+  Time         : late night (bucket 47)
+  Battery      : 12% (critical)
+  Day          : Weekend
+
+  Prefetch decision (top-0):
+
+  Gemma says:
+    "Optimising memory allocation based on your usage history."
+
+  Cache result : [MISS]  -- cold start (Gmail)
+
+----------------------------------------------------------------------
+Step 12/15
+----------------------------------------------------------------------
+  App opened   : Gmail (com.google.android.gm)
+  Time         : late night (bucket 47)
+  Battery      : 14% (critical)
+  Day          : Weekend
+
+  Prefetch decision (top-0):
+
+  Gemma says:
+    "Optimising memory allocation based on your usage history."
+
+  Cache result : [MISS]  -- cold start (Gmail)
+
+----------------------------------------------------------------------
+Step 13/15
+----------------------------------------------------------------------
+  App opened   : TikTok (com.tiktok.android)
+  Time         : late night (bucket 47)
+  Battery      : 9% (critical)
+  Day          : Weekend
+
+  Prefetch decision (top-0):
+
+  Gemma says:
+    "Optimising memory allocation based on your usage history."
+
+  Cache result : [MISS]  -- cold start (TikTok)
+
+----------------------------------------------------------------------
+Step 14/15
+----------------------------------------------------------------------
+  App opened   : Messages (com.samsung.android.messaging)
+  Time         : late night (bucket 47)
+  Battery      : 13% (critical)
+  Day          : Weekend
+
+  Prefetch decision (top-0):
+
+  Gemma says:
+    "Optimising memory allocation based on your usage history."
+
+  Cache result : [MISS]  -- cold start (Messages)
+
+----------------------------------------------------------------------
+Step 15/15
+----------------------------------------------------------------------
+  App opened   : Google Maps (com.google.android.maps)
+  Time         : late night (bucket 47)
+  Battery      : 27% (low)
+  Day          : Weekend
+
+  Prefetch decision (top-0):
+
+  Gemma says:
+    "Optimising memory allocation based on your usage history."
+
+  Cache result : [MISS]  -- cold start (Google Maps)
+
+----------------------------------------------------------------------
+  Demo Summary
+----------------------------------------------------------------------
+  Steps shown:    15
+  Cache hits:     0/15  (0.0%)
+  Gemma mode:     LIVE (Gemma model)
+----------------------------------------------------------------------

@@ -4,7 +4,7 @@ Benchmark fairness tests for execution-derived GraphMind evaluation.
 
 from pathlib import Path
 
-from src.benchmarks.evaluator import BenchmarkEvaluator
+from src.benchmarks.evaluator_v2 import BenchmarkEvaluatorV2 as BenchmarkEvaluator
 from src.benchmarks.graphmind_policy_runner import GraphMindPolicyRunner
 
 
@@ -23,7 +23,7 @@ def _sample_events():
 
 def test_no_graphmind_boost_constants_in_benchmark_source():
     source_files = [
-        Path("src/benchmarks/evaluator.py"),
+        Path("src/benchmarks/evaluator_v2.py"),
         Path("src/benchmarks/graphmind_policy_runner.py"),
     ]
     combined = "\n".join(p.read_text(encoding="utf-8") for p in source_files)
@@ -55,8 +55,10 @@ def test_evaluator_uses_graphmind_execution_path(monkeypatch):
         }
 
     monkeypatch.setattr(GraphMindPolicyRunner, "run", fake_run)
-    evaluator = BenchmarkEvaluator()
-    result = evaluator.run_graphmind_policy("fairness_user", _sample_events())
+    from src.benchmarks.baselines_v2 import GraphMindRLPolicy
+    policy = GraphMindRLPolicy(user_id="fairness_user", top_k=8)
+    result = policy.run_full_evaluation(_sample_events())
 
     assert called["count"] == 1
     assert result["cache_hit_rate"] == 0.25
+

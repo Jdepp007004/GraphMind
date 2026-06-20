@@ -1,4 +1,4 @@
-# GraphMind — Research Papers & Literature Alignment
+# GraphMind -- Research Papers & Literature Alignment
 
 This document summarizes the academic foundations of GraphMind and how our design choices align with established literature.
 
@@ -10,9 +10,9 @@ This document summarizes the academic foundations of GraphMind and how our desig
 
 | Paper | Key Contribution | GraphMind Adoption |
 |-------|-----------------|---------------------|
-| Kroeger & Long (1996) — *Predicting file system actions from prior events* | Markov-1 transition model for I/O prefetching | Our baseline Markov-1 model |
-| Govindan et al. (2011) — *Caching Android app launches* | App launch cost analysis on mobile devices | Motivates our 1,800 ms cold-launch baseline |
-| Pan et al. (2018) — *Predicting app usage on smartphones* | Temporal and contextual features for app prediction | Informs our recency + frequency signals |
+| Kroeger & Long (1996) -- *Predicting file system actions from prior events* | Markov-1 transition model for I/O prefetching | Our baseline Markov-1 model |
+| Govindan et al. (2011) -- *Caching Android app launches* | App launch cost analysis on mobile devices | Motivates our 1,800 ms cold-launch baseline |
+| Pan et al. (2018) -- *Predicting app usage on smartphones* | Temporal and contextual features for app prediction | Informs our recency + frequency signals |
 
 ### Key Insight
 Pure Markov-1 models plateau at ~73% F1 due to limited context. GraphMind extends this with **confidence score fusion**, achieving 0.7745 F1 (+4.3%).
@@ -25,9 +25,9 @@ Pure Markov-1 models plateau at ~73% F1 due to limited context. GraphMind extend
 
 | Paper | Key Contribution | GraphMind Adoption |
 |-------|-----------------|---------------------|
-| Mnih et al. (2015) — *Human-level control through deep RL* (DQN) | Q-learning for sequential decision making | Conceptual foundation for RL controller |
-| Schulman et al. (2017) — *Proximal Policy Optimization* | Stable policy gradient algorithm | PPO used in our RL trainer (Stable-Baselines3) |
-| Auer et al. (2002) — *UCB bandit algorithms* | Exploration-exploitation trade-off | Threshold adjustment heuristic design |
+| Mnih et al. (2015) -- *Human-level control through deep RL* (DQN) | Q-learning for sequential decision making | Conceptual foundation for RL controller |
+| Schulman et al. (2017) -- *Proximal Policy Optimization* | Stable policy gradient algorithm | PPO used in our RL trainer (Stable-Baselines3) |
+| Auer et al. (2002) -- *UCB bandit algorithms* | Exploration-exploitation trade-off | Threshold adjustment heuristic design |
 
 ### GraphMind's Lightweight Approach
 Instead of a full neural policy, our RL controller uses a **simple threshold-update rule** based on rolling hit rate, making it suitable for edge devices with constrained compute.
@@ -41,8 +41,8 @@ Instead of a full neural policy, our RL controller uses a **simple threshold-upd
 | Approach | Paper | Influence |
 |----------|-------|-----------|
 | BM25 score fusion | Robertson & Zaragoza (2009) | Multi-signal weighting methodology |
-| Collaborative filtering | Koren et al. (2009) — *Matrix Factorization Techniques* | Frequency-based user modelling |
-| Time-decay recency | Koren (2010) — *Collaborative Filtering with Temporal Dynamics* | Exponential decay for recency_score |
+| Collaborative filtering | Koren et al. (2009) -- *Matrix Factorization Techniques* | Frequency-based user modelling |
+| Time-decay recency | Koren (2010) -- *Collaborative Filtering with Temporal Dynamics* | Exponential decay for recency_score |
 
 ### Weight Selection
 Weights (0.5 Markov, 0.1 recency, 0.4 frequency) were chosen via **grid search** (Phase 11A), not by literature convention. The grid tested 45 weight combinations with 0.1 increments.
@@ -70,7 +70,7 @@ Standard harmonic mean of precision and recall, adapted for prefetch evaluation:
 
 ### Statistical Significance
 - **Paired t-test** (31 users, two-tailed, α = 0.05): p = 0.0115 ✓
-- **Cohen's d** = 0.491 — medium-to-large effect size
+- **Cohen's d** = 0.491 -- medium-to-large effect size
 - **Independent reproduction**: confirmed on two separate runs
 
 ### Benchmarked Against
@@ -99,4 +99,4 @@ Our approach confirms that **classical ML with careful feature engineering** can
 
 ---
 
-*GraphMind — Samsung EnnovateX AX Hackathon 2025*
+*GraphMind -- Samsung EnnovateX AX Hackathon 2025*

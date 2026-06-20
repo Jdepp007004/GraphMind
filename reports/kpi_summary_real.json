@@ -6,7 +6,10 @@
   "load_time_improvement_pct": 77.58,
   "launch_time_improvement_pct": 77.58,
   "system_stability_issues": 0,
-  "memory_utilization_efficiency_improvement_pct": 6418.77,
+  "memory_utilization_efficiency_improvement_pct": 10.97,
+  "_memory_util_formula": "LRU miss rate reduction: (LRU_miss - GM_miss) / LRU_miss * 100",
+  "_memory_util_detail": "LRU hit=0.9280 miss=7.20%; GraphMind hit=0.9359 miss=6.41%; improvement=(7.20-6.41)/7.20*100=10.97%",
+  "_note": "KPI7 FAIL on real dataset is expected: LRU already achieves 92.8% hit rate on habitual UbiqLog sequences. Synthetic benchmark (evaluator_v2.py) shows 86% improvement where LRU baseline is only 19.69%.",
   "kpi_pass_fail": {
     "next_context_prediction_f1": "PASS",
     "cache_hit_rate_pct": "PASS",
@@ -14,6 +17,6 @@
     "load_time_improvement_pct": "PASS",
     "launch_time_improvement_pct": "PASS",
     "system_stability_issues": "PASS",
-    "memory_utilization_efficiency_improvement_pct": "PASS"
+    "memory_utilization_efficiency_improvement_pct": "FAIL"
   }
 }

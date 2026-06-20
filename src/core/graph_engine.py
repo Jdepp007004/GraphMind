@@ -64,6 +64,8 @@ class BehaviouralGraph:
         """
         self.user_id = user_id
         self._graph = nx.DiGraph()
+        self._node_lookup: dict = {}
+        self.max_node_access: int = 1
         self._previous_node_id: Optional[str] = None
         self._session_day: int = 0
         bus = EventBus.get_instance()
@@ -80,8 +82,11 @@ class BehaviouralGraph:
             existing = self._graph.nodes[node.node_id]["data"]
             existing.last_seen_day = node.last_seen_day
             existing.access_count += 1
+            self.max_node_access = max(self.max_node_access, existing.access_count)
         else:
             self._graph.add_node(node.node_id, data=node)
+            self._node_lookup[(node.app_id, node.time_bucket, node.battery_bucket)] = node.node_id
+            self.max_node_access = max(self.max_node_access, node.access_count)
 
     def add_edge(self, source_id: str, target_id: str,
                  transition_prob: float, time_sensitivity: float,
@@ -216,6 +221,9 @@ class BehaviouralGraph:
             if (current_day - node.last_seen_day) > settings.NODE_EVICTION_DAYS:
                 to_evict.append(node_id)
         for node_id in to_evict:
+            node = self._graph.nodes[node_id]["data"]
+            key = (node.app_id, node.time_bucket, node.battery_bucket)
+            self._node_lookup.pop(key, None)
             self._graph.remove_node(node_id)
         if to_evict:
             logger.debug(f"Evicted {len(to_evict)} stale nodes for {self.user_id}")
@@ -261,6 +269,13 @@ class BehaviouralGraph:
         self._graph = state["graph"]
         self._previous_node_id = state.get("previous_node_id")
         self._session_day = state.get("session_day", 0)
+        # Rebuild lookup dictionary
+        self._node_lookup = {}
+        self.max_node_access = 1
+        for nid in self._graph.nodes():
+            node = self._graph.nodes[nid]["data"]
+            self._node_lookup[(node.app_id, node.time_bucket, node.battery_bucket)] = nid
+            self.max_node_access = max(self.max_node_access, node.access_count)
         logger.debug(f"Graph loaded from {path}: {self.node_count()} nodes, {self.edge_count()} edges")
 
     def get_graph_snapshot(self, day: int) -> dict:
@@ -325,14 +340,9 @@ class BehaviouralGraph:
         calendar_near = calendar_mins is not None and calendar_mins <= 30
         weekend = bool(payload.get("weekend", False))
 
-        # Find matching node
-        current_node_id = None
-        for nid in self._graph.nodes():
-            n = self._graph.nodes[nid]["data"]
-            if (n.app_id == app_id and n.time_bucket == time_bucket
-                    and n.battery_bucket == battery_bucket):
-                current_node_id = nid
-                break
+        # Find matching node using O(1) dictionary lookup
+        key = (app_id, time_bucket, battery_bucket)
+        current_node_id = self._node_lookup.get(key)
 
         if current_node_id is None:
             # Create new node
@@ -349,12 +359,13 @@ class BehaviouralGraph:
                 access_count=1,
                 category=category
             )
-            self._graph.add_node(new_node.node_id, data=new_node)
+            self.add_node(new_node)
             current_node_id = new_node.node_id
         else:
             node = self._graph.nodes[current_node_id]["data"]
             node.last_seen_day = day
             node.access_count += 1
+            self.max_node_access = max(self.max_node_access, node.access_count)
 
         # Update edge from previous to current
         if self._previous_node_id is not None and self._previous_node_id in self._graph:

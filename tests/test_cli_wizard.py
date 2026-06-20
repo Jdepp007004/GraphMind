@@ -203,9 +203,10 @@ def test_connect_samsung_main_with_user_flag(monkeypatch):
 # ── Validation Script Tests ───────────────────────────────────────────────────
 
 def test_validation_script_exists():
-    """scripts/run_iteration2_validation.py must exist."""
+    """scripts/run_v5_validation.py must exist."""
     script = os.path.join(
         os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-        "scripts", "run_iteration2_validation.py"
+        "scripts", "run_v5_validation.py"
     )
     assert os.path.isfile(script), f"Validation script not found: {script}"
+

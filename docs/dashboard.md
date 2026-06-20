@@ -1,6 +1,6 @@
 # Dashboard Guide
 
-> **GraphMindRL V5 — 7-Page Interactive Dashboard**
+> **GraphMindRL V5 -- 7-Page Interactive Dashboard**
 > Running at `http://localhost:3000`
 
 ---
@@ -23,7 +23,7 @@
 
 ## Overview
 
-The GraphMind dashboard is a **Next.js 15** browser application that presents the complete research story — from raw data and system architecture to live simulation of the prefetch engine. It is designed for hackathon judges to explore the system interactively without running any Python code.
+The GraphMind dashboard is a **Next.js 15** browser application that presents the complete research story -- from raw data and system architecture to live simulation of the prefetch engine. It is designed for hackathon judges to explore the system interactively without running any Python code.
 
 The dashboard is **read-only**: it displays pre-computed results and does not modify any files.
 
@@ -260,8 +260,8 @@ Step-through view of a user's app sequence with rolling charts.
 ### How to Use
 
 1. Press **Play** to step through the sequence.
-2. Watch the **Rolling Hit Rate** chart — a rising line indicates the model is calibrating.
-3. Watch the **Adaptive Threshold** chart — the RL controller adjusts it based on hit rate.
+2. Watch the **Rolling Hit Rate** chart -- a rising line indicates the model is calibrating.
+3. Watch the **Adaptive Threshold** chart -- the RL controller adjusts it based on hit rate.
 4. Drag the scrub bar to jump to a specific point in the sequence and examine it in detail.
 
 ---
@@ -281,11 +281,11 @@ Complete experimental evidence and statistical validation.
 - The production model (all components active) is the rightmost bar.
 - Removing any component reduces F1, confirming each is necessary.
 
-**Phase 11A — Weight Grid**
+**Phase 11A -- Weight Grid**
 - Bar chart of the top 10 weight configurations from the grid search.
 - The production configuration (rank 1) is highlighted in dark.
 
-**Phase 11B — Threshold Sweep**
+**Phase 11B -- Threshold Sweep**
 - Bar chart of F1 vs threshold.
 - The optimal threshold (0.16) is highlighted.
 - Reference line shows the baseline F1.
@@ -343,7 +343,7 @@ python scripts/generate_dashboard_data.py
 | Graph visualisation | @xyflow/react | 12.x |
 | Animation | Framer Motion | 11.x |
 | Styling | Tailwind CSS | 3.x |
-| Font | Inter (Google Fonts) | — |
+| Font | Inter (Google Fonts) | -- |
 
 ### Browser Support
 

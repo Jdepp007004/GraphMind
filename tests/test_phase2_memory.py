@@ -55,18 +55,23 @@ def test_memory_manager_demote():
 
 def test_memory_manager_flush_by_category():
     """flush_hot_by_category() must remove only matching category nodes."""
-    g = BehaviouralGraph("user_test")
-    g.add_node(GraphNode("fin_1", np.zeros(64), "com.hdfcbank.new", 5, 2,
-                         {"headphones": False, "calendar_near": False, "weekend": False}, 0, 1, "financial"))
-    g.add_node(GraphNode("soc_1", np.zeros(64), "com.instagram.android", 8, 2,
-                         {"headphones": False, "calendar_near": False, "weekend": False}, 0, 1, "social"))
-    mm = MemoryManager("user_test", g)
-    mm.promote_to_hot("fin_1")
-    mm.promote_to_hot("soc_1")
-    flushed = mm.flush_hot_by_category("financial")
-    assert "fin_1" in flushed
-    assert not mm.is_in_hot("fin_1")
-    assert mm.is_in_hot("soc_1")
+    old_cap = settings.HOT_TIER_CAPACITY
+    settings.HOT_TIER_CAPACITY = 5
+    try:
+        g = BehaviouralGraph("user_test")
+        g.add_node(GraphNode("fin_1", np.zeros(64), "com.hdfcbank.new", 5, 2,
+                             {"headphones": False, "calendar_near": False, "weekend": False}, 0, 1, "financial"))
+        g.add_node(GraphNode("soc_1", np.zeros(64), "com.instagram.android", 8, 2,
+                             {"headphones": False, "calendar_near": False, "weekend": False}, 0, 1, "social"))
+        mm = MemoryManager("user_test", g)
+        mm.promote_to_hot("fin_1")
+        mm.promote_to_hot("soc_1")
+        flushed = mm.flush_hot_by_category("financial")
+        assert "fin_1" in flushed
+        assert not mm.is_in_hot("fin_1")
+        assert mm.is_in_hot("soc_1")
+    finally:
+        settings.HOT_TIER_CAPACITY = old_cap
 
 
 def test_memory_manager_tier_stats():

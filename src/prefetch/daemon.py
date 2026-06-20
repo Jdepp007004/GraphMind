@@ -117,13 +117,8 @@ class PrefetchDaemon:
         time_bucket = int(payload.get("time_of_day_bucket", 0))
         battery = float(payload.get("battery", 100.0))
         battery_bucket = min(4, int(battery / 20))
-        # Find matching node
-        for nid in self.graph._graph.nodes():
-            n = self.graph._graph.nodes[nid]["data"]
-            if (n.app_id == app_id and n.time_bucket == time_bucket
-                    and n.battery_bucket == battery_bucket):
-                self.current_node_id = nid
-                break
+        key = (app_id, time_bucket, battery_bucket)
+        self.current_node_id = self.graph._node_lookup.get(key, None)
 
     def _on_battery_updated(self, payload: dict) -> None:
         """PRIVATE. Update self.current_battery."""

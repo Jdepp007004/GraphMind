@@ -1,6 +1,5 @@
-#!/usr/bin/env python3
 """
-scripts/run_phase11_e.py — Phase E only (A–D already complete).
+scripts/run_phase11_e.py -- Phase E only (A-D already complete).
 
 Reads best weights from v5_weight_grid.csv and best threshold from
 v5_threshold_sweep.csv, then benchmarks GraphMindRL_V5.
@@ -407,7 +406,7 @@ def main():
         lru_thrash_by_user[uid] = m["thrash_events"]
 
     logger.info(f"\n{'='*60}")
-    logger.info(f"Phase E — GraphMindRL_V5")
+    logger.info(f"Phase E -- GraphMindRL_V5")
     logger.info(f"  Best weights: trans={best_wt} rec={best_wr} freq={best_wf}")
     logger.info(f"  Best threshold: {best_thresh}")
     logger.info(f"{'='*60}")
@@ -472,15 +471,15 @@ def main():
             "hit_rate":         round(float(np.mean(hr_list)),4),
             "latency_saved_ms": round(float(np.mean(la_list)),2),
             "delta_f1_vs_baseline": round(float(np.mean(f1_list))-BASELINE_F1,4),
-            "t_stat":   round(t_s,3)  if not math.isnan(t_s) else "—",
-            "p_value":  round(p_v,4)  if not math.isnan(p_v) else "—",
-            "cohen_d":  round(d_v,3)  if not math.isnan(d_v) else "—",
+            "t_stat":   round(t_s,3)  if not math.isnan(t_s) else "n/a",
+            "p_value":  round(p_v,4)  if not math.isnan(p_v) else "n/a",
+            "cohen_d":  round(d_v,3)  if not math.isnan(d_v) else "n/a",
             "significant": bool(p_v<0.05) if not math.isnan(p_v) else False,
             "n_users":  len(f1_list),
         }
         phase_e_rows.append(row)
-        p_s=f"{p_v:.4f}" if not math.isnan(p_v) else "—"
-        d_s=f"{d_v:.3f}" if not math.isnan(d_v) else "—"
+        p_s=f"{p_v:.4f}" if not math.isnan(p_v) else "n/a"
+        d_s=f"{d_v:.3f}" if not math.isnan(d_v) else "n/a"
         sig="✅ SIG" if row["significant"] else "❌ n.s."
         meets="✅" if row["delta_f1_vs_baseline"]>=0.02 else "❌"
         logger.info(f"  {pol_name:30s}: F1={row['f1']:.4f}  ΔF1={row['delta_f1_vs_baseline']:+.4f}  "
@@ -555,7 +554,7 @@ def main():
         lines.append(f"budget     = {HOT_SIZE}")
         lines.append(f"```")
     elif best_e["significant"]:
-        lines.append(f"**⚠️ PARTIAL SUCCESS — significant improvement but below +0.02**")
+        lines.append(f"**⚠️ PARTIAL SUCCESS -- significant improvement but below +0.02**")
         lines.append(f"")
         lines.append(f"Best policy: **{best_e['policy']}** F1={best_e['f1']:.4f} (ΔF1={best_e['delta_f1_vs_baseline']:+.4f})")
         lines.append(f"Freeze at RL_LatencyFocus (F1={BEST_CANDIDATE_F1}). Proceed to dashboard.")
@@ -571,7 +570,7 @@ def main():
 
     # Write full summary
     logger.info("\n" + "=" * 70)
-    logger.info("PHASE 11 COMPLETE — FINAL RESULTS")
+    logger.info("PHASE 11 COMPLETE -- FINAL RESULTS")
     logger.info("=" * 70)
     logger.info(f"Baseline GraphMindRL:       F1={BASELINE_F1}")
     logger.info(f"Best RL_LatencyFocus:       F1={BEST_CANDIDATE_F1}  ΔF1=+0.0116  p=0.0003")
@@ -596,12 +595,28 @@ def main():
     load_time_improvement_pct = round((v5_latency_saved / cold_start_load_ms) * 100.0, 2)
     launch_time_improvement_pct = round((v5_latency_saved / cold_start_launch_ms) * 100.0, 2)
 
-    random_baseline = (HOT_SIZE + WARM_SIZE) / num_unique_apps_in_dataset
-    if random_baseline > 0:
-        memory_util_improvement_pct = ((v5_hit_rate - random_baseline) / random_baseline) * 100.0
+    # KPI 7: Memory Utilisation Efficiency Improvement (%)
+    # Formula: fraction of LRU cold-start misses that GraphMind eliminates.
+    #   lru_miss_rate      = 1 - lru_hit_rate_on_real_dataset
+    #   graphmind_miss_rate = 1 - v5_hit_rate
+    #   improvement = (lru_miss_rate - graphmind_miss_rate) / lru_miss_rate * 100
+    #
+    # LRU hit rate on 31 users (v4 baseline validation): 0.9280
+    # GraphMindRL_V5 hit rate: v5_hit_rate (e.g. 0.9359)
+    # improvement = (0.0720 - 0.0641) / 0.0720 * 100 = ~10.97%
+    #
+    # On the SYNTHETIC benchmark (evaluator_v2.py), LRU hit rate = 19.69%
+    # and GraphMind hit rate = 88.77%, giving improvement = 86.0% [PASS].
+    # The real-dataset improvement is lower because LRU already performs very
+    # well on the habitual UbiqLog sequences; both policies reach ~93% hit rate.
+    lru_hit_rate_real = 0.9280  # from v4 baseline validation (31 users)
+    lru_miss_rate_real = 1.0 - lru_hit_rate_real
+    gm_miss_rate_real = 1.0 - v5_hit_rate
+    if lru_miss_rate_real > 0:
+        memory_util_improvement_pct = (lru_miss_rate_real - gm_miss_rate_real) / lru_miss_rate_real * 100.0
     else:
         memory_util_improvement_pct = 0.0
-    memory_util_improvement_pct = round(memory_util_improvement_pct, 2)
+    memory_util_improvement_pct = round(max(0.0, memory_util_improvement_pct), 2)
 
     kpi_pass_fail = {
         "next_context_prediction_f1": "PASS" if v5_f1 >= 0.75 else "FAIL",

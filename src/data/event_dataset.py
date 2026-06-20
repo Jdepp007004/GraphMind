@@ -15,7 +15,9 @@ Implementations:
 
 import logging
 import os
+import json
 from abc import ABC, abstractmethod
+from datetime import datetime
 from typing import Dict, Iterator, List, Optional
 
 from config import settings
@@ -387,4 +389,170 @@ class SamsungLogDataset(EventDataset):
             "split_sizes": {"train": 0, "val": 0, "test": 0},
             "loaded": False,
             "note": "Not yet implemented — stub only.",
+        }
+
+
+# ---------------------------------------------------------------------------
+# UbiqLogDataset
+# ---------------------------------------------------------------------------
+
+SYSTEM_PREFIXES = (
+    "com.android.",
+    "com.google.android.providers",
+    "com.google.android.gms",
+    "com.google.android.gsf",
+    "com.sec.android.provider",
+    "com.samsung.android.provider",
+    "com.redbend.",
+    "android.",
+)
+SYSTEM_SUFFIXES = (":engine", ":client", ":daemon", ":service", ":pushservice", ":sync")
+
+def _is_system_app(p: str) -> bool:
+    p = p.lower()
+    for pfx in SYSTEM_PREFIXES:
+        if p.startswith(pfx.lower()):
+            return True
+    for sfx in SYSTEM_SUFFIXES:
+        if p.endswith(sfx):
+            return True
+    return False
+
+def _parse_ts(s: str) -> Optional[datetime]:
+    try:
+        dt = datetime.strptime(s.strip(), "%m-%d-%Y %H:%M:%S")
+        return dt if 2011 <= dt.year <= 2016 else None
+    except Exception:
+        return None
+
+
+class UbiqLogDataset(EventDataset):
+    """
+    Loads the real UbiqLog dataset from datasets/ubiqlog/UbiqLog4UCI.
+    """
+
+    def __init__(
+        self,
+        ubiqlog_root: Optional[str] = None,
+        user_ids: Optional[List[str]] = None,
+    ) -> None:
+        self._ubiqlog_root = ubiqlog_root or os.path.join(settings.PROJECT_ROOT, "datasets", "ubiqlog", "UbiqLog4UCI")
+        self._user_ids = user_ids
+        self._events: List[GraphMindEvent] = []
+        self._splits: Dict[str, List[GraphMindEvent]] = {}
+        self._loaded = False
+
+    def load(self) -> None:
+        if self._loaded:
+            return
+
+        # Load usable users list
+        users_json_path = os.path.join(settings.PROJECT_ROOT, "data", "processed", "users.json")
+        if os.path.exists(users_json_path):
+            with open(users_json_path, encoding="utf-8") as f:
+                usable_users = [u["user_id"] for u in json.load(f)["users"]]
+        else:
+            usable_users = sorted([
+                d for d in os.listdir(self._ubiqlog_root)
+                if os.path.isdir(os.path.join(self._ubiqlog_root, d)) and not d.startswith(".")
+            ])
+
+        if self._user_ids is not None:
+            usable_users = [u for u in usable_users if u in self._user_ids]
+
+        from src.data.device_analyzer_loader import _load_taxonomy
+        taxonomy = _load_taxonomy()
+
+        all_events: List[GraphMindEvent] = []
+        
+        # Load the events for the requested users
+        for user_id in usable_users:
+            user_dir = os.path.join(self._ubiqlog_root, user_id)
+            if not os.path.isdir(user_dir):
+                continue
+            
+            raw = []
+            for fname in sorted(os.listdir(user_dir)):
+                if not fname.endswith(".txt"):
+                    continue
+                try:
+                    with open(os.path.join(user_dir, fname), encoding="utf-8", errors="replace") as f:
+                        for line in f:
+                            line = line.strip()
+                            if not line:
+                                continue
+                            try:
+                                obj = json.loads(line)
+                                if "Application" not in obj:
+                                    continue
+                                app = obj["Application"]
+                                pkg = app.get("ProcessName", "").strip()
+                                if not pkg or _is_system_app(pkg):
+                                    continue
+                                start = _parse_ts(app.get("Start", ""))
+                                if start is None:
+                                    continue
+                                raw.append((start, pkg))
+                            except Exception:
+                                pass
+                except Exception:
+                    pass
+            
+            raw.sort(key=lambda x: x[0])
+            if not raw:
+                continue
+                
+            first_ts = raw[0][0]
+            for start_dt, pkg in raw:
+                ts = start_dt.timestamp()
+                time_bucket = start_dt.hour * 2 + (1 if start_dt.minute >= 30 else 0)
+                weekend = start_dt.weekday() >= 5
+                day = (start_dt.date() - first_ts.date()).days
+                category = taxonomy.get(pkg, {}).get("category", "utility")
+                
+                all_events.append({
+                    "timestamp": ts,
+                    "app_id": pkg,
+                    "battery": 80.0,
+                    "time_bucket": time_bucket,
+                    "headphones": False,
+                    "calendar_event_in_mins": None,
+                    "weekend": weekend,
+                    "day": day,
+                    "category": category,
+                    "source": "ubiqlog",
+                    "user_id": user_id,
+                })
+
+        # Sort globally by timestamp
+        all_events.sort(key=lambda e: float(e["timestamp"]))
+        
+        self._events = all_events
+        self._splits = self._chronological_split(all_events)
+        self._loaded = True
+        logger.info(
+            f"UbiqLogDataset loaded: {len(all_events)} events "
+            f"({len(usable_users)} users) — "
+            f"train={len(self._splits['train'])} "
+            f"val={len(self._splits['val'])} "
+            f"test={len(self._splits['test'])}"
+        )
+
+    def iter_events(self, split: str = "train") -> Iterator[GraphMindEvent]:
+        if not self._loaded:
+            self.load()
+        if split == "all":
+            yield from self._events
+        else:
+            yield from self._splits.get(split, [])
+
+    def metadata(self) -> dict:
+        if not self._loaded:
+            self.load()
+        return {
+            "source": "ubiqlog",
+            "ubiqlog_root": self._ubiqlog_root,
+            "total_events": len(self._events),
+            "split_sizes": {k: len(v) for k, v in self._splits.items()},
+            "loaded": self._loaded,
         }

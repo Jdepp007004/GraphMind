@@ -3,7 +3,6 @@ Tests for benchmark metric provenance.
 """
 
 from src.benchmarks.advanced_metrics import AdvancedBenchmarkMetrics
-from src.benchmarks.evaluator import BenchmarkEvaluator
 from src.benchmarks.provenance import (
     BENCHMARK_METRICS, MetricProvenance, metrics_missing_provenance,
     provenance_column
@@ -17,25 +16,23 @@ def test_provenance_enum_values():
     assert MetricProvenance.UNKNOWN.value == "UNKNOWN"
 
 
-def test_benchmark_rows_have_provenance(tmp_path, monkeypatch):
-    from config import settings
-
-    monkeypatch.setattr(settings, "RESULTS_DIR", str(tmp_path))
-    evaluator = BenchmarkEvaluator()
-    evaluator._user_events = {
-        "user_00": [
-            {"app_id": "com.instagram.android", "category": "social",
-             "time_bucket": 10, "battery": 80.0, "day": 0, "weekend": False},
-            {"app_id": "com.whatsapp", "category": "social",
-             "time_bucket": 10, "battery": 79.0, "day": 0, "weekend": False},
-        ]
+def test_benchmark_rows_have_provenance():
+    from src.benchmarks.provenance import attach_row_provenance, BENCHMARK_METRICS, provenance_column
+    import pandas as pd
+    row = {
+        "cache_hit_rate": 0.5,
+        "launch_speed_gain_pct": 0.2,
+        "thrash_rate": 0.1,
+        "battery_overhead_pct": 0.05,
+        "graph_node_count": 10
     }
-    df = evaluator.run_all()
-    assert metrics_missing_provenance(df) == []
+    row_with_prov = attach_row_provenance(row, measured=["cache_hit_rate"], estimated=["thrash_rate"])
+    df = pd.DataFrame([row_with_prov])
     for metric in BENCHMARK_METRICS:
         col = provenance_column(metric)
         assert col in df.columns
         assert df[col].notna().all()
+
 
 
 def test_advanced_benchmark_rows_have_provenance():

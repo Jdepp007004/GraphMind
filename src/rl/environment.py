@@ -24,18 +24,18 @@ from src.rl.reward import compute_reward
 
 logger = logging.getLogger(__name__)
 
-OBS_DIM = 35 + settings.HOT_TIER_CAPACITY + 3  # 35 + 30 + 3 = 68
+OBS_DIM = 68
 
 
 class GraphMindEnv(gym.Env):
     """
     Custom Gymnasium environment for RL training.
 
-    Observation space: Box(shape=(35 + HOT_TIER_CAPACITY + 3,), dtype=float32)
+    Observation space: Box(shape=(35 + 30 + 3,), dtype=float32)
         = context_embedding(35) + hot_tier_occupancy(30) + [battery, time_bucket_norm, cache_hit_rate_recent]
         Total: 68 dimensions
 
-    Action space: Discrete(HOT_TIER_CAPACITY + 1)
+    Action space: Discrete(31)
         Actions 0 to 28: promote node at hot_tier_index to front (signal to prioritize)
         Action 29: 'no-op / run prune cycle'
         Action 30: 'emergency: demote bottom half of HOT to WARM'
@@ -73,9 +73,9 @@ class GraphMindEnv(gym.Env):
                 logger.warning(f"Could not load base graph: {e}")
 
         self.observation_space = spaces.Box(
-            low=-np.inf, high=np.inf, shape=(OBS_DIM,), dtype=np.float32
+            low=-np.inf, high=np.inf, shape=(68,), dtype=np.float32
         )
-        self.action_space = spaces.Discrete(settings.HOT_TIER_CAPACITY + 1)  # 31
+        self.action_space = spaces.Discrete(31)  # 31
 
         # Counters
         self.cache_hits: int = 0
@@ -223,8 +223,8 @@ class GraphMindEnv(gym.Env):
 
         # HOT tier occupancy (30 dims)
         hot_ids = self.memory_manager.get_hot_node_ids()
-        hot_occ = np.zeros(settings.HOT_TIER_CAPACITY, dtype=np.float32)
-        for i in range(min(len(hot_ids), settings.HOT_TIER_CAPACITY)):
+        hot_occ = np.zeros(30, dtype=np.float32)
+        for i in range(min(len(hot_ids), 30)):
             hot_occ[i] = 1.0
 
         # 3 state signals

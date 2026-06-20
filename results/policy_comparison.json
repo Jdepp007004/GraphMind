@@ -1,0 +1,67 @@
+[
+  {
+    "user_id": "user_08",
+    "split": "validation",
+    "policy_name": "Random",
+    "cache_hit_rate": 0.0,
+    "precision": 0.1,
+    "recall": 0.5,
+    "f1": 0.1667,
+    "thrash_rate": 0.8333,
+    "latency_ms": 850.0,
+    "mean_reward": -0.126,
+    "steps": 6
+  },
+  {
+    "user_id": "user_08",
+    "split": "validation",
+    "policy_name": "NoOp",
+    "cache_hit_rate": 0.0,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "thrash_rate": 0.4167,
+    "latency_ms": 850.0,
+    "mean_reward": -0.125,
+    "steps": 6
+  },
+  {
+    "user_id": "user_08",
+    "split": "validation",
+    "policy_name": "Frequency",
+    "cache_hit_rate": 0.0,
+    "precision": 0.1053,
+    "recall": 0.3333,
+    "f1": 0.16,
+    "thrash_rate": 0.2778,
+    "latency_ms": 850.0,
+    "mean_reward": -0.13,
+    "steps": 6
+  },
+  {
+    "user_id": "user_08",
+    "split": "validation",
+    "policy_name": "LRU",
+    "cache_hit_rate": 0.0,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "thrash_rate": 0.2083,
+    "latency_ms": 850.0,
+    "mean_reward": -0.13,
+    "steps": 6
+  },
+  {
+    "user_id": "user_08",
+    "split": "validation",
+    "policy_name": "PPO",
+    "cache_hit_rate": 0.0,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "thrash_rate": 0.1667,
+    "latency_ms": 850.0,
+    "mean_reward": -0.125,
+    "steps": 6
+  }
+]

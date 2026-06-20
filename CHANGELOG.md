@@ -6,17 +6,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [V5 — Production] — 2025-06-07 (Samsung EnnovateX AX Hackathon 2025)
+## [V5 -- Production] -- 2025-06-07 (Samsung EnnovateX AX Hackathon 2025)
 
 ### 🏆 Official Result
 **F1 = 0.7745 · p = 0.0115 · Cohen's d = 0.491 · Cache Hit Rate = 93.1%**
 
 ### Added
-- **GraphMindRL V5** — production-grade RL-enhanced Markov prefetch engine
-- **Adaptive confidence threshold** — RL controller adjusting threshold in real time based on rolling 20-step hit rate
-- **Two-tier cache architecture** — HOT (5 apps, 0ms) and WARM (15 apps, ~200ms) tiers
-- **Confidence scoring formula** — fuses Markov transitions (0.5), recency (0.1), and frequency (0.4)
-- **7-page Next.js 15 dashboard** — full interactive analytics suite
+- **GraphMindRL V5** -- production-grade RL-enhanced Markov prefetch engine
+- **Adaptive confidence threshold** -- RL controller adjusting threshold in real time based on rolling 20-step hit rate
+- **Two-tier cache architecture** -- HOT (5 apps, 0ms) and WARM (15 apps, ~200ms) tiers
+- **Confidence scoring formula** -- fuses Markov transitions (0.5), recency (0.1), and frequency (0.4)
+- **7-page Next.js 15 dashboard** -- full interactive analytics suite
   - Executive Overview (`/`)
   - Benchmark Explorer (`/benchmark`)
   - Optimization Journey (`/journey`)
@@ -24,12 +24,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - Cache Simulator (`/simulator`)
   - User Playback (`/playback`)
   - Research Validation (`/research`)
-- **Multi-agent orchestration** — 6 specialized agents (Prefetch, RLTrainer, GraphManager, DriftDetector, Security, Orchestrator)
-- **Full documentation suite** — architecture, benchmarking, reproducibility, models, datasets, user guide
+- **Multi-agent orchestration** -- 6 specialized agents (Prefetch, RLTrainer, GraphManager, DriftDetector, Security, Orchestrator)
+- **Full documentation suite** -- architecture, benchmarking, reproducibility, models, datasets, user guide
 
 ### Changed
 - Replaced static threshold (0.15) with RL-adaptive threshold (base 0.16, ±0.005)
-- Upgraded confidence weights from (0.5, 0.2, 0.3) to (0.5, 0.1, 0.4) — Phase 11A weight grid result
+- Upgraded confidence weights from (0.5, 0.2, 0.3) to (0.5, 0.1, 0.4) -- Phase 11A weight grid result
 - Redesigned dashboard from dark AI aesthetic to clean Figma/Notion-style
 
 ### Fixed
@@ -43,10 +43,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [V4 — Candidate] — 2025-05-20
+## [V4 -- Candidate] -- 2025-05-20
 
 ### Added
-- `RL_LatencyFocus` policy — optimized for latency reduction (F1 = 0.7539)
+- `RL_LatencyFocus` policy -- optimized for latency reduction (F1 = 0.7539)
 - Full Phase 11 benchmark suite with 8 hypothesis-test-decision cycles
 - Statistical significance testing: paired t-test + Cohen's d for all policies
 - Device validation module for Samsung Galaxy A-series device profiles
@@ -58,7 +58,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [V3 — Iteration 3] — 2025-05-05
+## [V3 -- Iteration 3] -- 2025-05-05
 
 ### Added
 - Credibility hardening: benchmark provenance tracking
@@ -71,7 +71,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [V2 — Iteration 2] — 2025-04-20
+## [V2 -- Iteration 2] -- 2025-04-20
 
 ### Added
 - Samsung telemetry ingestion layer (ADB connector, usage stats collector)
@@ -85,7 +85,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-## [V1 — Iteration 1] — 2025-04-05
+## [V1 -- Iteration 1] -- 2025-04-05
 
 ### Added
 - Core graph engine with weighted directed Markov graph (NetworkX)
@@ -103,4 +103,4 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
-*GraphMind — Samsung EnnovateX AX Hackathon 2025*
+*GraphMind -- Samsung EnnovateX AX Hackathon 2025*

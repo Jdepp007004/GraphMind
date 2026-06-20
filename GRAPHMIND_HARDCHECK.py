@@ -473,19 +473,25 @@ def check_memory_manager_flush_by_category():
     from src.core.event_bus import EventBus
     from src.core.graph_engine import BehaviouralGraph, GraphNode
     from src.core.memory_manager import MemoryManager
+    from config import settings
     EventBus.get_instance().clear_all()
-    g = BehaviouralGraph('user_test')
-    fin_node = GraphNode('fin_1', np.zeros(64), 'com.hdfcbank.new', 5, 2, {'headphones': False, 'calendar_near': False, 'weekend': False}, 0, 1, 'financial')
-    soc_node = GraphNode('soc_1', np.zeros(64), 'com.instagram.android', 8, 2, {'headphones': False, 'calendar_near': False, 'weekend': False}, 0, 1, 'social')
-    g.add_node(fin_node)
-    g.add_node(soc_node)
-    mm = MemoryManager('user_test', g)
-    mm.promote_to_hot('fin_1')
-    mm.promote_to_hot('soc_1')
-    flushed = mm.flush_hot_by_category('financial')
-    assert 'fin_1' in flushed, 'Financial node not flushed'
-    assert not mm.is_in_hot('fin_1'), 'Financial node still in HOT'
-    assert mm.is_in_hot('soc_1'), 'Social node incorrectly flushed'
+    old_cap = settings.HOT_TIER_CAPACITY
+    settings.HOT_TIER_CAPACITY = 5
+    try:
+        g = BehaviouralGraph('user_test')
+        fin_node = GraphNode('fin_1', np.zeros(64), 'com.hdfcbank.new', 5, 2, {'headphones': False, 'calendar_near': False, 'weekend': False}, 0, 1, 'financial')
+        soc_node = GraphNode('soc_1', np.zeros(64), 'com.instagram.android', 8, 2, {'headphones': False, 'calendar_near': False, 'weekend': False}, 0, 1, 'social')
+        g.add_node(fin_node)
+        g.add_node(soc_node)
+        mm = MemoryManager('user_test', g)
+        mm.promote_to_hot('fin_1')
+        mm.promote_to_hot('soc_1')
+        flushed = mm.flush_hot_by_category('financial')
+        assert 'fin_1' in flushed, 'Financial node not flushed'
+        assert not mm.is_in_hot('fin_1'), 'Financial node still in HOT'
+        assert mm.is_in_hot('soc_1'), 'Social node incorrectly flushed'
+    finally:
+        settings.HOT_TIER_CAPACITY = old_cap
     EventBus.get_instance().clear_all()
 
 @check(2, 'MemoryManager.get_tier_stats() returns correct schema', 'get_tier_stats() must return a dict with keys: hot_count, warm_count, cold_count, hot_capacity, warm_capacity. hot_capacity must equal HOT_TIER_CAPACITY (30), warm_capacity must equal WARM_TIER_CAPACITY (150).')
