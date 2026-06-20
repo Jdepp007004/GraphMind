@@ -1,5 +1,4 @@
 "use client";
-import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight, TrendingUp, Shield, Zap, Database, Target, Layers } from "lucide-react";
@@ -33,12 +32,9 @@ const config = [
 ];
 
 const quickLinks = [
-  { href: "/benchmark",  label: "Benchmark Explorer",  desc: "14-policy comparison · V6 vs all baselines" },
-  { href: "/kpi",        label: "KPI Dashboard",        desc: "7/7 PS03 KPIs · real numbers" },
-  { href: "/simulator",  label: "Cache Simulator",      desc: "Live 5-tier PIN/HOT/WARM/COOL simulation" },
-  { href: "/graph",      label: "Graph Explorer",       desc: "Interactive per-user Markov graph" },
-  { href: "/playback",   label: "User Playback",        desc: "Step through real UbiqLog events" },
-  { href: "/research",   label: "Research Validation",  desc: "Ablations · stats · reproducibility" },
+  { href: "/benchmark",    label: "Benchmark Explorer",  desc: "14-policy comparison · V6 vs all baselines" },
+  { href: "/kpi",          label: "KPI Dashboard",        desc: "7/7 PS03 KPIs · real numbers" },
+  { href: "/architecture", label: "V6 Architecture",      desc: "5-tier memory & transformer reranker design" },
 ];
 
 const kpiRows = [

@@ -1,5 +1,5 @@
 user_id,split,policy_name,cache_hit_rate,precision,recall,f1,thrash_rate,latency_ms,mean_reward,steps
-user_08,validation,Random,0.0,0.1,0.5,0.1667,0.8333,850.0,-0.126,6
+user_08,validation,Random,0.0,0.0667,0.3333,0.1111,0.8333,850.0,-0.125,6
 user_08,validation,NoOp,0.0,0.0,0.0,0.0,0.4167,850.0,-0.125,6
 user_08,validation,Frequency,0.0,0.1053,0.3333,0.16,0.2778,850.0,-0.13,6
 user_08,validation,LRU,0.0,0.0,0.0,0.0,0.2083,850.0,-0.13,6

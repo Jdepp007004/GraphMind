@@ -1,16 +1,13 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, BarChart2, Target, GitBranch, Play, FlaskConical, Cpu } from "lucide-react";
+import { LayoutDashboard, BarChart2, Target, Cpu } from "lucide-react";
 
 const NAV = [
   { href: "/",          label: "Overview",           icon: LayoutDashboard },
   { href: "/kpi",       label: "KPI Dashboard",      icon: Target },
   { href: "/benchmark", label: "Benchmark Explorer", icon: BarChart2 },
-  { href: "/simulator", label: "Cache Simulator",    icon: Cpu },
-  { href: "/graph",     label: "Graph Explorer",     icon: GitBranch },
-  { href: "/playback",  label: "User Playback",      icon: Play },
-  { href: "/research",  label: "Research",           icon: FlaskConical },
+  { href: "/architecture", label: "V6 Architecture", icon: Cpu },
 ];
 
 export default function Navigation() {

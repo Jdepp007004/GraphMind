@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, Cell, ReferenceLine,
+  ResponsiveContainer, Cell,
 } from "recharts";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
@@ -31,7 +31,16 @@ const TABS = [
   { key: "latency_saved_ms", label: "Latency Saved" },
 ] as const;
 
-const Tip = ({ active, payload }: any) => {
+interface TipProps {
+  active?: boolean;
+  payload?: Array<{
+    name: string;
+    value: string | number;
+    payload: PolicyResult;
+  }>;
+}
+
+const Tip = ({ active, payload }: TipProps) => {
   if (!active || !payload?.length) return null;
   const d = payload[0];
   return (

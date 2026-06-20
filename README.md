@@ -224,7 +224,6 @@ Full dependency list: [docs/technical_stack.md](docs/technical_stack.md)
 GraphMind/
 │
 ├── 📄 README.md                          # You are here
-├── 🔒 GRAPHMIND_HARDCHECK.py             # Full system verification script
 ├── 📋 requirements.txt                   # Python dependencies
 │
 ├── ⚙️  config/

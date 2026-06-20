@@ -1,5 +1,0 @@
-policy,n_users,mean_f1,std_f1,mean_hr,mean_precision,mean_recall,mean_lat_ms,delta_f1
-TimeAwareM1_6Band,31,0.7151,0.1437,0.9338,0.6212,0.8576,1999.7,-0.0273
-TimeAwareM1_12Band,31,0.7001,0.1521,0.9301,0.6076,0.8416,1994.4,-0.0423
-TimeAwareM1_24Hour,31,0.6915,0.1505,0.9264,0.5992,0.8324,1988.9,-0.0509
-TimeAwareM1_48Bucket,31,0.687,0.1455,0.9256,0.5959,0.8246,1987.7,-0.0554

@@ -5,14 +5,14 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine,
 } from "recharts";
-import { CheckCircle2, XCircle, Minus } from "lucide-react";
+import { CheckCircle2, XCircle, Minus, LucideIcon } from "lucide-react";
 
 interface Phase {
   phase: string; label: string; f1: number; delta: number;
   status: string; description: string; date: string;
 }
 
-const STATUS: Record<string, { label: string; badge: string; icon: any }> = {
+const STATUS: Record<string, { label: string; badge: string; icon: LucideIcon }> = {
   production: { label: "Production",    badge: "badge-green",  icon: CheckCircle2 },
   accepted:   { label: "Accepted",      badge: "badge-blue",   icon: CheckCircle2 },
   rejected:   { label: "Rejected",      badge: "badge-red",    icon: XCircle },
@@ -21,9 +21,16 @@ const STATUS: Record<string, { label: string; badge: string; icon: any }> = {
   weak:       { label: "Inconclusive",  badge: "badge-amber",  icon: Minus },
 };
 
-const Tip = ({ active, payload }: any) => {
+interface TipProps {
+  active?: boolean;
+  payload?: Array<{
+    payload: Phase;
+  }>;
+}
+
+const Tip = ({ active, payload }: TipProps) => {
   if (!active || !payload?.length) return null;
-  const d = payload[0].payload as Phase;
+  const d = payload[0].payload;
   return (
     <div className="card-sm px-3 py-2 text-xs shadow-sm">
       <div className="font-medium text-gray-900">{d.label}</div>

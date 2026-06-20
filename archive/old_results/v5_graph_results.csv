@@ -1,5 +1,0 @@
-policy,n_users,mean_f1,std_f1,mean_hr,mean_precision,mean_recall,mean_lat_ms,delta_f1
-Graph_Bigram,31,0.7295,0.1449,0.9297,0.6423,0.8567,1993.8,-0.0129
-Graph_NodeApp,31,0.7267,0.1509,0.938,0.6328,0.8713,2005.7,-0.0157
-Graph_NodeAppTime6,31,0.7116,0.143,0.9334,0.6167,0.8562,1999.2,-0.0308
-Graph_NodeAppTime12,31,0.6918,0.1493,0.9293,0.5961,0.839,1993.2,-0.0506
