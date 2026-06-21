@@ -35,11 +35,11 @@
 
 **Institute/College Name** — PES University, Electronic City Campus, 100 Feet Ring Road, Bangalore — 560100, Karnataka, India
 
-**Final Presentation Google Drive Link** — _(add Google Drive PDF link here before submission)_
+**Final Presentation Google Drive Link** — [Presentation PDF](https://drive.google.com/file/d/1UvXntPKS14w6kUgxe3ZggG5MWK9mOpSW/view?usp=sharing)
 
-**Full Submission Demo Video Link** — _(add YouTube link here before submission)_
+**Full Submission Demo Video Link** — [Demo Video](https://youtu.be/i79UCERPrvs)
 
-**Setup & Result Reproducibility Video Link** — _(add YouTube link here before submission)_
+**Setup & Result Reproducibility Video Link** — [Reproducibility Video](https://youtu.be/nqJQPvFqxbE)
 
 ---
 
