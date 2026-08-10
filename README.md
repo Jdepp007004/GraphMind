@@ -49,13 +49,13 @@ Benchmarked on **real UbiqLog dataset** — 31 users, 508 days of real Android a
 
 | KPI | Target | Achieved | Status |
 |-----|--------|----------|--------|
-| Next Context Prediction Accuracy (F1) | ≥ 75% | **97.92%** | ✅ PASS |
-| Cache Hit Rate | ≥ 85% | **97.92%** | ✅ PASS |
-| Memory Thrashing Reduction vs LRU | ≥ 50% | **100.00%** | ✅ PASS |
-| App Load Time Improvement | ≥ 20% | **72.18%** | ✅ PASS |
-| App Launch Time Improvement | ≥ 10% | **82.20%** | ✅ PASS |
-| System Stability | 0 issues | **0 issues** | ✅ PASS |
-| Memory Utilisation Efficiency vs LRU | ≥ 30% | **96.91%** | ✅ PASS |
+| Next Context Prediction Accuracy (F1) | ≥ 75% | **97.92%** |  PASS |
+| Cache Hit Rate | ≥ 85% | **97.92%** |  PASS |
+| Memory Thrashing Reduction vs LRU | ≥ 50% | **100.00%** |  PASS |
+| App Load Time Improvement | ≥ 20% | **72.18%** |  PASS |
+| App Launch Time Improvement | ≥ 10% | **82.20%** |  PASS |
+| System Stability | 0 issues | **0 issues** |  PASS |
+| Memory Utilisation Efficiency vs LRU | ≥ 30% | **96.91%** |  PASS |
 
 > **7/7 KPIs PASS** on the real UbiqLog dataset (31 users, Samsung Galaxy A23 calibrated latencies).  
 > V6 outperforms V5 (80.51% → 97.92% cache hit rate) via per-user isolation + 5-tier cache + Transformer reranker.  
